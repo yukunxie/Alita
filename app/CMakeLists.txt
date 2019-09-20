@@ -25,7 +25,7 @@ add_library( # Sets the name of the library.
         src/main/cpp/main.cpp
         src/main/cpp/native-lib.cpp
         src/main/cpp/RealRenderer.cpp
-        src/main/cpp/vulkan_wrapper.cpp
+        src/main/cpp/drivers/vulkan/vulkan_wrapper.cpp
         )
 
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")

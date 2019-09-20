@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "vulkan_wrapper.h"
+#include "drivers/vulkan/vulkan_wrapper.h"
 
 // Android log function wrappers
 static const char *kTAG = "VulkanDemo";

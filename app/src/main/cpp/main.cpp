@@ -4,7 +4,7 @@
 
 #include "RealRenderer.h"
 
-#include "vulkan_wrapper.h"
+#include "drivers/vulkan/vulkan_wrapper.h"
 
 void terminate(void);
 void handle_cmd(android_app* app, int32_t cmd);

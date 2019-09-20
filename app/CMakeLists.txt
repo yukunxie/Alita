@@ -23,8 +23,8 @@ add_library( # Sets the name of the library.
 
         # Provides a relative path to your source file(s).
         src/main/cpp/main.cpp
-        src/main/cpp/native-lib.cpp
-        src/main/cpp/RealRenderer.cpp
+        src/main/cpp/jni/native-lib.cpp
+        src/main/cpp/render/RealRenderer.cpp
         src/main/cpp/drivers/vulkan/vulkan_wrapper.cpp
         )
 

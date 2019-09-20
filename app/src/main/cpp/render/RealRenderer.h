@@ -9,7 +9,7 @@
 #include <android/log.h>
 #include <android_native_app_glue.h>
 
-#include "drivers/vulkan/vulkan_wrapper.h"
+#include "../drivers/vulkan/vulkan_wrapper.h"
 
 struct SwapChainSupportDetails
 {

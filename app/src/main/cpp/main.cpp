@@ -2,7 +2,7 @@
 #include <android/log.h>
 #include <android_native_app_glue.h>
 
-#include "RealRenderer.h"
+#include "render/RealRenderer.h"
 
 #include "drivers/vulkan/vulkan_wrapper.h"
 
@@ -29,9 +29,6 @@ void android_main(struct android_app* app)
 
 void terminate(void) {
     return ;
-//    vkDestroySurfaceKHR(tutorialInstance, tutorialSurface, nullptr);
-//    vkDestroyDevice(tutorialDevice, nullptr);
-//    vkDestroyInstance(tutorialInstance, nullptr);
 }
 
 // Process the next main command.

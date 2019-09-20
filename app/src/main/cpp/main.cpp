@@ -20,6 +20,10 @@ void android_main(struct android_app* app)
                             (void**)&source) >= 0) {
             if (source != NULL) source->process(app, source);
         }
+        if (RealRenderer::getInstance()->isReady())
+        {
+            RealRenderer::getInstance()->drawFrame();
+        }
     } while (app->destroyRequested == 0);
 
     initVulkanInstance(app);

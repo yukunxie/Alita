@@ -2,7 +2,7 @@
 #include <android/log.h>
 #include <android_native_app_glue.h>
 
-#include "VulkanDemo.h"
+#include "RealRenderer.h"
 
 #include "vulkan_wrapper.h"
 
@@ -25,8 +25,6 @@ void android_main(struct android_app* app)
             RealRenderer::getInstance()->drawFrame();
         }
     } while (app->destroyRequested == 0);
-
-    initVulkanInstance(app);
 }
 
 void terminate(void) {

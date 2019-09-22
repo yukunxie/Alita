@@ -90,6 +90,8 @@ private:
 
     void createSemaphores();
 
+    void createShaderModule();
+
 private:
     VkInstance vkInstance_ = nullptr;
     VkPhysicalDevice vkGPU_ = nullptr;
@@ -105,6 +107,7 @@ private:
     std::vector<VkImageView> swapChainImageViews_;
 
     VkRenderPass renderPass_;
+    VkPipeline graphicsPipeline_;
     VkPipelineLayout pipelineLayout_;
     std::vector<VkFramebuffer> swapChainFramebuffers_;
     VkCommandPool commandPool_;

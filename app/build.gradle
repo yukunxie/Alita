@@ -29,6 +29,11 @@ android {
             path "CMakeLists.txt"
         }
     }
+
+    task copyTask(type:Copy) {
+                from './assets/'
+                into   'build/'
+            }
 }
 
 dependencies {

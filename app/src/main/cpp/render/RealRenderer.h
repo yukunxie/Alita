@@ -8,7 +8,8 @@
 #include <vector>
 #include <android/log.h>
 #include <android_native_app_glue.h>
-
+#include "types/Types.h"
+#include "aux/Aux.h"
 #include "../drivers/vulkan/vulkan_wrapper.h"
 
 struct SwapChainSupportDetails
@@ -60,6 +61,8 @@ protected:
 
     bool isDeviceSuitable(VkPhysicalDevice device);
 
+    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
 private:
     VkInstance createVKInstance(struct android_app *app);
 
@@ -92,6 +95,8 @@ private:
 
     void createShaderModule();
 
+    void createVertexBuffer();
+
 private:
     VkInstance vkInstance_ = nullptr;
     VkPhysicalDevice vkGPU_ = nullptr;
@@ -101,20 +106,23 @@ private:
     VkSurfaceKHR vkSurface_;
     VkSwapchainKHR vkSwapchain_;
     VkFence vkFence_;
-    std::vector<VkImage> swapChainImages_;
     VkFormat swapChainImageFormat_;
     VkExtent2D swapChainExtent_;
+    VkRenderPass vkRenderPass_;
+    VkPipeline vkGraphicsPipeline_;
+    VkPipelineLayout vkPipelineLayout_;
+    VkSemaphore vkImageAvailableSemaphore_;
+    VkSemaphore vkRenderFinishedSemaphore_;
+    VkCommandPool vkCommandPool_;
+
+    //
+    VkBuffer vkVertexBuffer_;
+    VkDeviceMemory vkVertexBufferMemory_;
+
+    std::vector<VkImage> swapChainImages_;
     std::vector<VkImageView> swapChainImageViews_;
-
-    VkRenderPass renderPass_;
-    VkPipeline graphicsPipeline_;
-    VkPipelineLayout pipelineLayout_;
     std::vector<VkFramebuffer> swapChainFramebuffers_;
-    VkCommandPool commandPool_;
     std::vector<VkCommandBuffer> commandBuffers_;
-
-    VkSemaphore imageAvailableSemaphore_;
-    VkSemaphore renderFinishedSemaphore_;
 
     static RealRenderer *instance_;
 };

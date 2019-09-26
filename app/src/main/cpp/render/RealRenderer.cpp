@@ -5,9 +5,15 @@
 #include "RealRenderer.h"
 
 #include <vector>
+#include <array>
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
 
 #include "../drivers/vulkan/vulkan_wrapper.h"
-#include "shaders.h"
+#include "aux/AFileSystem.h"
+#include "glm/vec3.hpp"
+#include "../external/glm/gtx/closest_point.inl"
+#include "../aux/AFileSystem.h"
 
 // Android log function wrappers
 static const char *kTAG = "VulkanDemo";
@@ -72,6 +78,8 @@ bool RealRenderer::initVulkanContext(struct android_app *app)
     createCommandPool();
 
     createShaderModule();
+
+    createVertexBuffer();
 
     createCommandBuffers();
 
@@ -453,7 +461,7 @@ void RealRenderer::createRenderPass()
             .pDependencies = nullptr
     };
 
-    if (auto code = vkCreateRenderPass(vkDevice_, &renderPassInfo, nullptr, &renderPass_); code !=
+    if (auto code = vkCreateRenderPass(vkDevice_, &renderPassInfo, nullptr, &vkRenderPass_); code !=
                                                                                            VK_SUCCESS) {
         throw std::runtime_error("failed to create render pass!");
     }
@@ -465,11 +473,18 @@ void RealRenderer::createFramebuffers()
 
     for (size_t i = 0; i < swapChainImageViews_.size(); i++) {
         VkImageView attachments[] = {swapChainImageViews_[i]};
-        VkFramebufferCreateInfo framebufferInfo = {.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, .pNext = nullptr, .renderPass = renderPass_, .layers = 1, .attachmentCount = 1,  // 2 if using depth
-                .pAttachments = attachments, .width = static_cast<uint32_t>(swapChainExtent_.width), .height = static_cast<uint32_t>(swapChainExtent_.height),};
+        VkFramebufferCreateInfo framebufferInfo {
+                .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+                .pNext = nullptr,
+                .renderPass = vkRenderPass_,
+                .layers = 1,
+                .attachmentCount = 1,  // 2 if using depth
+                .pAttachments = attachments,
+                .width = static_cast<uint32_t>(swapChainExtent_.width),
+                .height = static_cast<uint32_t>(swapChainExtent_.height)
+        };
 
-        if (vkCreateFramebuffer(vkDevice_, &framebufferInfo, nullptr, &swapChainFramebuffers_[i]) !=
-            VK_SUCCESS) {
+        if (vkCreateFramebuffer(vkDevice_, &framebufferInfo, nullptr, &swapChainFramebuffers_[i]) != VK_SUCCESS) {
             throw std::runtime_error("failed to create framebuffer!");
         }
     }
@@ -478,9 +493,14 @@ void RealRenderer::createFramebuffers()
 void RealRenderer::createCommandPool()
 {
     QueueFamilyIndices queueFamilyIndices = findQueueFamilies(vkPhysicalDevice_, vkSurface_);
-    VkCommandPoolCreateInfo poolInfo = {.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO, .pNext = nullptr, .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, .queueFamilyIndex = 0,};
+    VkCommandPoolCreateInfo poolInfo = {
+            .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+            .queueFamilyIndex = 0
+    };
 
-    if (auto code = vkCreateCommandPool(vkDevice_, &poolInfo, nullptr, &commandPool_); code !=
+    if (auto code = vkCreateCommandPool(vkDevice_, &poolInfo, nullptr, &vkCommandPool_); code !=
                                                                                        VK_SUCCESS) {
         throw std::runtime_error("failed to create command pool!");
     }
@@ -549,7 +569,7 @@ void RealRenderer::createCommandBuffers()
 
     //    VkCommandBufferAllocateInfo allocInfo = {};
     //    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    //    allocInfo.commandPool = commandPool_;
+    //    allocInfo.commandPool = vkCommandPool_;
     //    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     //    allocInfo.commandBufferCount = (uint32_t) commandBuffers_.size();
     //    if (vkAllocateCommandBuffers(vkDevice_, &allocInfo, commandBuffers_.data()) != VK_SUCCESS) {
@@ -557,10 +577,15 @@ void RealRenderer::createCommandBuffers()
     //    }
 
     for (size_t i = 0; i < commandBuffers_.size(); i++) {
-        VkCommandBufferAllocateInfo cmdBufferCreateInfo{.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO, .pNext = nullptr, .commandPool = commandPool_, .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY, .commandBufferCount = 1,};
+        VkCommandBufferAllocateInfo cmdBufferCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+            .pNext = nullptr,
+            .commandPool = vkCommandPool_,
+            .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+            .commandBufferCount = 1
+        };
 
-        if (auto code = vkAllocateCommandBuffers(vkDevice_, &cmdBufferCreateInfo,
-                                                 &commandBuffers_[i]); code != VK_SUCCESS) {
+        if (auto code = vkAllocateCommandBuffers(vkDevice_, &cmdBufferCreateInfo, &commandBuffers_[i]); code != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate command buffers!");
         }
 
@@ -575,7 +600,7 @@ void RealRenderer::createCommandBuffers()
         // transition the display image to color attachment layout
         setImageLayout(commandBuffers_[i],
                 swapChainImages_[i],
-                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                VK_IMAGE_LAYOUT_UNDEFINED,
                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                 VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
                 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
@@ -583,7 +608,7 @@ void RealRenderer::createCommandBuffers()
         // Now we start a renderpass. Any draw command has to be recorded in a
         // renderpass
         VkClearValue clearVals{
-                .color.float32[0] = 0.0f,
+                .color.float32[0] = 1.0f,
                 .color.float32[1] = 0.34f,
                 .color.float32[2] = 0.90f,
                 .color.float32[3] = 1.0f
@@ -592,7 +617,7 @@ void RealRenderer::createCommandBuffers()
         VkRenderPassBeginInfo renderPassBeginInfo = {
             .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
             .pNext = nullptr,
-            .renderPass = renderPass_,
+            .renderPass = vkRenderPass_,
             .framebuffer = swapChainFramebuffers_[i],
             .renderArea = {.offset = {.x = 0, .y = 0 },.extent = swapChainExtent_},
             .clearValueCount = 1,
@@ -601,20 +626,17 @@ void RealRenderer::createCommandBuffers()
 
         vkCmdBeginRenderPass(commandBuffers_[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-        // draw some commands
-        {
-            vkCmdBindPipeline(commandBuffers_[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline_);
-            vkCmdDraw(commandBuffers_[i], 3, 1, 0, 0);
-        }
+//        // draw some commands
+//        {
+//            vkCmdBindPipeline(commandBuffers_[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkGraphicsPipeline_);
+//            VkDeviceSize offset = 0;
+//            vkCmdBindVertexBuffers(commandBuffers_[i], 0, 1, &vkVertexBuffer_, &offset);
+//            VKAPI_CALL(vkCmdDraw(commandBuffers_[i], 3, 1, 0, 0));
+//        }
 
         vkCmdEndRenderPass(commandBuffers_[i]);
+
         // transition back to swapchain image to PRESENT_SRC_KHR
-        setImageLayout(commandBuffers_[i],
-                swapChainImages_[i],
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
         CALL_VK(vkEndCommandBuffer(commandBuffers_[i]));
     }
 }
@@ -624,9 +646,9 @@ void RealRenderer::createSemaphores()
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    if (vkCreateSemaphore(vkDevice_, &semaphoreInfo, nullptr, &imageAvailableSemaphore_) !=
+    if (vkCreateSemaphore(vkDevice_, &semaphoreInfo, nullptr, &vkImageAvailableSemaphore_) !=
         VK_SUCCESS ||
-        vkCreateSemaphore(vkDevice_, &semaphoreInfo, nullptr, &renderFinishedSemaphore_) !=
+        vkCreateSemaphore(vkDevice_, &semaphoreInfo, nullptr, &vkRenderFinishedSemaphore_) !=
         VK_SUCCESS) {
         throw std::runtime_error("failed to create semaphores!");
     }
@@ -638,8 +660,9 @@ void RealRenderer::createShaderModule()
     {
         VkShaderModuleCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = shader_vert_length;
-        createInfo.pCode = reinterpret_cast<const uint32_t*>(shader_vert_data);
+        const TData& data = AFileSystem::getInstance()->readData("shaders/shader.vert.spv");
+        createInfo.codeSize = data.size();
+        createInfo.pCode = reinterpret_cast<const uint32_t*>(data.data());
 
         if (vkCreateShaderModule(vkDevice_, &createInfo, nullptr, &vertShaderModule) != VK_SUCCESS) {
             throw std::runtime_error("failed to create shader module!");
@@ -650,8 +673,9 @@ void RealRenderer::createShaderModule()
     {
         VkShaderModuleCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = shader_frag_length;
-        createInfo.pCode = reinterpret_cast<const uint32_t*>(shader_frag_data);
+        const TData& data = AFileSystem::getInstance()->readData("shaders/shader.frag.spv");
+        createInfo.codeSize = data.size();
+        createInfo.pCode = reinterpret_cast<const uint32_t*>(data.data());
 
         if (vkCreateShaderModule(vkDevice_, &createInfo, nullptr, &fragShaderModule) != VK_SUCCESS) {
             throw std::runtime_error("failed to create shader module!");
@@ -674,12 +698,32 @@ void RealRenderer::createShaderModule()
 
     VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
+    VkVertexInputBindingDescription bindingDescription = {
+            .binding = 0,
+            .stride  = sizeof(TVertex),
+            .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+    };
+
+    std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {
+            VkVertexInputAttributeDescription {
+                    .binding = 0,
+                    .location = 0,
+                    .format = VK_FORMAT_R32G32_SFLOAT,
+                    .offset = offsetof(TVertex, pos)
+            },
+            VkVertexInputAttributeDescription {
+                    .binding = 0,
+                    .location = 1,
+                    .format = VK_FORMAT_R32G32B32_SFLOAT,
+                    .offset = offsetof(TVertex, color)
+            }
+    };
+
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-            .vertexBindingDescriptionCount = 0,
-            .vertexAttributeDescriptionCount = 0,
-            .pVertexBindingDescriptions = nullptr,  // Optional
-            .pVertexAttributeDescriptions = nullptr, // Optional
+            .vertexBindingDescriptionCount = 1,
+            .vertexAttributeDescriptionCount = static_cast<std::uint32_t>(attributeDescriptions.size()),
+            .pVertexBindingDescriptions = &bindingDescription,
+            .pVertexAttributeDescriptions = attributeDescriptions.data()
     };
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {
@@ -781,7 +825,7 @@ void RealRenderer::createShaderModule()
             .pPushConstantRanges = nullptr, // Optional
     };
 
-    if (vkCreatePipelineLayout(vkDevice_, &pipelineLayoutInfo, nullptr, &pipelineLayout_) != VK_SUCCESS) {
+    if (vkCreatePipelineLayout(vkDevice_, &pipelineLayoutInfo, nullptr, &vkPipelineLayout_) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout!");
     }
 
@@ -793,51 +837,181 @@ void RealRenderer::createShaderModule()
             .pInputAssemblyState = &inputAssembly,
             .pViewportState = &viewportState,
             .pRasterizationState = &rasterizer,
-            .pMultisampleState = &multisampling, pipelineInfo.pDepthStencilState = nullptr, // Optional
+            .pMultisampleState = &multisampling,
+            pipelineInfo.pDepthStencilState = nullptr, // Optional
             .pColorBlendState = &colorBlending,
             .pDynamicState = nullptr, // Optional
 
-            .layout = pipelineLayout_,
-            .renderPass = renderPass_,
+            .layout = vkPipelineLayout_,
+            .renderPass = vkRenderPass_,
             .subpass = 0,
 
             .basePipelineHandle = VK_NULL_HANDLE, // Optional
             .basePipelineIndex = -1, // Optional
     };
 
-    if (vkCreateGraphicsPipelines(vkDevice_, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline_) != VK_SUCCESS) {
+    if (vkCreateGraphicsPipelines(vkDevice_, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkGraphicsPipeline_) != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics pipeline!"); }
+}
+
+void RealRenderer::createVertexBuffer()
+{
+    const std::vector<TVertex> vertices = {{{0.0f, -.5f}, {1.0f, 0.0f, 0.0f}}, {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}}, {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+    };
+
+    // TODO define a class member
+    uint32_t queueFamilyIndex_ = 0;
+
+    VkBufferCreateInfo bufferInfo = {
+            .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+            .size = sizeof(vertices[0]) * vertices.size(),
+            .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+            .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+            .pQueueFamilyIndices = &queueFamilyIndex_,
+            .queueFamilyIndexCount = 1,
+    };
+
+    if (vkCreateBuffer(vkDevice_, &bufferInfo, nullptr, &vkVertexBuffer_) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create vertex buffer!");
+    }
+
+    // Allocate heap memory for vertex buffer
+
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(vkDevice_, vkVertexBuffer_, &memRequirements);
+
+    std::uint32_t memTypeMask = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    VkMemoryAllocateInfo allocInfo = {
+            .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+            .allocationSize = memRequirements.size,
+            .memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, memTypeMask)
+    };
+
+    if (vkAllocateMemory(vkDevice_, &allocInfo, nullptr, &vkVertexBufferMemory_) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to allocate vertex buffer memory!");
+    }
+
+    void* data;
+    VKAPI_CALL(vkMapMemory(vkDevice_, vkVertexBufferMemory_, 0, bufferInfo.size, 0, &data));
+    memcpy(data, vertices.data(), (size_t) bufferInfo.size);
+    vkUnmapMemory(vkDevice_, vkVertexBufferMemory_);
+    VKAPI_CALL(vkBindBufferMemory(vkDevice_, vkVertexBuffer_, vkVertexBufferMemory_, 0));
+}
+
+uint32_t RealRenderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+{
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(vkPhysicalDevice_, &memProperties);
+
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+    {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+        {
+            return i;
+        }
+    }
+
+    throw std::runtime_error("failed to find suitable memory type!");
 }
 
 void RealRenderer::drawFrame()
 {
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(vkDevice_, vkSwapchain_, std::numeric_limits<uint64_t>::max(),
-                          imageAvailableSemaphore_, VK_NULL_HANDLE, &imageIndex);
+    VKAPI_CALL(vkAcquireNextImageKHR(vkDevice_, vkSwapchain_, std::numeric_limits<uint64_t>::max(),
+                          vkImageAvailableSemaphore_, VK_NULL_HANDLE, &imageIndex));
 
-    vkResetFences(vkDevice_, 1, &vkFence_);
+    vkWaitForFences(vkDevice_, 1, &vkFence_, VK_TRUE, std::numeric_limits<uint64_t>::max());
+
+    VkCommandBufferBeginInfo cmdBufferBeginInfo{
+            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+            .pNext = nullptr,
+            .flags = 0,
+            .pInheritanceInfo = nullptr
+    };
+    CALL_VK(vkBeginCommandBuffer(commandBuffers_[imageIndex], &cmdBufferBeginInfo));
+
+    // transition the display image to color attachment layout
+    setImageLayout(commandBuffers_[imageIndex],
+                   swapChainImages_[imageIndex],
+                   VK_IMAGE_LAYOUT_UNDEFINED,
+                   VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                   VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                   VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+
+    VkClearValue clearVals{
+            .color.float32[0] = 0.0f,
+            .color.float32[1] = 1.0f,
+            .color.float32[2] = 0.0f,
+            .color.float32[3] = 1.0f
+    };
+
+    VkRenderPassBeginInfo renderPassBeginInfo = {
+            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+            .pNext = nullptr,
+            .renderPass = vkRenderPass_,
+            .framebuffer = swapChainFramebuffers_[imageIndex],
+            .renderArea = {.offset = {.x = 0, .y = 0 },.extent = swapChainExtent_},
+            .clearValueCount = 1,
+            .pClearValues = &clearVals
+    };
+
+    vkCmdBeginRenderPass(commandBuffers_[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    // draw some commands
+    {
+        vkCmdBindPipeline(commandBuffers_[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, vkGraphicsPipeline_);
+        VkBuffer vertexBuffers[] = {vkVertexBuffer_};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(commandBuffers_[imageIndex], 0, 1, vertexBuffers, offsets);
+
+        VKAPI_CALL(vkCmdDraw(commandBuffers_[imageIndex], 3, 1, 0, 0));
+    }
+
+    vkCmdEndRenderPass(commandBuffers_[imageIndex]);
+
+    CALL_VK(vkEndCommandBuffer(commandBuffers_[imageIndex]));
 
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &imageAvailableSemaphore_;
+    submitInfo.pWaitSemaphores = &vkImageAvailableSemaphore_;
     submitInfo.pWaitDstStageMask = waitStages;
 
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffers_[imageIndex];
 
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &renderFinishedSemaphore_;
+    submitInfo.pSignalSemaphores = &vkRenderFinishedSemaphore_;
 
+    vkResetFences(vkDevice_, 1, &vkFence_);
     if (auto code = vkQueueSubmit(vkQueue_, 1, &submitInfo, vkFence_); code != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
-    vkWaitForFences(vkDevice_, 1, &vkFence_, VK_TRUE, 100000000);
 
     LOGI("Drawing frames......");
 
     VkResult result;
-    VkPresentInfoKHR presentInfo{.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, .pNext = nullptr, .swapchainCount = 1, .pSwapchains = &vkSwapchain_, .pImageIndices = &imageIndex, .waitSemaphoreCount = 0, .pWaitSemaphores = nullptr, .pResults = &result,};
-    vkQueuePresentKHR(vkQueue_, &presentInfo);
+    VkPresentInfoKHR presentInfo{
+        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .pNext = nullptr,
+        .swapchainCount = 1,
+        .pSwapchains = &vkSwapchain_,
+        .pImageIndices = &imageIndex,
+        .waitSemaphoreCount = 0,
+        .pWaitSemaphores = nullptr,
+        .pResults = &result
+    };
+
+    if (auto code = vkQueuePresentKHR(vkQueue_, &presentInfo); code == VK_ERROR_OUT_OF_DATE_KHR ||
+        code == VK_SUBOPTIMAL_KHR)
+    {
+        // TODO: recreate swapchain
+    }
+    else if (code != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to present swap chain image!");
+    }
+    vkQueueWaitIdle(vkQueue_);
 }

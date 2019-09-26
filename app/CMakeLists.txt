@@ -15,6 +15,16 @@ add_library( app-glue STATIC ${APP_GLUE_DIR}/android_native_app_glue.c)
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 
+include_directories(
+        src/main/cpp
+        src/main/cpp/external
+        )
+
+
+#add_subdirectory(src/main/cpp/external/glm)
+
+file(GLOB native_srcs "src/main/cpp/aux/*.cpp")
+
 add_library( # Sets the name of the library.
         native-lib
 
@@ -25,7 +35,10 @@ add_library( # Sets the name of the library.
         src/main/cpp/main.cpp
         src/main/cpp/jni/native-lib.cpp
         src/main/cpp/render/RealRenderer.cpp
+#        src/main/cpp/aux/AFileSystem.cpp
         src/main/cpp/drivers/vulkan/vulkan_wrapper.cpp
+
+        ${native_srcs}
         )
 
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")

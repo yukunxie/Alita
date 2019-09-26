@@ -1,5 +1,7 @@
 package com.realxie.vulkandemo;
 
+import android.content.Context;
+import android.content.res.AssetManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -19,6 +21,10 @@ public class MainActivity extends AppCompatActivity {
         // Example of a call to a native method
         TextView tv = (TextView) findViewById(R.id.sample_text);
         tv.setText(stringFromJNI());
+
+//        (Context)activity,
+
+        setAssetManagerJNI((Context)this, getApplication().getAssets());
     }
 
     /**
@@ -26,4 +32,6 @@ public class MainActivity extends AppCompatActivity {
      * which is packaged with this application.
      */
     public native String stringFromJNI();
+
+    private static native void setAssetManagerJNI(final Context pContext, final AssetManager pAssetManager);
 }

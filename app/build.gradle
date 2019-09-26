@@ -29,11 +29,6 @@ android {
             path "CMakeLists.txt"
         }
     }
-
-    task copyTask(type:Copy) {
-                from './assets/'
-                into   'build/'
-            }
 }
 
 dependencies {
@@ -43,4 +38,21 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}
+
+android.applicationVariants.all { variant ->
+    println("reaxlie vulkan demo: Pre build script begin ...${projectDir}")
+
+    delete "build/outputs/apk/debug/app-debug/assets"
+    delete "src/main/assets"
+    mkdir "src/main/assets"
+
+    variant.mergeAssets.doFirst
+    {
+        copy {
+            from "${projectDir}/../assets/"
+            into "src/main/assets/"
+        }
+    }
+    println("reaxlie vulkan demo: Pre build script end ...")
 }

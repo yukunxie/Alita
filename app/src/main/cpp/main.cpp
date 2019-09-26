@@ -3,6 +3,7 @@
 #include <android_native_app_glue.h>
 
 #include "render/RealRenderer.h"
+#include "aux/AFileSystem.h"
 
 #include "drivers/vulkan/vulkan_wrapper.h"
 
@@ -12,6 +13,10 @@ void handle_cmd(android_app* app, int32_t cmd);
 void android_main(struct android_app* app)
 {
     app->onAppCmd = handle_cmd;
+
+    AFileSystem::getInstance()->initAssetManager(app->activity->assetManager);
+
+    AFileSystem::getInstance()->readData("shaders/shader.vert");
 
     int events;
     android_poll_source* source;

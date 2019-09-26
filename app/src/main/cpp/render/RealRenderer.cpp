@@ -104,11 +104,15 @@ void RealRenderer::setupSwapchainEnv()
 
 VkInstance RealRenderer::createVKInstance(struct android_app *app)
 {
-    VkApplicationInfo appInfo = {.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO, .pNext = nullptr, .apiVersion = VK_MAKE_VERSION(
-            1, 0, 0), .applicationVersion = VK_MAKE_VERSION(1, 0,
-                                                            0), .engineVersion = VK_MAKE_VERSION(1,
-                                                                                                 0,
-                                                                                                 0), .pApplicationName = "Realxie's vulkan demo", .pEngineName = "demo",};
+    VkApplicationInfo appInfo = {
+            .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+            .pNext = nullptr,
+            .apiVersion = VK_MAKE_VERSION(1, 0, 0),
+            .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
+            .engineVersion = VK_MAKE_VERSION(1, 0, 0),
+            .pApplicationName = "Realxie's vulkan demo",
+            .pEngineName = "demo"
+    };
 
     // prepare necessary extensions: Vulkan on Android need these to function
     std::vector<const char *> instanceExt;
@@ -116,7 +120,15 @@ VkInstance RealRenderer::createVKInstance(struct android_app *app)
     instanceExt.push_back("VK_KHR_android_surface");
 
     // Create the Vulkan instance
-    VkInstanceCreateInfo instanceCreateInfo{.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO, .pNext = nullptr, .pApplicationInfo = &appInfo, .enabledExtensionCount = static_cast<uint32_t>(instanceExt.size()), .ppEnabledExtensionNames = instanceExt.data(), .enabledLayerCount = 0, .ppEnabledLayerNames = nullptr,};
+    VkInstanceCreateInfo instanceCreateInfo{
+        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        .pNext = nullptr,
+        .pApplicationInfo = &appInfo,
+        .enabledExtensionCount = static_cast<uint32_t>(instanceExt.size()),
+        .ppEnabledExtensionNames = instanceExt.data(),
+        .enabledLayerCount = 0,
+        .ppEnabledLayerNames = nullptr
+    };
 
     VkInstance instance;
     CALL_VK(vkCreateInstance(&instanceCreateInfo, nullptr, &instance));
@@ -232,7 +244,12 @@ VkPhysicalDevice RealRenderer::createVKPhysicalDevice(VkInstance instance)
 VkSurfaceKHR RealRenderer::createVKSurface(struct android_app *app)
 {
     // if we create a surface, we need the surface extension
-    VkAndroidSurfaceCreateInfoKHR createInfo{.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR, .pNext = nullptr, .flags = 0, .window = app->window};
+    VkAndroidSurfaceCreateInfoKHR createInfo{
+        .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
+        .pNext = nullptr,
+        .flags = 0,
+        .window = app->window
+    };
     VkSurfaceKHR surface;
     vkCreateAndroidSurfaceKHR(vkInstance_, &createInfo, nullptr, &surface);
     return surface;

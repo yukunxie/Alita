@@ -10,8 +10,8 @@
 #include <android/asset_manager_jni.h>
 
 #include "../drivers/vulkan/vulkan_wrapper.h"
-#include "aux/AFileSystem.h"
-#include "glm/vec3.hpp"
+#include "../aux/AFileSystem.h"
+#include "../external/glm/vec3.hpp"
 #include "../external/glm/gtx/closest_point.inl"
 #include "../aux/AFileSystem.h"
 
@@ -53,16 +53,16 @@ RealRenderer::~RealRenderer()
 {
 }
 
-bool RealRenderer::initVulkanContext(struct android_app *app)
+bool RealRenderer::initVulkanContext(ANativeWindow *window)
 {
-    if (app->window == nullptr || isReady()) {
+    if (window == nullptr || isReady()) {
         return false;
     }
 
-    vkInstance_ = createVKInstance(app);
-    vkSurface_ = createVKSurface(app);
-    vkGPU_ = createVKGPU(app);
-    vkDevice_ = createVKDevice(app);
+    vkInstance_ = createVKInstance();
+    vkSurface_ = createVKSurface(window);
+    vkGPU_ = createVKGPU();
+    vkDevice_ = createVKDevice();
     vkPhysicalDevice_ = createVKPhysicalDevice(vkInstance_);
     vkSwapchain_ = createVKSwapChain(vkDevice_, vkPhysicalDevice_, vkSurface_);
     vkQueue_ = createVKQueue(vkDevice_, vkPhysicalDevice_, vkSurface_);
@@ -102,7 +102,7 @@ void RealRenderer::setupSwapchainEnv()
     swapChainExtent_ = extent;
 }
 
-VkInstance RealRenderer::createVKInstance(struct android_app *app)
+VkInstance RealRenderer::createVKInstance()
 {
     VkApplicationInfo appInfo = {
             .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -136,7 +136,7 @@ VkInstance RealRenderer::createVKInstance(struct android_app *app)
     return instance;
 }
 
-VkPhysicalDevice RealRenderer::createVKGPU(struct android_app *app)
+VkPhysicalDevice RealRenderer::createVKGPU()
 {
     uint32_t gpuCount = 0;
     CALL_VK(vkEnumeratePhysicalDevices(vkInstance_, &gpuCount, nullptr));
@@ -145,7 +145,7 @@ VkPhysicalDevice RealRenderer::createVKGPU(struct android_app *app)
     return tmpGpus[0];  // Pick up the first GPU Devicereturn true;
 }
 
-VkDevice RealRenderer::createVKDevice(struct android_app *app)
+VkDevice RealRenderer::createVKDevice()
 {
     // check for vulkan info on this GPU device
     VkPhysicalDeviceProperties gpuProperties;
@@ -241,14 +241,14 @@ VkPhysicalDevice RealRenderer::createVKPhysicalDevice(VkInstance instance)
     return physicalDevice;
 }
 
-VkSurfaceKHR RealRenderer::createVKSurface(struct android_app *app)
+VkSurfaceKHR RealRenderer::createVKSurface( ANativeWindow* window)
 {
     // if we create a surface, we need the surface extension
     VkAndroidSurfaceCreateInfoKHR createInfo{
         .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
         .pNext = nullptr,
         .flags = 0,
-        .window = app->window
+        .window = window
     };
     VkSurfaceKHR surface;
     vkCreateAndroidSurfaceKHR(vkInstance_, &createInfo, nullptr, &surface);

@@ -40,7 +40,7 @@ public:
     inline bool isReady()
     { return vkDevice_ != nullptr; }
 
-    bool initVulkanContext(struct android_app *app);
+    bool initVulkanContext(ANativeWindow* app);
 
     void drawFrame();
 
@@ -64,15 +64,15 @@ protected:
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 private:
-    VkInstance createVKInstance(struct android_app *app);
+    VkInstance createVKInstance();
 
-    VkPhysicalDevice createVKGPU(struct android_app *app);
+    VkPhysicalDevice createVKGPU();
 
-    VkDevice createVKDevice(struct android_app *app);
+    VkDevice createVKDevice();
 
     VkPhysicalDevice createVKPhysicalDevice(VkInstance instance);
 
-    VkSurfaceKHR createVKSurface(struct android_app *app);
+    VkSurfaceKHR createVKSurface(ANativeWindow* window);
 
     VkSwapchainKHR
     createVKSwapChain(VkDevice device, VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
@@ -126,7 +126,4 @@ private:
 
     static RealRenderer *instance_;
 };
-
-bool initVulkanInstance(struct android_app *app);
-
 #endif //VULKANDEMO_VULKANDEMO_H

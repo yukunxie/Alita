@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Surface;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
@@ -18,11 +19,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Example of a call to a native method
-        TextView tv = (TextView) findViewById(R.id.sample_text);
-        tv.setText(stringFromJNI());
-
-//        (Context)activity,
+        // init vulkan context
+        VulkanSurfaceView surfaceView = findViewById(R.id.MainView);
+        initVulkanContextJNI(surfaceView.surfaceHolder.getSurface());
 
         setAssetManagerJNI((Context)this, getApplication().getAssets());
     }
@@ -33,5 +32,9 @@ public class MainActivity extends AppCompatActivity {
      */
     public native String stringFromJNI();
 
+    public static native void initVulkanContextJNI(final Object surface);
+
     private static native void setAssetManagerJNI(final Context pContext, final AssetManager pAssetManager);
+
+    public static native  void nativeRenderJNI(float dt);
 }

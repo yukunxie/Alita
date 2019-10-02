@@ -14,16 +14,16 @@
 #include "../external/glm/vec3.hpp"
 #include "../external/glm/gtx/closest_point.inl"
 #include "../aux/AFileSystem.h"
-
-// Android log function wrappers
-static const char *kTAG = "VulkanDemo";
-#define LOGI(...) \
-  ((void)__android_log_print(ANDROID_LOG_INFO, kTAG, __VA_ARGS__))
-#define LOGW(...) \
-  ((void)__android_log_print(ANDROID_LOG_WARN, kTAG, __VA_ARGS__))
-#define LOGE(...) \
-  ((void)__android_log_print(ANDROID_LOG_ERROR, kTAG, __VA_ARGS__))
-
+//
+//// Android log function wrappers
+//static const char *kTAG = "VulkanDemo";
+//#define LOGI(...) \
+//  ((void)__android_log_print(ANDROID_LOG_INFO, kTAG, __VA_ARGS__))
+//#define LOGW(...) \
+//  ((void)__android_log_print(ANDROID_LOG_WARN, kTAG, __VA_ARGS__))
+//#define LOGE(...) \
+//  ((void)__android_log_print(ANDROID_LOG_ERROR, kTAG, __VA_ARGS__))
+//
 // Vulkan call wrapper
 #define CALL_VK(func)                                                 \
   if (VK_SUCCESS != (func)) {                                         \
@@ -59,29 +59,31 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
         return false;
     }
 
-    vkInstance_ = createVKInstance();
-    vkSurface_ = createVKSurface(window);
-    vkGPU_ = createVKGPU();
-    vkDevice_ = createVKDevice();
-    vkPhysicalDevice_ = createVKPhysicalDevice(vkInstance_);
-    vkSwapchain_ = createVKSwapChain(vkDevice_, vkPhysicalDevice_, vkSurface_);
-    vkQueue_ = createVKQueue(vkDevice_, vkPhysicalDevice_, vkSurface_);
+    rhiDevice_ = new RHI::VKDevice(window);
 
-    VkFenceCreateInfo fenceCreateInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, .pNext = nullptr, .flags = 0,};
-    vkCreateFence(vkDevice_, &fenceCreateInfo, nullptr, &vkFence_);
-
-    setupSwapchainEnv();
-    createImageViews();
-    createSemaphores();
-    createRenderPass();
-    createFramebuffers();
-    createCommandPool();
-
-    createShaderModule();
-
-    createVertexBuffer();
-
-    createCommandBuffers();
+//    vkInstance_ = createVKInstance();
+//    vkSurface_ = createVKSurface(window);
+//    vkGPU_ = createVKGPU();
+//    vkDevice_ = createVKDevice();
+//    vkPhysicalDevice_ = createVKPhysicalDevice(vkInstance_);
+//    vkSwapchain_ = createVKSwapChain(vkDevice_, vkPhysicalDevice_, vkSurface_);
+//    vkQueue_ = createVKQueue(vkDevice_, vkPhysicalDevice_, vkSurface_);
+//
+//    VkFenceCreateInfo fenceCreateInfo{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, .pNext = nullptr, .flags = 0,};
+//    vkCreateFence(vkDevice_, &fenceCreateInfo, nullptr, &vkFence_);
+//
+//    setupSwapchainEnv();
+//    createImageViews();
+//    createSemaphores();
+//    createRenderPass();
+//    createFramebuffers();
+//    createCommandPool();
+//
+//    createShaderModule();
+//
+//    createVertexBuffer();
+//
+//    createCommandBuffers();
 
 
     return true;
@@ -934,101 +936,103 @@ uint32_t RealRenderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags
 
 void RealRenderer::drawFrame()
 {
-    uint32_t imageIndex;
-    VKAPI_CALL(vkAcquireNextImageKHR(vkDevice_, vkSwapchain_, std::numeric_limits<uint64_t>::max(),
-                          vkImageAvailableSemaphore_, VK_NULL_HANDLE, &imageIndex));
+    rhiDevice_->BeginRenderpass();
 
-    vkWaitForFences(vkDevice_, 1, &vkFence_, VK_TRUE, std::numeric_limits<uint64_t>::max());
-
-    VkCommandBufferBeginInfo cmdBufferBeginInfo{
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-            .pNext = nullptr,
-            .flags = 0,
-            .pInheritanceInfo = nullptr
-    };
-    CALL_VK(vkBeginCommandBuffer(commandBuffers_[imageIndex], &cmdBufferBeginInfo));
-
-    // transition the display image to color attachment layout
-    setImageLayout(commandBuffers_[imageIndex],
-                   swapChainImages_[imageIndex],
-                   VK_IMAGE_LAYOUT_UNDEFINED,
-                   VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                   VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-                   VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-
-    VkClearValue clearVals{
-            .color.float32[0] = 0.0f,
-            .color.float32[1] = 1.0f,
-            .color.float32[2] = 0.0f,
-            .color.float32[3] = 1.0f
-    };
-
-    VkRenderPassBeginInfo renderPassBeginInfo = {
-            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-            .pNext = nullptr,
-            .renderPass = vkRenderPass_,
-            .framebuffer = swapChainFramebuffers_[imageIndex],
-            .renderArea = {.offset = {.x = 0, .y = 0 },.extent = swapChainExtent_},
-            .clearValueCount = 1,
-            .pClearValues = &clearVals
-    };
-
-    vkCmdBeginRenderPass(commandBuffers_[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    // draw some commands
-    {
-        vkCmdBindPipeline(commandBuffers_[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, vkGraphicsPipeline_);
-        VkBuffer vertexBuffers[] = {vkVertexBuffer_};
-        VkDeviceSize offsets[] = {0};
-        vkCmdBindVertexBuffers(commandBuffers_[imageIndex], 0, 1, vertexBuffers, offsets);
-
-        VKAPI_CALL(vkCmdDraw(commandBuffers_[imageIndex], 3, 1, 0, 0));
-    }
-
-    vkCmdEndRenderPass(commandBuffers_[imageIndex]);
-
-    CALL_VK(vkEndCommandBuffer(commandBuffers_[imageIndex]));
-
-    VkSubmitInfo submitInfo = {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &vkImageAvailableSemaphore_;
-    submitInfo.pWaitDstStageMask = waitStages;
-
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffers_[imageIndex];
-
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &vkRenderFinishedSemaphore_;
-
-    vkResetFences(vkDevice_, 1, &vkFence_);
-    if (auto code = vkQueueSubmit(vkQueue_, 1, &submitInfo, vkFence_); code != VK_SUCCESS) {
-        throw std::runtime_error("failed to submit draw command buffer!");
-    }
-
-    LOGI("Drawing frames......");
-
-    VkResult result;
-    VkPresentInfoKHR presentInfo{
-        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-        .pNext = nullptr,
-        .swapchainCount = 1,
-        .pSwapchains = &vkSwapchain_,
-        .pImageIndices = &imageIndex,
-        .waitSemaphoreCount = 0,
-        .pWaitSemaphores = nullptr,
-        .pResults = &result
-    };
-
-    if (auto code = vkQueuePresentKHR(vkQueue_, &presentInfo); code == VK_ERROR_OUT_OF_DATE_KHR ||
-        code == VK_SUBOPTIMAL_KHR)
-    {
-        // TODO: recreate swapchain
-    }
-    else if (code != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to present swap chain image!");
-    }
-    vkQueueWaitIdle(vkQueue_);
+//    uint32_t imageIndex;
+//    VKAPI_CALL(vkAcquireNextImageKHR(vkDevice_, vkSwapchain_, std::numeric_limits<uint64_t>::max(),
+//                          vkImageAvailableSemaphore_, VK_NULL_HANDLE, &imageIndex));
+//
+//    vkWaitForFences(vkDevice_, 1, &vkFence_, VK_TRUE, std::numeric_limits<uint64_t>::max());
+//
+//    VkCommandBufferBeginInfo cmdBufferBeginInfo{
+//            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+//            .pNext = nullptr,
+//            .flags = 0,
+//            .pInheritanceInfo = nullptr
+//    };
+//    CALL_VK(vkBeginCommandBuffer(commandBuffers_[imageIndex], &cmdBufferBeginInfo));
+//
+//    // transition the display image to color attachment layout
+//    setImageLayout(commandBuffers_[imageIndex],
+//                   swapChainImages_[imageIndex],
+//                   VK_IMAGE_LAYOUT_UNDEFINED,
+//                   VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+//                   VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+//                   VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+//
+//    VkClearValue clearVals{
+//            .color.float32[0] = 0.0f,
+//            .color.float32[1] = 1.0f,
+//            .color.float32[2] = 0.0f,
+//            .color.float32[3] = 1.0f
+//    };
+//
+//    VkRenderPassBeginInfo renderPassBeginInfo = {
+//            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+//            .pNext = nullptr,
+//            .renderPass = vkRenderPass_,
+//            .framebuffer = swapChainFramebuffers_[imageIndex],
+//            .renderArea = {.offset = {.x = 0, .y = 0 },.extent = swapChainExtent_},
+//            .clearValueCount = 1,
+//            .pClearValues = &clearVals
+//    };
+//
+//    vkCmdBeginRenderPass(commandBuffers_[imageIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+//
+//    // draw some commands
+//    {
+//        vkCmdBindPipeline(commandBuffers_[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, vkGraphicsPipeline_);
+//        VkBuffer vertexBuffers[] = {vkVertexBuffer_};
+//        VkDeviceSize offsets[] = {0};
+//        vkCmdBindVertexBuffers(commandBuffers_[imageIndex], 0, 1, vertexBuffers, offsets);
+//
+//        VKAPI_CALL(vkCmdDraw(commandBuffers_[imageIndex], 3, 1, 0, 0));
+//    }
+//
+//    vkCmdEndRenderPass(commandBuffers_[imageIndex]);
+//
+//    CALL_VK(vkEndCommandBuffer(commandBuffers_[imageIndex]));
+//
+//    VkSubmitInfo submitInfo = {};
+//    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+//    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+//    submitInfo.waitSemaphoreCount = 1;
+//    submitInfo.pWaitSemaphores = &vkImageAvailableSemaphore_;
+//    submitInfo.pWaitDstStageMask = waitStages;
+//
+//    submitInfo.commandBufferCount = 1;
+//    submitInfo.pCommandBuffers = &commandBuffers_[imageIndex];
+//
+//    submitInfo.signalSemaphoreCount = 1;
+//    submitInfo.pSignalSemaphores = &vkRenderFinishedSemaphore_;
+//
+//    vkResetFences(vkDevice_, 1, &vkFence_);
+//    if (auto code = vkQueueSubmit(vkQueue_, 1, &submitInfo, vkFence_); code != VK_SUCCESS) {
+//        throw std::runtime_error("failed to submit draw command buffer!");
+//    }
+//
+//    LOGI("Drawing frames......");
+//
+//    VkResult result;
+//    VkPresentInfoKHR presentInfo{
+//        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+//        .pNext = nullptr,
+//        .swapchainCount = 1,
+//        .pSwapchains = &vkSwapchain_,
+//        .pImageIndices = &imageIndex,
+//        .waitSemaphoreCount = 0,
+//        .pWaitSemaphores = nullptr,
+//        .pResults = &result
+//    };
+//
+//    if (auto code = vkQueuePresentKHR(vkQueue_, &presentInfo); code == VK_ERROR_OUT_OF_DATE_KHR ||
+//        code == VK_SUBOPTIMAL_KHR)
+//    {
+//        // TODO: recreate swapchain
+//    }
+//    else if (code != VK_SUCCESS)
+//    {
+//        throw std::runtime_error("failed to present swap chain image!");
+//    }
+//    vkQueueWaitIdle(vkQueue_);
 }

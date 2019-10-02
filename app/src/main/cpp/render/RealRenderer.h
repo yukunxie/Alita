@@ -11,6 +11,7 @@
 #include "types/Types.h"
 #include "aux/Aux.h"
 #include "../drivers/vulkan/vulkan_wrapper.h"
+#include "RHI/backend/Vulkan/VKDevice.h"
 
 struct SwapChainSupportDetails
 {
@@ -38,7 +39,7 @@ public:
     static RealRenderer *getInstance();
 
     inline bool isReady()
-    { return vkDevice_ != nullptr; }
+    { return rhiDevice_ != nullptr; }
 
     bool initVulkanContext(ANativeWindow* app);
 
@@ -125,5 +126,7 @@ private:
     std::vector<VkCommandBuffer> commandBuffers_;
 
     static RealRenderer *instance_;
+
+    RHI::VKDevice*  rhiDevice_;
 };
 #endif //VULKANDEMO_VULKANDEMO_H

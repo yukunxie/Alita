@@ -18,10 +18,12 @@ add_library( app-glue STATIC ${APP_GLUE_DIR}/android_native_app_glue.c)
 include_directories(
         src/main/cpp
         src/main/cpp/external
+        src/main/cpp/RHI/include
+        src/main/cpp/RHI/backend/Vulkan
         )
 
 
-#add_subdirectory(src/main/cpp/external/glm)
+add_subdirectory(src/main/cpp/RHI/backend/Vulkan)
 
 file(GLOB native_srcs "src/main/cpp/aux/*.cpp")
 
@@ -61,6 +63,7 @@ find_library( # Sets the name of the path variable.
 
 target_link_libraries( # Specifies the target library.
         native-lib
+        vulkan-lib-static
         app-glue
         log
         android)

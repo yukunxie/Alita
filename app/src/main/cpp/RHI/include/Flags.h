@@ -33,6 +33,16 @@ typedef enum SharingMode {
     SHARING_MODE_MAX_ENUM = 0x7FFFFFFF
 } SharingMode;
 
+typedef struct Viewport
+{
+    std::int32_t x;
+    std::int32_t y;
+    std::int32_t width;
+    std::int32_t height;
+    float        minDepth;
+    float        maxDepth;
+} Viewport;
+
 NS_RHI_END
 
 #endif //VULKANDEMO_RHIFLAGS_H

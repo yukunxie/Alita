@@ -7,13 +7,16 @@
 
 #include "../../include/Macros.h"
 #include "../../include/Device.h"
-#include "../../../drivers/vulkan/vulkan_wrapper.h"
+#include "drivers/vulkan/vulkan_wrapper.h"
 
 #include <vulkan/vulkan.h>
 #include <android/native_window.h>
 #include <vector>
 
 NS_RHI_BEGIN
+
+class VKBuffer;
+class VKGraphicPipeline;
 
 struct SwapChainSupportDetails
 {
@@ -39,11 +42,21 @@ public:
     VKDevice(ANativeWindow *window);
     ~VKDevice();
 
+    VkDevice GetVulkanDevice() {return vkDevice_;}
+    uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+    VkRenderPass GetRenderPass() {return vkRenderPass_;}
+
 public:
-    virtual BufferHnd CreateBuffer(BufferUsageFlagBits usageFlagBits, SharingMode sharingMode, std::uint32_t sizeOfBytes, void* data) override;
-    virtual void CreateShaderModule(const std::vector<std::uint8_t>& vertexShader, const std::vector<std::uint8_t>& fragShader) override;
+    virtual BufferHnd CreateBuffer(BufferUsageFlagBits usageFlagBits, SharingMode sharingMode, std::uint32_t sizeOfBytes, const void* data) override;
+    virtual GraphicPipelineHnd CreateGraphicPipeline(const std::vector<std::uint8_t>& vertexShader, const std::vector<std::uint8_t>& fragShader) override;
     virtual void BeginRenderpass() override;
     virtual void EndRenderpass() override;
+    virtual void BindBuffer(BufferHnd buffer, std::uint32_t offset) override ;
+    virtual void Draw(std::uint32_t vertexCount, std::uint32_t instanceCount, std::uint32_t firstVertex, std::uint32_t firstInstance) override;
+    virtual void Draw(std::uint32_t vertexCount, std::uint32_t firstVertex) override;
+    virtual void BindGraphicPipeline(GraphicPipelineHnd graphicPipeline) override;
+    virtual Viewport GetViewport() override {return viewport_;};
 
 private:
     void CreateInstance();
@@ -69,7 +82,6 @@ private:
     VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
     SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);
     bool IsDeviceSuitable(VkPhysicalDevice device);
-    uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 private:
     ANativeWindow*                  nativeWindow_           = nullptr;
@@ -89,12 +101,13 @@ private:
     std::vector<VkCommandBuffer>    commandBuffers_;
     QueueFamilyIndices              queueFamilyIndices_;
 
-    VkPipeline                      vkGraphicsPipeline_; // tmp
-    VkPipelineLayout                vkPipelineLayout_; // tmp
-
     VkSemaphore                     vkImageAvailableSemaphore_;
     VkSemaphore                     vkRenderFinishedSemaphore_;
     VkFence                         vkFence_;
+
+    std::uint32_t                   imageIndex_ = 0;
+
+    Viewport                        viewport_;
 
 };
 

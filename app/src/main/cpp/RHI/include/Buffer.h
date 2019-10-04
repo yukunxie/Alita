@@ -17,7 +17,7 @@ typedef std::shared_ptr<Buffer> BufferHnd;
 class Buffer
 {
 public:
-    ~Buffer(){}
+    virtual ~Buffer(){}
 };
 
 NS_RHI_END

@@ -12,6 +12,7 @@
 #include "aux/Aux.h"
 #include "../drivers/vulkan/vulkan_wrapper.h"
 #include "RHI/backend/Vulkan/VKDevice.h"
+#include "RHI/include/GraphicPipleine.h"
 
 struct SwapChainSupportDetails
 {
@@ -128,5 +129,7 @@ private:
     static RealRenderer *instance_;
 
     RHI::VKDevice*  rhiDevice_;
+    RHI::BufferHnd  rhiBuffer_;
+    RHI::GraphicPipelineHnd rhiGraphicPipeline_;
 };
 #endif //VULKANDEMO_VULKANDEMO_H

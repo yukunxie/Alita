@@ -23,4 +23,12 @@ static const char *kTAG = "RHI";
   ((void)__android_log_print(ANDROID_LOG_ERROR, kTAG, __VA_ARGS__))
 
 
+#define CALL_VK(func)                                                 \
+  if (VK_SUCCESS != (func)) {                                         \
+    __android_log_print(ANDROID_LOG_ERROR, "Tutorial ",               \
+                        "Vulkan error. File[%s], line[%d]", __FILE__, \
+                        __LINE__);                                    \
+  }
+
+
 #endif //VULKANDEMO_MACROS_H

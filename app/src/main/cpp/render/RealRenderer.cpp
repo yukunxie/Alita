@@ -25,12 +25,12 @@
 //  ((void)__android_log_print(ANDROID_LOG_ERROR, kTAG, __VA_ARGS__))
 //
 // Vulkan call wrapper
-#define CALL_VK(func)                                                 \
-  if (VK_SUCCESS != (func)) {                                         \
-    __android_log_print(ANDROID_LOG_ERROR, "Tutorial ",               \
-                        "Vulkan error. File[%s], line[%d]", __FILE__, \
-                        __LINE__);                                    \
-  }
+//#define CALL_VK(func)                                                 \
+//  if (VK_SUCCESS != (func)) {                                         \
+//    __android_log_print(ANDROID_LOG_ERROR, "Tutorial ",               \
+//                        "Vulkan error. File[%s], line[%d]", __FILE__, \
+//                        __LINE__);                                    \
+//  }
 
 RealRenderer *RealRenderer::instance_ = nullptr;
 
@@ -60,6 +60,31 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     }
 
     rhiDevice_ = new RHI::VKDevice(window);
+
+    const std::vector<TVertex> vertices = {{{0.0f, -.5f}, {1.0f, 0.0f, 0.0f}}, {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}}, {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+    };
+
+//    // TODO define a class member
+//    uint32_t queueFamilyIndex_ = 0;
+//
+//    VkBufferCreateInfo bufferInfo = {
+//            .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+//            .size = sizeof(vertices[0]) * vertices.size(),
+//            .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+//            .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+//            .pQueueFamilyIndices = &queueFamilyIndex_,
+//            .queueFamilyIndexCount = 1,
+//    };
+
+    rhiBuffer_ = rhiDevice_->CreateBuffer(RHI::BufferUsageFlagBits::BUFFER_USAGE_VERTEX_BUFFER_BIT, RHI::SharingMode::SHARING_MODE_EXCLUSIVE, sizeof(vertices[0]) * vertices.size(), vertices.data());
+
+    const TData& vertData = AFileSystem::getInstance()->readData("shaders/shader.vert.spv");
+    const TData& fragData = AFileSystem::getInstance()->readData("shaders/shader.frag.spv");
+
+    rhiGraphicPipeline_ = rhiDevice_->CreateGraphicPipeline(vertData, fragData);
+//    createInfo.codeSize = data.size();
+//    createInfo.pCode = reinterpret_cast<const uint32_t*>(data.data());
+
 
 //    vkInstance_ = createVKInstance();
 //    vkSurface_ = createVKSurface(window);
@@ -650,7 +675,7 @@ void RealRenderer::createCommandBuffers()
 //            vkCmdBindPipeline(commandBuffers_[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkGraphicsPipeline_);
 //            VkDeviceSize offset = 0;
 //            vkCmdBindVertexBuffers(commandBuffers_[i], 0, 1, &vkVertexBuffer_, &offset);
-//            VKAPI_CALL(vkCmdDraw(commandBuffers_[i], 3, 1, 0, 0));
+//            CALL_VK(vkCmdDraw(commandBuffers_[i], 3, 1, 0, 0));
 //        }
 
         vkCmdEndRenderPass(commandBuffers_[i]);
@@ -912,10 +937,10 @@ void RealRenderer::createVertexBuffer()
     }
 
     void* data;
-    VKAPI_CALL(vkMapMemory(vkDevice_, vkVertexBufferMemory_, 0, bufferInfo.size, 0, &data));
+    CALL_VK(vkMapMemory(vkDevice_, vkVertexBufferMemory_, 0, bufferInfo.size, 0, &data));
     memcpy(data, vertices.data(), (size_t) bufferInfo.size);
     vkUnmapMemory(vkDevice_, vkVertexBufferMemory_);
-    VKAPI_CALL(vkBindBufferMemory(vkDevice_, vkVertexBuffer_, vkVertexBufferMemory_, 0));
+    CALL_VK(vkBindBufferMemory(vkDevice_, vkVertexBuffer_, vkVertexBufferMemory_, 0));
 }
 
 uint32_t RealRenderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
@@ -937,9 +962,13 @@ uint32_t RealRenderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags
 void RealRenderer::drawFrame()
 {
     rhiDevice_->BeginRenderpass();
+    rhiDevice_->BindGraphicPipeline(rhiGraphicPipeline_);
+    rhiDevice_->BindBuffer(rhiBuffer_, 0);
+    rhiDevice_->Draw(3, 0);
+    rhiDevice_->EndRenderpass();
 
 //    uint32_t imageIndex;
-//    VKAPI_CALL(vkAcquireNextImageKHR(vkDevice_, vkSwapchain_, std::numeric_limits<uint64_t>::max(),
+//    CALL_VK(vkAcquireNextImageKHR(vkDevice_, vkSwapchain_, std::numeric_limits<uint64_t>::max(),
 //                          vkImageAvailableSemaphore_, VK_NULL_HANDLE, &imageIndex));
 //
 //    vkWaitForFences(vkDevice_, 1, &vkFence_, VK_TRUE, std::numeric_limits<uint64_t>::max());
@@ -986,7 +1015,7 @@ void RealRenderer::drawFrame()
 //        VkDeviceSize offsets[] = {0};
 //        vkCmdBindVertexBuffers(commandBuffers_[imageIndex], 0, 1, vertexBuffers, offsets);
 //
-//        VKAPI_CALL(vkCmdDraw(commandBuffers_[imageIndex], 3, 1, 0, 0));
+//        CALL_VK(vkCmdDraw(commandBuffers_[imageIndex], 3, 1, 0, 0));
 //    }
 //
 //    vkCmdEndRenderPass(commandBuffers_[imageIndex]);

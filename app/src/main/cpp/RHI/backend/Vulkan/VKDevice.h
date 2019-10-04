@@ -17,6 +17,7 @@ NS_RHI_BEGIN
 
 class VKBuffer;
 class VKGraphicPipeline;
+class VKShader;
 
 struct SwapChainSupportDetails
 {
@@ -50,6 +51,7 @@ public:
 public:
     virtual BufferHnd CreateBuffer(BufferUsageFlagBits usageFlagBits, SharingMode sharingMode, std::uint32_t sizeOfBytes, const void* data) override;
     virtual GraphicPipelineHnd CreateGraphicPipeline(const std::vector<std::uint8_t>& vertexShader, const std::vector<std::uint8_t>& fragShader) override;
+    virtual ShaderHnd CreateShader(const std::vector<std::uint8_t>& shaderSource) override ;
     virtual void BeginRenderpass() override;
     virtual void EndRenderpass() override;
     virtual void BindBuffer(BufferHnd buffer, std::uint32_t offset) override ;

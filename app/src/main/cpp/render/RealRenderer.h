@@ -37,5 +37,7 @@ private:
     RHI::VKDevice*          rhiDevice_          = nullptr;
     RHI::BufferHnd          rhiBuffer_          = nullptr;
     RHI::GraphicPipelineHnd rhiGraphicPipeline_ = nullptr;
+    RHI::ShaderHnd          rhiVertShader_      = nullptr;
+    RHI::ShaderHnd          rhiFragShader_      = nullptr;
 };
 #endif //VULKANDEMO_VULKANDEMO_H

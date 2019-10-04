@@ -8,6 +8,7 @@
 #include "Macros.h"
 #include "Buffer.h"
 #include "GraphicPipleine.h"
+#include "Shader.h"
 #include "Flags.h"
 
 NS_RHI_BEGIN
@@ -17,6 +18,7 @@ class Device
 public:
     virtual BufferHnd CreateBuffer(BufferUsageFlagBits usageFlagBits, SharingMode sharingMode, std::uint32_t sizeOfBytes, const void* data) = 0;
     virtual GraphicPipelineHnd CreateGraphicPipeline(const std::vector<std::uint8_t>& vertexShader, const std::vector<std::uint8_t>& fragShader) = 0;
+    virtual ShaderHnd CreateShader(const std::vector<std::uint8_t>& shaderSource) = 0;
 
     virtual void BindBuffer(BufferHnd buffer, std::uint32_t offset) = 0;
     virtual void Draw(std::uint32_t vertexCount, std::uint32_t instanceCount, std::uint32_t firstVertex, std::uint32_t firstInstance) = 0;

@@ -6,6 +6,7 @@
 #include "VulkanMarcos.h"
 #include "VKBuffer.h"
 #include "VKGraphicPipeline.h"
+#include "VKShader.h"
 
 #include <vector>
 #include <array>
@@ -482,6 +483,12 @@ GraphicPipelineHnd VKDevice::CreateGraphicPipeline(const std::vector<std::uint8_
 {
     GraphicPipelineHnd pipeline(new VKGraphicPipeline(this, vertexShader, fragShader));
     return pipeline;
+}
+
+ShaderHnd VKDevice::CreateShader(const std::vector<std::uint8_t>& shaderSource)
+{
+    ShaderHnd shader(new VKShader(this, shaderSource));
+    return shader;
 }
 
 void VKDevice::SetupSynchronizeObjects()

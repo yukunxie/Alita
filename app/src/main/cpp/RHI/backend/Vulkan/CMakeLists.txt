@@ -1,17 +1,17 @@
 
 
-include_directories(
-        ../
-        ../../
-)
+include_directories()
+
+file(GLOB SRCS "./*.cpp")
+file(GLOB HEADS "./*.h")
+
 add_library( # Sets the name of the library.
         vulkan-lib-static
 
         # Sets the library as a shared library.
         STATIC
 
-        # Provides a relative path to your source file(s).
-        ./VKDevice.cpp
-        ./VKBuffer.cpp
-        ./VKGraphicPipeline.cpp
+        ${HEADS}
+        ${SRCS}
+
         )

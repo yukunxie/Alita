@@ -71,6 +71,9 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
 
     rhiGraphicPipeline_ = rhiDevice_->CreateGraphicPipeline(vertData, fragData);
 
+    rhiVertShader_ = rhiDevice_->CreateShader(vertData);
+    rhiFragShader_ = rhiDevice_->CreateShader(fragData);
+
     return true;
 }
 

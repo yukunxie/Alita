@@ -1,4 +1,4 @@
-package com.realxie.vulkandemo;
+package com.realxie.alita;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.realxie.vulkandemo", appContext.getPackageName());
+        assertEquals("com.realxie.alita", appContext.getPackageName());
     }
 }

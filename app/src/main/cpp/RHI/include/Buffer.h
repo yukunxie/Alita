@@ -2,8 +2,8 @@
 // Created by realxie on 2019-10-02.
 //
 
-#ifndef VULKANDEMO_BUFFER_H
-#define VULKANDEMO_BUFFER_H
+#ifndef ALITA_BUFFER_H
+#define ALITA_BUFFER_H
 
 #include "Macros.h"
 #include <memory>
@@ -22,4 +22,4 @@ public:
 
 NS_RHI_END
 
-#endif //VULKANDEMO_BUFFER_H
+#endif //ALITA_BUFFER_H

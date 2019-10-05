@@ -2,8 +2,8 @@
 // Created by realxie on 2019-09-24.
 //
 
-#ifndef VULKANDEMO_TYPES_H
-#define VULKANDEMO_TYPES_H
+#ifndef ALITA_TYPES_H
+#define ALITA_TYPES_H
 
 #include "../external/glm/glm.hpp"
 
@@ -16,4 +16,4 @@ struct TVertex {
     TVector3 color;
 };
 
-#endif //VULKANDEMO_TYPES_H
+#endif //ALITA_TYPES_H

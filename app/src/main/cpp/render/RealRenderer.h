@@ -2,8 +2,8 @@
 // Created by realxie on 2019/3/23.
 //
 
-#ifndef VULKANDEMO_VULKANDEMO_H
-#define VULKANDEMO_VULKANDEMO_H
+#ifndef ALITA_ALITA_H
+#define ALITA_ALITA_H
 
 #include <vector>
 #include <android/log.h>
@@ -42,4 +42,4 @@ private:
     RHI::ShaderHnd          rhiFragShader_      = nullptr;
     RHI::RenderPassHnd      rhiRenderPass_      = nullptr;
 };
-#endif //VULKANDEMO_VULKANDEMO_H
+#endif //ALITA_ALITA_H

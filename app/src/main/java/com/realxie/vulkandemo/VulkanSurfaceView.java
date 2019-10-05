@@ -1,4 +1,4 @@
-package com.realxie.vulkandemo;
+package com.realxie.alita;
 
 import android.content.Context;
 import android.util.AttributeSet;

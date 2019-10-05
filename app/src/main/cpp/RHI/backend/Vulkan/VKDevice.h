@@ -2,8 +2,8 @@
 // Created by realxie on 2019-10-02.
 //
 
-#ifndef VULKANDEMO_VKDEVICE_H
-#define VULKANDEMO_VKDEVICE_H
+#ifndef ALITA_VKDEVICE_H
+#define ALITA_VKDEVICE_H
 
 #include "../../include/Macros.h"
 #include "../../include/Device.h"
@@ -138,4 +138,4 @@ private:
 NS_RHI_END
 
 
-#endif //VULKANDEMO_VKDEVICE_H
+#endif //ALITA_VKDEVICE_H

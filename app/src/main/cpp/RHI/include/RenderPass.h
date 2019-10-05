@@ -2,8 +2,8 @@
 // Created by realxie on 2019-10-04.
 //
 
-#ifndef VULKANDEMO_RENDERPASS_H
-#define VULKANDEMO_RENDERPASS_H
+#ifndef ALITA_RENDERPASS_H
+#define ALITA_RENDERPASS_H
 
 #include "Macros.h"
 #include <memory>
@@ -22,4 +22,4 @@ public:
 
 NS_RHI_END
 
-#endif //VULKANDEMO_RENDERPASS_H
+#endif //ALITA_RENDERPASS_H

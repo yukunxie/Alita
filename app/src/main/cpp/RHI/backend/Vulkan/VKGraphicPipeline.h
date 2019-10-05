@@ -2,8 +2,8 @@
 // Created by realxie on 2019-10-04.
 //
 
-#ifndef VULKANDEMO_VKGRAPHICPIPELINE_H
-#define VULKANDEMO_VKGRAPHICPIPELINE_H
+#ifndef ALITA_VKGRAPHICPIPELINE_H
+#define ALITA_VKGRAPHICPIPELINE_H
 
 #include "VKDevice.h"
 #include "../../include/Macros.h"
@@ -36,4 +36,4 @@ private:
 NS_RHI_END
 
 
-#endif //VULKANDEMO_VKGRAPHICPIPELINE_H
+#endif //ALITA_VKGRAPHICPIPELINE_H

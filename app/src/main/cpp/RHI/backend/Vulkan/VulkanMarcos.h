@@ -2,8 +2,8 @@
 // Created by realxie on 2019-10-02.
 //
 
-#ifndef VULKANDEMO_VULKANMARCOS_H
-#define VULKANDEMO_VULKANMARCOS_H
+#ifndef ALITA_VULKANMARCOS_H
+#define ALITA_VULKANMARCOS_H
 
 #include <android/log.h>
 
@@ -15,4 +15,4 @@
                         __LINE__);                                    \
   }
 
-#endif //VULKANDEMO_VULKANMARCOS_H
+#endif //ALITA_VULKANMARCOS_H

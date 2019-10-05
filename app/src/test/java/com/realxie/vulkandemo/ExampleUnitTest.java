@@ -1,4 +1,4 @@
-package com.realxie.vulkandemo;
+package com.realxie.alita;
 
 import org.junit.Test;
 

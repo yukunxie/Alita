@@ -2,8 +2,8 @@
 // Created by realxie on 2019-10-02.
 //
 
-#ifndef VULKANDEMO_VKBUFFER_H
-#define VULKANDEMO_VKBUFFER_H
+#ifndef ALITA_VKBUFFER_H
+#define ALITA_VKBUFFER_H
 
 #include "VKDevice.h"
 
@@ -35,4 +35,4 @@ private:
 NS_RHI_END
 
 
-#endif //VULKANDEMO_VKBUFFER_H
+#endif //ALITA_VKBUFFER_H

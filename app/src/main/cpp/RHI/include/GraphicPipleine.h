@@ -2,8 +2,8 @@
 // Created by realxie on 2019-10-04.
 //
 
-#ifndef VULKANDEMO_GRAPHICPIPLEINE_H
-#define VULKANDEMO_GRAPHICPIPLEINE_H
+#ifndef ALITA_GRAPHICPIPLEINE_H
+#define ALITA_GRAPHICPIPLEINE_H
 
 #include "Macros.h"
 
@@ -25,4 +25,4 @@ public:
 
 NS_RHI_END
 
-#endif //VULKANDEMO_GRAPHICPIPLEINE_H
+#endif //ALITA_GRAPHICPIPLEINE_H

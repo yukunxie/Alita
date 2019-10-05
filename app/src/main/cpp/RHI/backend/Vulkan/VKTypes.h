@@ -2,8 +2,8 @@
 // Created by realxie on 2019-10-04.
 //
 
-#ifndef VULKANDEMO_VKTYPES_H
-#define VULKANDEMO_VKTYPES_H
+#ifndef ALITA_VKTYPES_H
+#define ALITA_VKTYPES_H
 
 #include "../../include/Macros.h"
 #include "../../include/Flags.h"
@@ -23,4 +23,4 @@ VkVertexInputRate ToVkVertexInputRate(VertexInputRate inputRate);
 
 NS_RHI_END
 
-#endif //VULKANDEMO_VKTYPES_H
+#endif //ALITA_VKTYPES_H

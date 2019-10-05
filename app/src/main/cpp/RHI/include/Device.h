@@ -2,8 +2,8 @@
 // Created by realxie on 2019-10-02.
 //
 
-#ifndef VULKANDEMO_DEVICE_H
-#define VULKANDEMO_DEVICE_H
+#ifndef ALITA_DEVICE_H
+#define ALITA_DEVICE_H
 
 #include "Macros.h"
 #include "Buffer.h"
@@ -56,4 +56,4 @@ public:
 
 NS_RHI_END
 
-#endif //VULKANDEMO_DEVICE_H
+#endif //ALITA_DEVICE_H

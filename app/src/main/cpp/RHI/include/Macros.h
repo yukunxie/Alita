@@ -2,8 +2,8 @@
 // Created by realxie on 2019-10-02.
 //
 
-#ifndef VULKANDEMO_MACROS_H
-#define VULKANDEMO_MACROS_H
+#ifndef ALITA_MACROS_H
+#define ALITA_MACROS_H
 
 #include <android/log.h>
 
@@ -31,4 +31,4 @@ static const char *kTAG = "RHI";
   }
 
 
-#endif //VULKANDEMO_MACROS_H
+#endif //ALITA_MACROS_H

@@ -2,8 +2,8 @@
 // Created by realxie on 2019-10-02.
 //
 
-#ifndef VULKANDEMO_RHIFLAGS_H
-#define VULKANDEMO_RHIFLAGS_H
+#ifndef ALITA_RHIFLAGS_H
+#define ALITA_RHIFLAGS_H
 
 #include "Macros.h"
 #include "Shader.h"
@@ -1290,4 +1290,4 @@ typedef struct RenderPassCreateInfo {
 
 NS_RHI_END
 
-#endif //VULKANDEMO_RHIFLAGS_H
+#endif //ALITA_RHIFLAGS_H

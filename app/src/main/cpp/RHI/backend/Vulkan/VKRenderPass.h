@@ -2,8 +2,8 @@
 // Created by realxie on 2019-10-04.
 //
 
-#ifndef VULKANDEMO_VKRENDERPASS_H
-#define VULKANDEMO_VKRENDERPASS_H
+#ifndef ALITA_VKRENDERPASS_H
+#define ALITA_VKRENDERPASS_H
 
 #include "VKDevice.h"
 #include "../../include/Macros.h"
@@ -35,4 +35,4 @@ private:
 NS_RHI_END
 
 
-#endif //VULKANDEMO_VKRENDERPASS_H
+#endif //ALITA_VKRENDERPASS_H

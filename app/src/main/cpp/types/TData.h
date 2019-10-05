@@ -2,8 +2,8 @@
 // Created by realxie on 2019-09-26.
 //
 
-#ifndef VULKANDEMO_TDATA_H
-#define VULKANDEMO_TDATA_H
+#ifndef ALITA_TDATA_H
+#define ALITA_TDATA_H
 
 #include <vector>
 
@@ -15,4 +15,4 @@ using TData = std::vector<std::uint8_t>;
 //};
 
 
-#endif //VULKANDEMO_TDATA_H
+#endif //ALITA_TDATA_H

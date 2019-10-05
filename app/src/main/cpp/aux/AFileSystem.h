@@ -2,8 +2,8 @@
 // Created by realxie on 2019-09-26.
 //
 
-#ifndef VULKANDEMO_AFILESYSTEM_H
-#define VULKANDEMO_AFILESYSTEM_H
+#ifndef ALITA_AFILESYSTEM_H
+#define ALITA_AFILESYSTEM_H
 
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
@@ -27,4 +27,4 @@ protected:
 };
 
 
-#endif //VULKANDEMO_AFILESYSTEM_H
+#endif //ALITA_AFILESYSTEM_H

@@ -124,7 +124,7 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     };
 
     // Step 2. setup vertex attribute info
-    
+
     RHI::PipelineVertexInputStateCreateInfo vertexInputInfo = {
             .vertexBindingDescriptions = {
                     RHI::VertexInputBindingDescription {

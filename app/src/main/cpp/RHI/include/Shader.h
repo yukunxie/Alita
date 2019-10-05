@@ -2,8 +2,8 @@
 // Created by realxie on 2019-10-04.
 //
 
-#ifndef VULKANDEMO_SHADER_H
-#define VULKANDEMO_SHADER_H
+#ifndef ALITA_SHADER_H
+#define ALITA_SHADER_H
 
 
 #include "Macros.h"
@@ -26,4 +26,4 @@ public:
 
 NS_RHI_END
 
-#endif //VULKANDEMO_SHADER_H
+#endif //ALITA_SHADER_H

@@ -4,11 +4,11 @@
 # Sets the minimum version of CMake required to build the native library.
 
 cmake_minimum_required(VERSION 3.4.1)
-
-# build native_app_glue as a static lib
-set(APP_GLUE_DIR ${ANDROID_NDK}/sources/android/native_app_glue)
-include_directories(${APP_GLUE_DIR})
-add_library( app-glue STATIC ${APP_GLUE_DIR}/android_native_app_glue.c)
+#
+## build native_app_glue as a static lib
+#set(APP_GLUE_DIR ${ANDROID_NDK}/sources/android/native_app_glue)
+#include_directories(${APP_GLUE_DIR})
+#add_library( app-glue STATIC ${APP_GLUE_DIR}/android_native_app_glue.c)
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -34,7 +34,7 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        src/main/cpp/main.cpp
+#        src/main/cpp/main.cpp
         src/main/cpp/jni/native-lib.cpp
         src/main/cpp/render/RealRenderer.cpp
 #        src/main/cpp/aux/AFileSystem.cpp
@@ -43,7 +43,8 @@ add_library( # Sets the name of the library.
         ${native_srcs}
         )
 
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
+#set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
@@ -64,6 +65,6 @@ find_library( # Sets the name of the path variable.
 target_link_libraries( # Specifies the target library.
         native-lib
         vulkan-lib-static
-        app-glue
+#        app-glue
         log
         android)

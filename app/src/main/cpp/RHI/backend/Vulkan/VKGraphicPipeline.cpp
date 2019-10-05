@@ -3,82 +3,63 @@
 //
 
 #include "VKGraphicPipeline.h"
+#include "VKTypes.h"
+#include "VKShader.h"
 
 #include <array>
 
 NS_RHI_BEGIN
 
-VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const std::vector<std::uint8_t>& vertexShader, const std::vector<std::uint8_t>& fragShader)
+VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const std::vector<RHI::PipelineShaderStageCreateInfo>& shaderStageInfos
+        , const PipelineVertexInputStateCreateInfo& vertexInputInfo
+        , const PipelineViewportStateCreateInfo& viewportStateCreateInfo)
 {
     VkDevice vkDevice = device->GetVulkanDevice();
 
-    VkShaderModule vertShaderModule;
+    // Setup shader modules
+    std::vector<VkPipelineShaderStageCreateInfo> shaderStages (shaderStageInfos.size());
+    for (size_t i = 0; i < shaderStageInfos.size(); ++i)
     {
-        VkShaderModuleCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = vertexShader.size();
-        createInfo.pCode = reinterpret_cast<const uint32_t*>(vertexShader.data());
-
-        if (vkCreateShaderModule(vkDevice, &createInfo, nullptr, &vertShaderModule) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create shader module!");
-        }
+        const auto& src = shaderStageInfos[i];
+        auto& dst = shaderStages[i];
+        dst.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        dst.stage = ToVkShaderStageFlagBits(src.stage);
+        dst.flags = src.flags;
+        dst.module = ((VKShader*)src.shader)->GetNative();
+        dst.pName = src.entryName.c_str();
     }
 
-    VkShaderModule fragShaderModule;
-    {
-        VkShaderModuleCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = fragShader.size();
-        createInfo.pCode = reinterpret_cast<const uint32_t*>(fragShader.data());
+    // setup vertex attribute input info
 
-        if (vkCreateShaderModule(vkDevice, &createInfo, nullptr, &fragShaderModule) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create shader module!");
-        }
+    std::vector<VkVertexInputBindingDescription> bindingDescriptions(vertexInputInfo.vertexBindingDescriptions.size());
+    for (size_t i = 0; i < vertexInputInfo.vertexBindingDescriptions.size(); ++i)
+    {
+        const auto& src = vertexInputInfo.vertexBindingDescriptions[i];
+        auto& dst = bindingDescriptions[i];
+        dst.binding = src.binding;
+        dst.stride = src.stride;
+        dst.inputRate = ToVkVertexInputRate(src.inputRate);
     }
 
-    VkPipelineShaderStageCreateInfo vertShaderStageInfo = {
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            .stage = VK_SHADER_STAGE_VERTEX_BIT,
-            .module = vertShaderModule,
-            .pName = "main",
-    };
+    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(vertexInputInfo.vertexAttributeDescriptions.size());
+    for (size_t i = 0; i < vertexInputInfo.vertexAttributeDescriptions.size(); ++i)
+    {
+        const auto& src = vertexInputInfo.vertexAttributeDescriptions[i];
+        auto& dst = attributeDescriptions[i];
+        dst.binding = src.binding;
+        dst.location = src.location;
+        dst.offset = src.offset;
+        dst.format = ToVkFormat(src.format);
+    }
 
-    VkPipelineShaderStageCreateInfo fragShaderStageInfo = {
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-            .module = fragShaderModule,
-            .pName = "main",
-    };
-
-    VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
-
-    VkVertexInputBindingDescription bindingDescription = {
-            .binding = 0,
-            .stride  = 5 * sizeof(float),
-            .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
-    };
-
-    std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {
-            VkVertexInputAttributeDescription {
-                    .binding = 0,
-                    .location = 0,
-                    .format = VK_FORMAT_R32G32_SFLOAT,
-                    .offset = 0
-            },
-            VkVertexInputAttributeDescription {
-                    .binding = 0,
-                    .location = 1,
-                    .format = VK_FORMAT_R32G32B32_SFLOAT,
-                    .offset = 8
-            }
-    };
-
-    VkPipelineVertexInputStateCreateInfo vertexInputInfo = {
-            .vertexBindingDescriptionCount = 1,
-            .vertexAttributeDescriptionCount = static_cast<std::uint32_t>(attributeDescriptions.size()),
-            .pVertexBindingDescriptions = &bindingDescription,
+    VkPipelineVertexInputStateCreateInfo vertexInputCreateDescription = {
+            .vertexBindingDescriptionCount = (std::uint32_t)bindingDescriptions.size(),
+            .pVertexBindingDescriptions = bindingDescriptions.data(),
+            .vertexAttributeDescriptionCount = (std::uint32_t)attributeDescriptions.size(),
             .pVertexAttributeDescriptions = attributeDescriptions.data()
     };
+
+    // setup ..
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
@@ -86,27 +67,41 @@ VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const std::vector<std::ui
             .primitiveRestartEnable = VK_FALSE
     };
 
-    VkViewport viewport = {
-            .x = 0.0f,
-            .y = 0.0f,
-            .width  = (float)device->GetViewport().width,
-            .height = (float)device->GetViewport().height,
-            .minDepth = 0.0f,
-            .maxDepth = 1.0f
-    };
+    // setup viewport
 
-    VkRect2D scissor = {
-            .offset = {0, 0},
-            .extent = {.width = (uint32_t)device->GetViewport().width, .height = (uint32_t)device->GetViewport().height},
-    };
+    std::vector<VkViewport> viewports(viewportStateCreateInfo.viewports.size());
+    for (size_t i = 0; i < viewportStateCreateInfo.viewports.size(); ++i)
+    {
+        const auto& src = viewportStateCreateInfo.viewports[i];
+        auto& dst = viewports[i];
+        dst.x = src.x;
+        dst.y = src.y;
+        dst.width  = src.width;
+        dst.height = src.height;
+        dst.minDepth = src.minDepth;
+        dst.maxDepth = src.maxDepth;
+    }
+
+    std::vector<VkRect2D> scissors(viewportStateCreateInfo.scissors.size());
+    for (size_t i = 0; i < viewportStateCreateInfo.scissors.size(); ++i)
+    {
+        const auto &src = viewportStateCreateInfo.scissors[i];
+        auto &dst = scissors[i];
+        dst.offset.x = src.x;
+        dst.offset.y = src.y;
+        dst.extent.width = src.width;
+        dst.extent.height = src.height;
+    }
 
     VkPipelineViewportStateCreateInfo viewportState = {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-            .viewportCount = 1,
-            .pViewports = &viewport,
-            .scissorCount = 1,
-            .pScissors = &scissor,
+            .viewportCount = (std::uint32_t)viewports.size(),
+            .pViewports = viewports.data(),
+            .scissorCount = (std::uint32_t)scissors.size(),
+            .pScissors = scissors.data(),
     };
+
+    // setup rasterization info
 
     VkPipelineRasterizationStateCreateInfo rasterizer = {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
@@ -185,9 +180,9 @@ VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const std::vector<std::ui
 
     VkGraphicsPipelineCreateInfo pipelineInfo = {
             .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-            .stageCount = 2,
-            .pStages = shaderStages,
-            .pVertexInputState = &vertexInputInfo,
+            .stageCount = (std::uint32_t)shaderStages.size(),
+            .pStages = shaderStages.data(),
+            .pVertexInputState = &vertexInputCreateDescription,
             .pInputAssemblyState = &inputAssembly,
             .pViewportState = &viewportState,
             .pRasterizationState = &rasterizer,

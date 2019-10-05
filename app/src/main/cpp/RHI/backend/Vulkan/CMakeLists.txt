@@ -1,6 +1,8 @@
 
 
-include_directories()
+include_directories(
+        ./
+)
 
 file(GLOB SRCS "./*.cpp")
 file(GLOB HEADS "./*.h")

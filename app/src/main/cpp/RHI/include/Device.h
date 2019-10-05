@@ -9,26 +9,47 @@
 #include "Buffer.h"
 #include "GraphicPipleine.h"
 #include "Shader.h"
+#include "RenderPass.h"
 #include "Flags.h"
+
+#include <vector>
 
 NS_RHI_BEGIN
 
 class Device
 {
 public:
-    virtual BufferHnd CreateBuffer(BufferUsageFlagBits usageFlagBits, SharingMode sharingMode, std::uint32_t sizeOfBytes, const void* data) = 0;
-    virtual GraphicPipelineHnd CreateGraphicPipeline(const std::vector<std::uint8_t>& vertexShader, const std::vector<std::uint8_t>& fragShader) = 0;
+    virtual BufferHnd CreateBuffer(BufferUsageFlagBits usageFlagBits
+            , SharingMode sharingMode
+            , std::uint32_t sizeOfBytes
+            , const void* data) = 0;
+
+    virtual GraphicPipelineHnd CreateGraphicPipeline(const std::vector<RHI::PipelineShaderStageCreateInfo>& shaderStageInfos
+            , const PipelineVertexInputStateCreateInfo& vertexInputInfo
+            , const PipelineViewportStateCreateInfo& viewportState) = 0;
+
     virtual ShaderHnd CreateShader(const std::vector<std::uint8_t>& shaderSource) = 0;
 
+    virtual RenderPassHnd CreateRenderPass(const RenderPassCreateInfo& createInfo) = 0;
+
     virtual void BindBuffer(BufferHnd buffer, std::uint32_t offset) = 0;
-    virtual void Draw(std::uint32_t vertexCount, std::uint32_t instanceCount, std::uint32_t firstVertex, std::uint32_t firstInstance) = 0;
+
+    virtual void Draw(std::uint32_t vertexCount
+            , std::uint32_t instanceCount
+            , std::uint32_t firstVertex
+            , std::uint32_t firstInstance) = 0;
+
     virtual void Draw(std::uint32_t vertexCount, std::uint32_t firstVertex) = 0;
+
     virtual void BindGraphicPipeline(GraphicPipelineHnd graphicPipeline) = 0;
 
     virtual void BeginRenderpass() = 0;
+
     virtual void EndRenderpass() = 0;
 
     virtual Viewport GetViewport() = 0;
+
+    virtual Scissor  GetScissor()  = 0;
 public:
     ~Device(){}
 };

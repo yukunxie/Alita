@@ -7,6 +7,7 @@
 #include "VKBuffer.h"
 #include "VKGraphicPipeline.h"
 #include "VKShader.h"
+#include "VKRenderPass.h"
 
 #include <vector>
 #include <array>
@@ -479,9 +480,11 @@ void VKDevice::CreateCommandBuffers()
     }
 }
 
-GraphicPipelineHnd VKDevice::CreateGraphicPipeline(const std::vector<std::uint8_t>& vertexShader, const std::vector<std::uint8_t>& fragShader)
+GraphicPipelineHnd VKDevice::CreateGraphicPipeline(const std::vector<RHI::PipelineShaderStageCreateInfo>& shaderStageInfos
+        , const PipelineVertexInputStateCreateInfo& vertexInputInfo
+        , const PipelineViewportStateCreateInfo& viewportState)
 {
-    GraphicPipelineHnd pipeline(new VKGraphicPipeline(this, vertexShader, fragShader));
+    GraphicPipelineHnd pipeline(new VKGraphicPipeline(this, shaderStageInfos, vertexInputInfo, viewportState));
     return pipeline;
 }
 
@@ -489,6 +492,11 @@ ShaderHnd VKDevice::CreateShader(const std::vector<std::uint8_t>& shaderSource)
 {
     ShaderHnd shader(new VKShader(this, shaderSource));
     return shader;
+}
+
+RenderPassHnd VKDevice::CreateRenderPass(const RenderPassCreateInfo& createInfo)
+{
+    return RenderPassHnd(new VKRenderPass(this, createInfo));
 }
 
 void VKDevice::SetupSynchronizeObjects()

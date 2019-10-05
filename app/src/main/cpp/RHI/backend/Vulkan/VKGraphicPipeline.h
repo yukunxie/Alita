@@ -19,7 +19,9 @@ NS_RHI_BEGIN
 class VKGraphicPipeline : public GraphicPipeline
 {
 public:
-    VKGraphicPipeline(VKDevice* device, const std::vector<std::uint8_t>& vertexShader, const std::vector<std::uint8_t>& fragShader);
+    VKGraphicPipeline(VKDevice* device, const std::vector<RHI::PipelineShaderStageCreateInfo>& shaderStageInfos
+            , const PipelineVertexInputStateCreateInfo& vertexInputInfo
+            , const PipelineViewportStateCreateInfo& viewportState);
     virtual ~VKGraphicPipeline();
 
     void Bind(VkCommandBuffer cmdBuffer);

@@ -64,15 +64,145 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     const std::vector<TVertex> vertices = {{{0.0f, -.5f}, {1.0f, 0.0f, 0.0f}}, {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}}, {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
     };
 
-    rhiBuffer_ = rhiDevice_->CreateBuffer(RHI::BufferUsageFlagBits::BUFFER_USAGE_VERTEX_BUFFER_BIT, RHI::SharingMode::SHARING_MODE_EXCLUSIVE, sizeof(vertices[0]) * vertices.size(), vertices.data());
+    rhiBuffer_ = rhiDevice_->CreateBuffer(RHI::BufferUsageFlagBits::VERTEX_BUFFER_BIT, RHI::SharingMode::EXCLUSIVE, sizeof(vertices[0]) * vertices.size(), vertices.data());
+
+    RHI::RenderPassCreateInfo renderPassCreateInfo {
+        .attachments = {
+                RHI::AttachmentDescription {
+                    .format = RHI::Format::B8G8R8_UNORM,
+                    .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
+                    .loadOp = RHI::AttachmentLoadOp::CLEAR,
+                    .storeOp = RHI::AttachmentStoreOp::STORE,
+                    .stencilLoadOp = RHI::AttachmentLoadOp::DONT_CARE,
+                    .stencilStoreOp = RHI::AttachmentStoreOp::DONT_CARE,
+                    .initialLayout = RHI::ImageLayout::UNDEFINED,
+                    .finalLayout = RHI::ImageLayout::PRESENT_SRC_KHR
+                },
+        },
+        .subpasses = {
+                RHI::SubpassDescription {
+                    .colorAttachments = {
+                            RHI::AttachmentReference {
+                                .attachment = 0,
+                                .layout = RHI::ImageLayout::COLOR_ATTACHMENT_OPTIMAL
+                            },
+                    },
+                    .colorAttachments = {},
+                    .depthStencilAttachment = {},
+                    .inputAttachments = {},
+                    .pipelineBindPoint = RHI::PipelineBindPoint::GRAPHICS,
+                    .preserveAttachments = {},
+                    .resolveAttachments = {}
+                },
+        },
+        .dependencies = {}
+    };
+
+    rhiRenderPass_ = rhiDevice_->CreateRenderPass(renderPassCreateInfo);
+
+    // ------------ Start setup GraphicPipeline object ---------------
+
+    // Step 1. create shaders
 
     const TData& vertData = AFileSystem::getInstance()->readData("shaders/shader.vert.spv");
     const TData& fragData = AFileSystem::getInstance()->readData("shaders/shader.frag.spv");
-
-    rhiGraphicPipeline_ = rhiDevice_->CreateGraphicPipeline(vertData, fragData);
-
     rhiVertShader_ = rhiDevice_->CreateShader(vertData);
     rhiFragShader_ = rhiDevice_->CreateShader(fragData);
+
+    std::vector<RHI::PipelineShaderStageCreateInfo> shaderStageInfos = {
+            RHI::PipelineShaderStageCreateInfo {
+                .stage = RHI::ShaderStageFlagBits::VERTEX_BIT,
+                .shader = rhiVertShader_.get(),
+                .entryName = "main"
+            },
+
+            RHI::PipelineShaderStageCreateInfo {
+                .stage = RHI::ShaderStageFlagBits::FRAGMENT_BIT,
+                .shader = rhiFragShader_.get(),
+                .entryName = "main"
+            }
+    };
+
+    // Step 2. setup vertex attribute info
+
+    VkVertexInputBindingDescription bindingDescription = {
+            .binding = 0,
+            .stride  = 5 * sizeof(float),
+            .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+    };
+
+    std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {
+            VkVertexInputAttributeDescription {
+                    .binding = 0,
+                    .location = 0,
+                    .format = VK_FORMAT_R32G32_SFLOAT,
+                    .offset = 0
+            },
+            VkVertexInputAttributeDescription {
+                    .binding = 0,
+                    .location = 1,
+                    .format = VK_FORMAT_R32G32B32_SFLOAT,
+                    .offset = 8
+            }
+    };
+
+    RHI::PipelineVertexInputStateCreateInfo vertexInputInfo = {
+            .vertexBindingDescriptions = {
+                    RHI::VertexInputBindingDescription {
+                            .binding = 0,
+                            .stride  = sizeof(TVertex),
+                            .inputRate = RHI::VertexInputRate::VERTEX
+                    },
+            },
+            .vertexAttributeDescriptions = {
+                    RHI::VertexInputAttributeDescription {
+                            .binding = 0,
+                            .location = 0,
+                            .format = RHI::Format::R32G32_SFLOAT,
+                            .offset = offsetof(TVertex, pos)
+                    },
+                    RHI::VertexInputAttributeDescription {
+                            .binding = 0,
+                            .location = 1,
+                            .format = RHI::Format::R32G32B32_SFLOAT,
+                            .offset = offsetof(TVertex, color)
+                    },
+            }
+    };
+
+    // Step 3. setup viewport and scissor
+
+    RHI::Viewport viewport = rhiDevice_->GetViewport();
+    std::vector<RHI::Viewport> viewports = {
+            viewport,
+    };
+
+//      // Two viewports.
+//    std::vector<RHI::Viewport> viewports = {
+//            RHI::Viewport {
+//                .x = 0, .y = 0, .width = viewport.width, .height = viewport.height / 2, .minDepth = 0.0f, .maxDepth = 1.0f
+//            },
+//            RHI::Viewport {
+//                    .x = 0, .y = viewport.height / 2, .width = viewport.width, .height = viewport.height / 2, .minDepth = 0.0f, .maxDepth = 1.0f
+//            },
+//    };
+
+    std::vector<RHI::Scissor>  scissors = {
+            RHI::Scissor{
+                .x = 0, .y = 0, .width = (std::uint32_t)viewport.width, .height = (std::uint32_t)viewport.height
+            },
+    };
+
+    RHI::PipelineViewportStateCreateInfo viewportState = {
+            .viewports = std::move(viewports),
+            .scissors  = std::move(scissors),
+    };
+
+    // final, create graphic pipeline state.
+
+    rhiGraphicPipeline_ = rhiDevice_->CreateGraphicPipeline(shaderStageInfos, vertexInputInfo, viewportState);
+
+    // ------------ End setup GraphicPipeline object ---------------
 
     return true;
 }

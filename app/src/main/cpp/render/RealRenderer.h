@@ -7,12 +7,13 @@
 
 #include <vector>
 #include <android/log.h>
-#include <android_native_app_glue.h>
+//#include <android_native_app_glue.h>
 #include "types/Types.h"
 #include "aux/Aux.h"
 #include "../drivers/vulkan/vulkan_wrapper.h"
 #include "RHI/backend/Vulkan/VKDevice.h"
 #include "RHI/include/GraphicPipleine.h"
+#include "RHI/include/RenderPass.h"
 
 class RealRenderer
 {
@@ -39,5 +40,6 @@ private:
     RHI::GraphicPipelineHnd rhiGraphicPipeline_ = nullptr;
     RHI::ShaderHnd          rhiVertShader_      = nullptr;
     RHI::ShaderHnd          rhiFragShader_      = nullptr;
+    RHI::RenderPassHnd      rhiRenderPass_      = nullptr;
 };
 #endif //VULKANDEMO_VULKANDEMO_H

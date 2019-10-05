@@ -124,28 +124,7 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     };
 
     // Step 2. setup vertex attribute info
-
-    VkVertexInputBindingDescription bindingDescription = {
-            .binding = 0,
-            .stride  = 5 * sizeof(float),
-            .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
-    };
-
-    std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {
-            VkVertexInputAttributeDescription {
-                    .binding = 0,
-                    .location = 0,
-                    .format = VK_FORMAT_R32G32_SFLOAT,
-                    .offset = 0
-            },
-            VkVertexInputAttributeDescription {
-                    .binding = 0,
-                    .location = 1,
-                    .format = VK_FORMAT_R32G32B32_SFLOAT,
-                    .offset = 8
-            }
-    };
-
+    
     RHI::PipelineVertexInputStateCreateInfo vertexInputInfo = {
             .vertexBindingDescriptions = {
                     RHI::VertexInputBindingDescription {

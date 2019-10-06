@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <array>
+#include <chrono>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
 
@@ -31,6 +32,12 @@
 //                        "Vulkan error. File[%s], line[%d]", __FILE__, \
 //                        __LINE__);                                    \
 //  }
+
+struct UniformBufferObject {
+    glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 proj;
+};
 
 RealRenderer *RealRenderer::instance_ = nullptr;
 
@@ -61,10 +68,25 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
 
     rhiDevice_ = new RHI::VKDevice(window);
 
-    const std::vector<TVertex> vertices = {{{0.0f, -.5f}, {1.0f, 0.0f, 0.0f}}, {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}}, {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+    const std::vector<TVertex> vertices = {
+            {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+            {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+            {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+            {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
     };
+    rhiVertexBuffer_ = rhiDevice_->CreateBuffer(RHI::BufferUsageFlagBits::VERTEX_BUFFER_BIT, RHI::SharingMode::EXCLUSIVE, sizeof(vertices[0]) * vertices.size(), vertices.data());
 
-    rhiBuffer_ = rhiDevice_->CreateBuffer(RHI::BufferUsageFlagBits::VERTEX_BUFFER_BIT, RHI::SharingMode::EXCLUSIVE, sizeof(vertices[0]) * vertices.size(), vertices.data());
+    const std::vector<uint16_t> indices = { 0, 1, 2, 2, 3, 0};
+    rhiIndexBuffer_ = rhiDevice_->CreateBuffer(RHI::BufferUsageFlagBits::INDEX_BUFFER_BIT, RHI::SharingMode::EXCLUSIVE, sizeof(indices[0]) * indices.size(), indices.data());
+
+    UniformBufferObject ubo = {};
+    float time = 0.0f;
+    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.proj = glm::perspective(glm::radians(45.0f), rhiDevice_->GetViewport().width / (float) rhiDevice_->GetViewport().height, 0.1f, 10.0f);
+    ubo.proj[1][1] *= -1;
+
+    rhiUniformBuffer_ = rhiDevice_->CreateBuffer(RHI::BufferUsageFlagBits::UNIFORM_BUFFER_BIT, RHI::SharingMode::EXCLUSIVE, sizeof(UniformBufferObject), &ubo);
 
     RHI::RenderPassCreateInfo renderPassCreateInfo {
         .attachments = {
@@ -183,14 +205,40 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
 
     // ------------ End setup GraphicPipeline object ---------------
 
+
+    // setup UBO
+
+    rhiUBO = rhiDevice_->CreateUniformBufferObject(rhiGraphicPipeline_.get());
+    rhiDevice_->UpdateUniformBufferObject(rhiUBO.get(), rhiUniformBuffer_.get(), 0, sizeof(UniformBufferObject));
+
     return true;
+}
+
+void RealRenderer::testRotate()
+{
+    static auto startTime = std::chrono::high_resolution_clock::now();
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+    UniformBufferObject ubo = {};
+    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.proj = glm::perspective(glm::radians(45.0f), rhiDevice_->GetViewport().width / (float) rhiDevice_->GetViewport().height, 0.1f, 10.0f);
+    ubo.proj[1][1] *= -1;
+
+    rhiDevice_->WriteBuffer(rhiUniformBuffer_.get(), &ubo, 0, sizeof(UniformBufferObject));
+    rhiDevice_->UpdateUniformBufferObject(rhiUBO.get(), rhiUniformBuffer_.get(), 0, sizeof(UniformBufferObject));
 }
 
 void RealRenderer::drawFrame()
 {
+    testRotate();
     rhiDevice_->BeginRenderpass();
     rhiDevice_->BindGraphicPipeline(rhiGraphicPipeline_);
-    rhiDevice_->BindBuffer(rhiBuffer_, 0);
-    rhiDevice_->Draw(3, 0);
+    rhiDevice_->BindVertexBuffer(rhiVertexBuffer_, 0);
+    rhiDevice_->BindIndexBuffer(rhiIndexBuffer_, 0);
+    rhiDevice_->BindUniformBufferObject(rhiUBO.get(), rhiGraphicPipeline_.get(), 0);
+    rhiDevice_->DrawIndxed(6, 0);
+//    rhiDevice_->Draw(3, 0);
     rhiDevice_->EndRenderpass();
 }

@@ -26,9 +26,17 @@ public:
 
     void Bind(VkCommandBuffer cmdBuffer);
 
+    VkPipeline GetPipeline() const {return vkGraphicsPipeline_;}
+
+    VkPipelineLayout GetPipelineLayout() const {return vkPipelineLayout_;}
+
+    VkDescriptorSetLayout GetDescriptorSetLayout() const {return vkDescriptorSetLayout_;}
+
 private:
-    VkPipeline                      vkGraphicsPipeline_; // tmp
-    VkPipelineLayout                vkPipelineLayout_; // tmp
+    VkPipeline                      vkGraphicsPipeline_     = 0;
+    VkPipelineLayout                vkPipelineLayout_       = 0;
+    VkDescriptorSetLayout           vkDescriptorSetLayout_  = 0;
+
 
     friend class VKDevice;
 };

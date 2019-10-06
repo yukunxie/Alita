@@ -29,6 +29,8 @@ public:
 
     void drawFrame();
 
+    void testRotate();
+
 protected:
     RealRenderer();
 
@@ -36,7 +38,10 @@ private:
     static RealRenderer *instance_;
 
     RHI::VKDevice*          rhiDevice_          = nullptr;
-    RHI::BufferHnd          rhiBuffer_          = nullptr;
+    RHI::BufferHnd          rhiVertexBuffer_    = nullptr;
+    RHI::BufferHnd          rhiIndexBuffer_     = nullptr;
+    RHI::BufferHnd          rhiUniformBuffer_   = nullptr;
+    RHI::UniformBufferObjectHnd rhiUBO          = nullptr;
     RHI::GraphicPipelineHnd rhiGraphicPipeline_ = nullptr;
     RHI::ShaderHnd          rhiVertShader_      = nullptr;
     RHI::ShaderHnd          rhiFragShader_      = nullptr;

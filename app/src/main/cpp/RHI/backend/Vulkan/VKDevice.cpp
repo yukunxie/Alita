@@ -8,6 +8,7 @@
 #include "VKGraphicPipeline.h"
 #include "VKShader.h"
 #include "VKRenderPass.h"
+#include "VKUniformBufferObject.h"
 
 #include <vector>
 #include <array>
@@ -28,6 +29,7 @@ VKDevice::VKDevice(ANativeWindow *window)
     CreateRenderPass();
     CreateFramebuffers();
     CreateCommandPool();
+    CreateDescriptorPool();
     CreateCommandBuffers();
     SetupSynchronizeObjects();
 }
@@ -43,6 +45,10 @@ BufferHnd VKDevice::CreateBuffer(BufferUsageFlagBits usageFlagBits, SharingMode 
     return buffer;
 }
 
+void VKDevice::WriteBuffer(const Buffer* buffer, const void* data, std::uint32_t offset, std::uint32_t size)
+{
+    ((VKBuffer*)buffer)->UpdateBuffer(data, offset, size);
+}
 
 // private
 
@@ -461,6 +467,60 @@ void VKDevice::CreateCommandPool()
     CALL_VK(vkCreateCommandPool(vkDevice_, &poolInfo, nullptr, &vkCommandPool_));
 }
 
+void VKDevice::CreateDescriptorPool()
+{
+    RHI_ASSERT(swapChainImages_.size() > 0);
+
+    VkDescriptorPoolSize poolSize {
+            .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            .descriptorCount = static_cast<uint32_t>(swapChainImages_.size()),
+    };
+
+    VkDescriptorPoolCreateInfo poolInfo {
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+            .poolSizeCount = 1,
+            .pPoolSizes = &poolSize,
+            .maxSets = static_cast<uint32_t>(swapChainImages_.size()),
+    };
+
+    CALL_VK(vkCreateDescriptorPool(vkDevice_, &poolInfo, nullptr, &vkDescriptorPool_));
+}
+
+void VKDevice::CreateDescriptorSets()
+{
+    VkDescriptorSetLayout layout;
+    VkDescriptorSetAllocateInfo allocInfo  {
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+            .descriptorSetCount = 1,
+            .pSetLayouts = &layout,
+            .descriptorPool = 0, // TODO
+    };
+
+    VkDescriptorSet descriptorSet;
+    CALL_VK(vkAllocateDescriptorSets(vkDevice_, &allocInfo, &descriptorSet));
+
+    VkDescriptorBufferInfo bufferInfo{
+            .buffer = 0, // TODO need a buffer object
+            .offset = 0,
+            .range  = VK_WHOLE_SIZE,
+    };
+
+    VkWriteDescriptorSet descriptorWrite{
+            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+            .dstSet = descriptorSet,
+            .dstBinding = 0,
+            .dstArrayElement = 0,
+            .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            .descriptorCount = 1,
+            .pBufferInfo = &bufferInfo,
+            .pImageInfo = nullptr, // optional
+            .pTexelBufferView = nullptr, // optional
+
+    };
+    vkUpdateDescriptorSets(vkDevice_, 1, &descriptorWrite, 0, nullptr);
+
+}
+
 void VKDevice::CreateCommandBuffers()
 {
     RHI_ASSERT(framebuffers_.size() > 0);
@@ -497,6 +557,11 @@ ShaderHnd VKDevice::CreateShader(const std::vector<std::uint8_t>& shaderSource)
 RenderPassHnd VKDevice::CreateRenderPass(const RenderPassCreateInfo& createInfo)
 {
     return RenderPassHnd(new VKRenderPass(this, createInfo));
+}
+
+UniformBufferObjectHnd VKDevice::CreateUniformBufferObject(const GraphicPipeline* graphicPipeline)
+{
+    return UniformBufferObjectHnd(new VKUniformBufferObject(this, (const VKGraphicPipeline*)graphicPipeline));
 }
 
 void VKDevice::SetupSynchronizeObjects()
@@ -692,12 +757,25 @@ void VKDevice::EndRenderpass()
     vkQueueWaitIdle(vkQueue_);
 }
 
-void VKDevice::BindBuffer(BufferHnd buffer, std::uint32_t offset)
+void VKDevice::BindVertexBuffer(BufferHnd buffer, std::uint32_t offset)
 {
-    VkBuffer vkBuffer = ((VKBuffer*)buffer.get())->Get();
+    VkBuffer vkBuffer = ((VKBuffer*)buffer.get())->GetNative();
     VkBuffer vertexBuffers[] = {vkBuffer};
     VkDeviceSize offsets[] = {offset};
     vkCmdBindVertexBuffers(commandBuffers_[imageIndex_], 0, 1, vertexBuffers, offsets);
+}
+
+void VKDevice::BindIndexBuffer(BufferHnd buffer, std::uint32_t offset)
+{
+    VkBuffer vkBuffer = ((VKBuffer*)buffer.get())->GetNative();
+    vkCmdBindIndexBuffer(commandBuffers_[imageIndex_], vkBuffer, offset, VK_INDEX_TYPE_UINT16);
+}
+
+void VKDevice::BindUniformBufferObject(const UniformBufferObject* ubo, const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint)
+{
+    VkPipelineLayout pipelineLayout = ((const VKGraphicPipeline*)graphicPipeline)->GetPipelineLayout();
+    VkDescriptorSet ds = ((const VKUniformBufferObject*) ubo)->GetNative();
+    vkCmdBindDescriptorSets(commandBuffers_[imageIndex_], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, bindingPoint, 1, &ds, 0, nullptr);
 }
 
 void VKDevice::Draw(std::uint32_t vertexCount, std::uint32_t instanceCount, std::uint32_t firstVertex, std::uint32_t firstInstance)
@@ -711,10 +789,38 @@ void VKDevice::Draw(std::uint32_t vertexCount, std::uint32_t firstVertex)
 //    vkCmdDraw(commandBuffers_[imageIndex_], vertexCount, 1, firstVertex, 0);
 }
 
+void VKDevice::DrawIndxed(std::uint32_t indexCount, std::uint32_t firstIndex)
+{
+    vkCmdDrawIndexed(commandBuffers_[imageIndex_], indexCount, 1, firstIndex, 0, 0);
+}
+
 void VKDevice::BindGraphicPipeline(GraphicPipelineHnd graphicPipeline)
 {
     VKGraphicPipeline* pipeline = (VKGraphicPipeline*)graphicPipeline.get();
     pipeline->Bind(commandBuffers_[imageIndex_]);
+}
+
+void VKDevice::UpdateUniformBufferObject(UniformBufferObject* ubo, const Buffer* buffer, std::uint32_t offset, std::uint32_t size)
+{
+    VkDescriptorBufferInfo bufferInfo{
+            .buffer = ((const VKBuffer*)buffer)->GetNative(),
+            .offset = offset,
+            .range  = size,
+    };
+
+    VkWriteDescriptorSet descriptorWrite{
+            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+            .dstSet = ((VKUniformBufferObject*)ubo)->GetNative(),
+            .dstBinding = 0,
+            .dstArrayElement = 0,
+            .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            .descriptorCount = 1,
+            .pBufferInfo = &bufferInfo,
+            .pImageInfo = nullptr, // optional
+            .pTexelBufferView = nullptr, // optional
+
+    };
+    vkUpdateDescriptorSets(vkDevice_, 1, &descriptorWrite, 0, nullptr);
 }
 
 NS_RHI_END

@@ -24,9 +24,12 @@ class VKBuffer : public Buffer
 public:
     VKBuffer(VKDevice* device, BufferUsageFlagBits usageFlagBits, SharingMode sharingMode, std::uint32_t sizeOfBytes, const void* data);
 
-    VkBuffer Get() {return vkBuffer_;}
+    VkBuffer GetNative() const {return vkBuffer_;}
+
+    void UpdateBuffer(const void* data, std::uint32_t offset, std::uint32_t size);
 
 private:
+    VkDevice        vkDevice_       = nullptr;
     VkBuffer        vkBuffer_       = 0;
     VkDeviceMemory  vkBufferMemory_ = 0;
 

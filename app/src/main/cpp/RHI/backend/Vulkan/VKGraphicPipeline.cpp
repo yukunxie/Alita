@@ -101,6 +101,23 @@ VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const std::vector<RHI::Pi
             .pScissors = scissors.data(),
     };
 
+    // setup uniform buffer object
+    VkDescriptorSetLayoutBinding uboLayoutBinding {
+            .binding = 0,
+            .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            .descriptorCount = 1,
+            .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+            .pImmutableSamplers = nullptr, // optional
+    };
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo = {
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+            .bindingCount = 1,
+            .pBindings = &uboLayoutBinding,
+    };
+
+    CALL_VK(vkCreateDescriptorSetLayout(vkDevice, &layoutInfo, nullptr, &vkDescriptorSetLayout_));
+
     // setup rasterization info
 
     VkPipelineRasterizationStateCreateInfo rasterizer = {
@@ -168,8 +185,8 @@ VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const std::vector<RHI::Pi
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-            .setLayoutCount = 0, // Optional
-            .pSetLayouts = nullptr, // Optional
+            .setLayoutCount = 1, // Optional
+            .pSetLayouts = &vkDescriptorSetLayout_, // Optional
             .pushConstantRangeCount = 0, // Optional
             .pPushConstantRanges = nullptr, // Optional
     };

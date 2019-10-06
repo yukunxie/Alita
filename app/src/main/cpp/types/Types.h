@@ -6,6 +6,7 @@
 #define ALITA_TYPES_H
 
 #include "../external/glm/glm.hpp"
+#include "../external/glm/gtc/matrix_transform.hpp"
 
 using TVector4 = glm::vec4;
 using TVector3 = glm::vec3;

@@ -48,11 +48,15 @@ public:
 
     VkRenderPass GetRenderPass() {return vkRenderPass_;}
 
+    VkDescriptorPool GetDescriptorPool() {return vkDescriptorPool_;}
+
 public:
     virtual BufferHnd CreateBuffer(BufferUsageFlagBits usageFlagBits
             , SharingMode sharingMode
             , std::uint32_t sizeOfBytes
             , const void* data) override;
+
+    virtual void WriteBuffer(const Buffer* buffer, const void* data, std::uint32_t offset, std::uint32_t size) override;
 
     virtual GraphicPipelineHnd CreateGraphicPipeline(const std::vector<RHI::PipelineShaderStageCreateInfo>& shaderStageInfos
             , const PipelineVertexInputStateCreateInfo& vertexInputInfo
@@ -62,11 +66,17 @@ public:
 
     virtual RenderPassHnd CreateRenderPass(const RenderPassCreateInfo& createInfo) override;
 
+    virtual UniformBufferObjectHnd CreateUniformBufferObject(const GraphicPipeline* graphicPipeline) override;
+
     virtual void BeginRenderpass() override;
 
     virtual void EndRenderpass() override;
 
-    virtual void BindBuffer(BufferHnd buffer, std::uint32_t offset) override ;
+    virtual void BindVertexBuffer(BufferHnd buffer, std::uint32_t offset) override ;
+
+    virtual void BindIndexBuffer(BufferHnd buffer, std::uint32_t offset) override ;
+
+    virtual void BindUniformBufferObject(const UniformBufferObject* ubo, const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint) override;
 
     virtual void Draw(std::uint32_t vertexCount, std::uint32_t instanceCount
             , std::uint32_t firstVertex
@@ -74,11 +84,15 @@ public:
 
     virtual void Draw(std::uint32_t vertexCount, std::uint32_t firstVertex) override;
 
+    virtual void DrawIndxed(std::uint32_t indexCount, std::uint32_t firstIndex) override;
+
     virtual void BindGraphicPipeline(GraphicPipelineHnd graphicPipeline) override;
 
     virtual Viewport GetViewport() override {return viewport_;}
 
-    virtual Scissor  GetScissor() override  {}
+    virtual Scissor  GetScissor() override  {return scissor_;}
+
+    virtual void UpdateUniformBufferObject(UniformBufferObject* ubo, const Buffer* buffer, std::uint32_t offset, std::uint32_t size) override;
 
 
 private:
@@ -91,6 +105,8 @@ private:
     void CreateFramebuffers();
     void CreateQueue();
     void CreateCommandPool();
+    void CreateDescriptorPool();
+    void CreateDescriptorSets();
     void CreateCommandBuffers();
     void SetupSynchronizeObjects();
 
@@ -114,6 +130,7 @@ private:
     VkPhysicalDevice                vkPhysicalDevice_       = nullptr;
     VkRenderPass                    vkRenderPass_;
     VkCommandPool                   vkCommandPool_;
+    VkDescriptorPool                vkDescriptorPool_;
     VkSurfaceKHR                    vkSurface_;
     VkSwapchainKHR                  vkSwapchain_;
     VkFormat                        vkSwapchainImageFormat_;

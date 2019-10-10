@@ -10,4 +10,8 @@
 /app/src/main/assets
 /build
 /captures
+/META-INF/
 .externalNativeBuild
+*.arsc
+*.dex
+AndroidManifest.xml

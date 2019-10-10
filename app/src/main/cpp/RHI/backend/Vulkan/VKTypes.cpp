@@ -61,6 +61,16 @@ VkImageType ToVkImageType(ImageType imageType)
     return (VkImageType) imageType;
 }
 
+VkDescriptorType ToVkDescriptorType(DescriptorType type)
+{
+    return (VkDescriptorType) type;
+}
+
+VkShaderStageFlags ToVkShaderStageFlags(ShaderStageFlags flag)
+{
+    return (VkShaderStageFlags) flag;
+}
+
 
 NS_RHI_END
 

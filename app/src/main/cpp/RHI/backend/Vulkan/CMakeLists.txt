@@ -18,4 +18,8 @@ add_library( # Sets the name of the library.
         ./VKUniformBufferObject.cpp
         ./VKTexture.cpp
         ./VKSampler.cpp
+        ./VKBindGroupLayout.cpp
+        ./VKPipelineLayout.cpp
+        ./VKBindingResources.cpp
+        ./VKBindGroup.cpp
         )

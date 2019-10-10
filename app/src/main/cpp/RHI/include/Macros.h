@@ -23,6 +23,7 @@ static const char *kTAG = "RHI";
   ((void)__android_log_print(ANDROID_LOG_ERROR, kTAG, __VA_ARGS__))
 
 
+#ifndef CALL_VK
 #define CALL_VK(func)                                                               \
   do {\
     if (auto code = (func); VK_SUCCESS != code)\
@@ -58,6 +59,7 @@ static const char *kTAG = "RHI";
             case VK_ERROR_INVALID_SHADER_NV: message = "VK_ERROR_INVALID_SHADER_NV";break;\
             case VK_ERROR_FRAGMENTATION_EXT: message = "VK_ERROR_FRAGMENTATION_EXT";break;\
             case VK_ERROR_NOT_PERMITTED_EXT: message = "VK_ERROR_NOT_PERMITTED_EXT";break;\
+            default: break; \
         }\
         __android_log_print(ANDROID_LOG_ERROR, "Tutorial ",                            \
                         "Vulkan error [%s – %d]. File[%s], line[%d] \n", message, code, __FILE__,     \
@@ -65,6 +67,7 @@ static const char *kTAG = "RHI";
                         assert(false); \
     }\
 } while (0)
+#endif
 
 
 #endif //ALITA_MACROS_H

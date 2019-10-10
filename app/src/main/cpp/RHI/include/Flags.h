@@ -1131,6 +1131,24 @@ typedef enum class ImageTiling {
     MAX_ENUM = 0x7FFFFFFF
 } ImageTiling;
 
+typedef enum class DescriptorType {
+    SAMPLER = 0,
+    COMBINED_IMAGE_SAMPLER = 1,
+    SAMPLED_IMAGE = 2,
+    STORAGE_IMAGE = 3,
+    UNIFORM_TEXEL_BUFFER = 4,
+    STORAGE_TEXEL_BUFFER = 5,
+    UNIFORM_BUFFER = 6,
+    STORAGE_BUFFER = 7,
+    UNIFORM_BUFFER_DYNAMIC = 8,
+    STORAGE_BUFFER_DYNAMIC = 9,
+    INPUT_ATTACHMENT = 10,
+    BEGIN_RANGE = SAMPLER,
+    END_RANGE = INPUT_ATTACHMENT,
+    RANGE_SIZE = (INPUT_ATTACHMENT - SAMPLER + 1),
+    MAX_ENUM = 0x7FFFFFFF
+} DescriptorType;
+
 typedef struct Viewport
 {
     std::int32_t x;
@@ -1364,6 +1382,17 @@ typedef struct ImageCreateInfo {
     ImageLayout            initialLayout;
     const void*            imageData;
 } ImageCreateInfo;
+
+typedef struct DescriptorSetLayoutBinding {
+    uint32_t              binding;
+    DescriptorType      descriptorType;
+    uint32_t              descriptorCount;
+    ShaderStageFlags    stageFlags;
+} DescriptorSetLayoutBinding;
+
+typedef struct DescriptorSetLayoutCreateInfo {
+    std::vector<DescriptorSetLayoutBinding> bindings;
+} DescriptorSetLayoutCreateInfo;
 
 NS_RHI_END
 

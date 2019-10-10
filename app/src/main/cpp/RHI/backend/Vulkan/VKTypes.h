@@ -23,6 +23,8 @@ VkSharingMode ToVkSharingMode(SharingMode sharingMode);
 VkImageTiling ToVkImageTiling(ImageTiling imageTiling);
 VkImageUsageFlags ToVkImageUsageFlags(ImageUsageFlags imageUsageFlags);
 VkImageType ToVkImageType(ImageType imageType);
+VkDescriptorType ToVkDescriptorType(DescriptorType type);
+VkShaderStageFlags ToVkShaderStageFlags(ShaderStageFlags flag);
 
 NS_RHI_END
 

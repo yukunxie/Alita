@@ -62,6 +62,7 @@ static const char *kTAG = "RHI";
         __android_log_print(ANDROID_LOG_ERROR, "Tutorial ",                            \
                         "Vulkan error [%s – %d]. File[%s], line[%d] \n", message, code, __FILE__,     \
                         __LINE__);  \
+                        assert(false); \
     }\
 } while (0)
 

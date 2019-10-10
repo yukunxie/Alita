@@ -15,6 +15,9 @@
 #include "../external/glm/vec3.hpp"
 #include "../external/glm/gtx/closest_point.inl"
 #include "../aux/AFileSystem.h"
+
+#include "external/stb/stb_image.h"
+
 //
 //// Android log function wrappers
 //static const char *kTAG = "VulkanDemo";
@@ -69,10 +72,10 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     rhiDevice_ = new RHI::VKDevice(window);
 
     const std::vector<TVertex> vertices = {
-            {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-            {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-            {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-            {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+            {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+            {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+            {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+            {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
     };
     rhiVertexBuffer_ = rhiDevice_->CreateBuffer(RHI::BufferUsageFlagBits::VERTEX_BUFFER_BIT, RHI::SharingMode::EXCLUSIVE, sizeof(vertices[0]) * vertices.size(), vertices.data());
 
@@ -168,6 +171,12 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
                             .format = RHI::Format::R32G32B32_SFLOAT,
                             .offset = offsetof(TVertex, color)
                     },
+                    RHI::VertexInputAttributeDescription {
+                            .binding = 0,
+                            .location = 2,
+                            .format = RHI::Format::R32G32_SFLOAT,
+                            .offset = offsetof(TVertex, texCoord)
+                    },
             }
     };
 
@@ -205,11 +214,76 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
 
     // ------------ End setup GraphicPipeline object ---------------
 
+    // setup image
+
+    int texWidth, texHeight, texChannels;
+    const TData& imageData = AFileSystem::getInstance()->readData("images/spiderman.jpg");
+    stbi_uc* pixels = stbi_load_from_memory(imageData.data(), imageData.size(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    VkDeviceSize imageSize = texWidth * texHeight * 4;
+    if (!pixels) {
+        throw std::runtime_error("failed to load texture image!");
+    }
+
+//    ImageCreateFlags       flags;
+//    ImageType              imageType;
+//    Format                 format;
+//    Extent3D               extent;
+//    uint32_t               mipLevels;
+//    uint32_t               arrayLayers;
+//    SampleCountFlagBits    samples;
+//    ImageTiling            tiling;
+//    ImageUsageFlags        usage;
+//    SharingMode            sharingMode;
+//    ImageLayout            initialLayout;
+//    const void*            imageData;
+
+    RHI::ImageCreateInfo imageCreateInfo {
+        .imageType = RHI::ImageType::IMAGE_TYPE_2D,
+        .format    = RHI::Format::R8G8B8A8_UNORM,
+        .extent = {
+            .width = (std::uint32_t)texWidth,
+            .height= (std::uint32_t)texHeight,
+            .depth = 1
+        },
+        .mipLevels = 1,
+        .arrayLayers = 1,
+        .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
+        .tiling = RHI::ImageTiling::LINEAR,
+        .sharingMode = RHI::SharingMode::EXCLUSIVE,
+        .imageData = pixels,
+    };
+
+    rhiTexture_ = rhiDevice_->CreateTexture(imageCreateInfo);
+    stbi_image_free(pixels);
+
+    rhiSampler_ = rhiDevice_->CreateSampler();
 
     // setup UBO
 
-    rhiUBO = rhiDevice_->CreateUniformBufferObject(rhiGraphicPipeline_.get());
-    rhiDevice_->UpdateUniformBufferObject(rhiUBO.get(), rhiUniformBuffer_.get(), 0, sizeof(UniformBufferObject));
+    rhiUBOSampler = rhiDevice_->CreateUniformBufferObject(rhiGraphicPipeline_.get(), 1, rhiTexture_.get(), rhiSampler_.get());
+    rhiDevice_->UpdateUniformBufferObject(rhiUBOSampler.get(), nullptr, 0, 0);
+
+    rhiUBO = rhiDevice_->CreateUniformBufferObject(rhiGraphicPipeline_.get(), 0, rhiUniformBuffer_.get(), 0, sizeof(UniformBufferObject));
+    rhiDevice_->UpdateUniformBufferObject(rhiUBO.get(), rhiUniformBuffer_.get(), 0, 0);
+
+//    VkDescriptorBufferInfo bufferInfo{
+//            .buffer = ((RHI::VKBuffer*)rhiUBO)->GetNative(),
+//            .offset = 0,
+//            .range  = sizeof(UniformBufferObject),
+//    };
+//
+//    VkWriteDescriptorSet descriptorWrite{
+//            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+//            .dstSet = vkDescriptorSet_,
+//            .dstBinding = bindingPoint_,
+//            .dstArrayElement = 0,
+//            .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+//            .descriptorCount = 1,
+//            .pBufferInfo = &bufferInfo,
+//            .pImageInfo = nullptr, // optional
+//            .pTexelBufferView = nullptr, // optional
+//
+//    };
 
     return true;
 }
@@ -227,7 +301,9 @@ void RealRenderer::testRotate()
     ubo.proj[1][1] *= -1;
 
     rhiDevice_->WriteBuffer(rhiUniformBuffer_.get(), &ubo, 0, sizeof(UniformBufferObject));
-    rhiDevice_->UpdateUniformBufferObject(rhiUBO.get(), rhiUniformBuffer_.get(), 0, sizeof(UniformBufferObject));
+//    rhiDevice_->UpdateUniformBufferObject(rhiUBO.get(), rhiUniformBuffer_.get(), 0, sizeof(UniformBufferObject));
+
+//    rhiDevice_->UpdateUniformBufferObject(rhiUBOSampler.get(), nullptr, 0, 0);
 }
 
 void RealRenderer::drawFrame()
@@ -238,6 +314,8 @@ void RealRenderer::drawFrame()
     rhiDevice_->BindVertexBuffer(rhiVertexBuffer_, 0);
     rhiDevice_->BindIndexBuffer(rhiIndexBuffer_, 0);
     rhiDevice_->BindUniformBufferObject(rhiUBO.get(), rhiGraphicPipeline_.get(), 0);
+    rhiDevice_->UpdateUniformBufferObject(rhiUBOSampler.get(), nullptr, 0, 0);
+//    rhiDevice_->BindUniformBufferObject(rhiUBOSampler.get(), rhiGraphicPipeline_.get(), 1);
     rhiDevice_->DrawIndxed(6, 0);
 //    rhiDevice_->Draw(3, 0);
     rhiDevice_->EndRenderpass();

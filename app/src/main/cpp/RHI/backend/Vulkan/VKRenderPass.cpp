@@ -34,7 +34,7 @@ VKRenderPass::VKRenderPass(VKDevice* device, const RenderPassCreateInfo& createI
             .pDependencies = nullptr
     };
 
-    CALL_VK(vkCreateRenderPass(device->GetVulkanDevice(), &renderPassInfo, nullptr, &vkRenderPass_));
+    CALL_VK(vkCreateRenderPass(device->GetDevice(), &renderPassInfo, nullptr, &vkRenderPass_));
 }
 
 VKRenderPass::~VKRenderPass()

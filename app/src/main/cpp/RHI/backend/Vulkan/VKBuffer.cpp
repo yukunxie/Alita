@@ -8,7 +8,7 @@ NS_RHI_BEGIN
 
 VKBuffer::VKBuffer(VKDevice* device, BufferUsageFlagBits usageFlagBits, SharingMode sharingMode, std::uint32_t sizeOfBytes, const void* data)
 {
-    vkDevice_ = device->GetVulkanDevice();
+    vkDevice_ = device->GetDevice();
 
     // TODO define a class member
     uint32_t queueFamilyIndex_ = 0;
@@ -53,7 +53,7 @@ void VKBuffer::UpdateBuffer(const void* data, std::uint32_t offset, std::uint32_
     CALL_VK(vkMapMemory(vkDevice_, vkBufferMemory_, offset, size, 0, &accessPointer));
     memcpy(accessPointer, data, (size_t) size);
     vkUnmapMemory(vkDevice_, vkBufferMemory_);
-    CALL_VK(vkBindBufferMemory(vkDevice_, vkBuffer_, vkBufferMemory_, 0));
+//    CALL_VK(vkBindBufferMemory(vkDevice_, vkBuffer_, vkBufferMemory_, 0));
 }
 
 NS_RHI_END

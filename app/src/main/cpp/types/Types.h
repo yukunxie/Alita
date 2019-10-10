@@ -15,6 +15,7 @@ using TVector2 = glm::vec2;
 struct TVertex {
     TVector2 pos;
     TVector3 color;
+    TVector2 texCoord;
 };
 
 #endif //ALITA_TYPES_H

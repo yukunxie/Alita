@@ -12,6 +12,8 @@
 #include "RenderPass.h"
 #include "Flags.h"
 #include "UniformBufferObject.h"
+#include "Texture.h"
+#include "Sampler.h"
 
 #include <vector>
 
@@ -36,6 +38,14 @@ public:
     virtual RenderPassHnd CreateRenderPass(const RenderPassCreateInfo& createInfo) = 0;
 
     virtual UniformBufferObjectHnd CreateUniformBufferObject(const GraphicPipeline* graphicPipeline) = 0;
+
+    virtual UniformBufferObjectHnd CreateUniformBufferObject(const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size) = 0;
+
+    virtual UniformBufferObjectHnd CreateUniformBufferObject(const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint, const Texture* texture, const Sampler* sampler) = 0;
+
+    virtual TextureHnd CreateTexture(const ImageCreateInfo& imageCreateInfo) = 0;
+
+    virtual SamplerHnd CreateSampler() = 0;
 
     virtual void BindVertexBuffer(BufferHnd buffer, std::uint32_t offset) = 0;
 

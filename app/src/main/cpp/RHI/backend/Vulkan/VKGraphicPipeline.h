@@ -32,10 +32,13 @@ public:
 
     VkDescriptorSetLayout GetDescriptorSetLayout() const {return vkDescriptorSetLayout_;}
 
+    VkDescriptorSet GetDescriptorSet() const {return vkDescriptorSet_;}
+
 private:
     VkPipeline                      vkGraphicsPipeline_     = 0;
     VkPipelineLayout                vkPipelineLayout_       = 0;
     VkDescriptorSetLayout           vkDescriptorSetLayout_  = 0;
+    VkDescriptorSet                 vkDescriptorSet_        = 0;
 
 
     friend class VKDevice;

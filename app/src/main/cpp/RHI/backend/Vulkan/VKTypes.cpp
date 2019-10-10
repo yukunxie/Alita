@@ -41,6 +41,26 @@ VkVertexInputRate ToVkVertexInputRate(VertexInputRate inputRate)
     return (VkVertexInputRate)inputRate;
 }
 
+VkSharingMode ToVkSharingMode(SharingMode sharingMode)
+{
+    return (VkSharingMode)sharingMode;
+}
+
+VkImageTiling ToVkImageTiling(ImageTiling imageTiling)
+{
+    return (VkImageTiling)imageTiling;
+}
+
+VkImageUsageFlags ToVkImageUsageFlags(ImageUsageFlags imageUsageFlags)
+{
+    return (VkImageUsageFlags) imageUsageFlags;
+}
+
+VkImageType ToVkImageType(ImageType imageType)
+{
+    return (VkImageType) imageType;
+}
+
 
 NS_RHI_END
 

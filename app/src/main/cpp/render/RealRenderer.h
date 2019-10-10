@@ -42,6 +42,9 @@ private:
     RHI::BufferHnd          rhiIndexBuffer_     = nullptr;
     RHI::BufferHnd          rhiUniformBuffer_   = nullptr;
     RHI::UniformBufferObjectHnd rhiUBO          = nullptr;
+    RHI::TextureHnd         rhiTexture_         = nullptr;
+    RHI::SamplerHnd         rhiSampler_         = nullptr;
+    RHI::UniformBufferObjectHnd rhiUBOSampler   = nullptr;
     RHI::GraphicPipelineHnd rhiGraphicPipeline_ = nullptr;
     RHI::ShaderHnd          rhiVertShader_      = nullptr;
     RHI::ShaderHnd          rhiFragShader_      = nullptr;

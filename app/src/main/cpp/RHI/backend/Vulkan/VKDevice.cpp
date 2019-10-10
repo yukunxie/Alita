@@ -9,11 +9,53 @@
 #include "VKShader.h"
 #include "VKRenderPass.h"
 #include "VKUniformBufferObject.h"
+#include "VKTexture.h"
+#include "VKSampler.h"
 
 #include <vector>
 #include <array>
 
 NS_RHI_BEGIN
+
+PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
+PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
+
+static VKAPI_ATTR VkBool32 VKAPI_CALL  DebugReportCallback(
+        VkDebugReportFlagsEXT msgFlags,
+        VkDebugReportObjectTypeEXT objType,
+        uint64_t srcObject, size_t location,
+        int32_t msgCode, const char * pLayerPrefix,
+        const char * pMsg, void * pUserData )
+{
+    if (msgFlags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
+        __android_log_print(ANDROID_LOG_ERROR,
+                            "AppName",
+                            "ERROR: [%s] Code %i : %s",
+                            pLayerPrefix, msgCode, pMsg);
+    } else if (msgFlags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
+        __android_log_print(ANDROID_LOG_WARN,
+                            "AppName",
+                            "WARNING: [%s] Code %i : %s",
+                            pLayerPrefix, msgCode, pMsg);
+    } else if (msgFlags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) {
+        __android_log_print(ANDROID_LOG_WARN,
+                            "AppName",
+                            "PERFORMANCE WARNING: [%s] Code %i : %s",
+                            pLayerPrefix, msgCode, pMsg);
+    } else if (msgFlags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
+        __android_log_print(ANDROID_LOG_INFO,
+                            "AppName", "INFO: [%s] Code %i : %s",
+                            pLayerPrefix, msgCode, pMsg);
+    } else if (msgFlags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
+        __android_log_print(ANDROID_LOG_VERBOSE,
+                            "AppName", "DEBUG: [%s] Code %i : %s",
+                            pLayerPrefix, msgCode, pMsg);
+    }
+
+    // Returning false tells the layer not to stop when the event occurs, so
+    // they see the same behavior with and without validation layers enabled.
+    return VK_FALSE;
+}
 
 VKDevice::VKDevice(ANativeWindow *window)
 {
@@ -37,6 +79,10 @@ VKDevice::VKDevice(ANativeWindow *window)
 VKDevice::~VKDevice()
 {
     // TODO free vulkan resource
+
+    if (vkDestroyDebugReportCallbackEXT) {
+        vkDestroyDebugReportCallbackEXT(vkInstance_, vkDebugReportCallback_, nullptr);
+    }
 }
 
 BufferHnd VKDevice::CreateBuffer(BufferUsageFlagBits usageFlagBits, SharingMode sharingMode, std::uint32_t sizeOfBytes, const void* data)
@@ -54,6 +100,36 @@ void VKDevice::WriteBuffer(const Buffer* buffer, const void* data, std::uint32_t
 
 void VKDevice::CreateInstance()
 {
+    // Get layer count using null pointer as last parameter
+    uint32_t instance_layer_present_count = 0;
+    vkEnumerateInstanceLayerProperties(&instance_layer_present_count, nullptr);
+
+    // Enumerate layers with valid pointer in last parameter
+    VkLayerProperties* layer_props = (VkLayerProperties*)malloc(instance_layer_present_count * sizeof(VkLayerProperties));
+    vkEnumerateInstanceLayerProperties(&instance_layer_present_count, layer_props);
+
+    // Make sure the desired validation layer is available
+    const char *instance_layers[] = {
+            "VK_LAYER_GOOGLE_threading",
+            "VK_LAYER_LUNARG_parameter_validation",
+            "VK_LAYER_LUNARG_object_tracker",
+            "VK_LAYER_LUNARG_core_validation",
+            "VK_LAYER_GOOGLE_unique_objects"
+    };
+
+    uint32_t instance_layer_request_count = sizeof(instance_layers) / sizeof(instance_layers[0]);
+    for (uint32_t i = 0; i < instance_layer_request_count; i++) {
+        bool found = false;
+        for (uint32_t j = 0; j < instance_layer_present_count; j++) {
+            if (strcmp(instance_layers[i], layer_props[j].layerName) == 0) {
+                found = true;
+            }
+        }
+        if (!found) {
+            assert(false);
+        }
+    }
+
     VkApplicationInfo appInfo = {
             .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
             .pNext = nullptr,
@@ -68,6 +144,36 @@ void VKDevice::CreateInstance()
     std::vector<const char *> instanceExt;
     instanceExt.push_back("VK_KHR_surface");
     instanceExt.push_back("VK_KHR_android_surface");
+    const char* DEBUG_REPORT_EXTENSION = VK_EXT_DEBUG_REPORT_EXTENSION_NAME;
+
+    // Enable Vulkan debug callback.
+    {
+        // Get the instance extension count
+        uint32_t inst_ext_count = 0;
+        vkEnumerateInstanceExtensionProperties(nullptr, &inst_ext_count, nullptr);
+
+        // Enumerate the instance extensions
+        VkExtensionProperties* inst_exts =
+                (VkExtensionProperties *)malloc(inst_ext_count * sizeof(VkExtensionProperties));
+        vkEnumerateInstanceExtensionProperties(nullptr, &inst_ext_count, inst_exts);
+
+        const char * enabled_inst_exts[16] = {};
+        uint32_t enabled_inst_ext_count = 0;
+
+        // Make sure the debug report extension is available
+        for (uint32_t i = 0; i < inst_ext_count; i++) {
+            if (strcmp(inst_exts[i].extensionName,
+                       VK_EXT_DEBUG_REPORT_EXTENSION_NAME) == 0) {
+                enabled_inst_exts[enabled_inst_ext_count++] =
+                        VK_EXT_DEBUG_REPORT_EXTENSION_NAME;
+            }
+        }
+
+        if (enabled_inst_ext_count > 0)
+        {
+            instanceExt.push_back(DEBUG_REPORT_EXTENSION);
+        }
+    }
 
     // Create the Vulkan instance
     VkInstanceCreateInfo instanceCreateInfo{
@@ -76,11 +182,38 @@ void VKDevice::CreateInstance()
             .pApplicationInfo = &appInfo,
             .enabledExtensionCount = static_cast<uint32_t>(instanceExt.size()),
             .ppEnabledExtensionNames = instanceExt.data(),
-            .enabledLayerCount = 0,
-            .ppEnabledLayerNames = nullptr
+            .enabledLayerCount = instance_layer_request_count,
+            .ppEnabledLayerNames = instance_layers
     };
 
     CALL_VK(vkCreateInstance(&instanceCreateInfo, nullptr, &vkInstance_));
+
+    if (!vkCreateDebugReportCallbackEXT)
+    {
+        vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)
+                vkGetInstanceProcAddr(vkInstance_, "vkCreateDebugReportCallbackEXT");
+        vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)
+                vkGetInstanceProcAddr(vkInstance_, "vkDestroyDebugReportCallbackEXT");
+    }
+
+    // Create the debug callback with desired settings
+    if (vkCreateDebugReportCallbackEXT) {
+
+        VkDebugReportCallbackCreateInfoEXT debugReportCallbackCreateInfo;
+        debugReportCallbackCreateInfo.sType =
+                VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
+        debugReportCallbackCreateInfo.pNext = NULL;
+        debugReportCallbackCreateInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT |
+                                              VK_DEBUG_REPORT_WARNING_BIT_EXT |
+                                              VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
+        debugReportCallbackCreateInfo.pfnCallback = DebugReportCallback;
+        debugReportCallbackCreateInfo.pUserData = NULL;
+
+        CALL_VK(vkCreateDebugReportCallbackEXT(vkInstance_, &debugReportCallbackCreateInfo,
+                                       nullptr, &vkDebugReportCallback_));
+    }
+
+
 }
 
 void VKDevice::CreateSurface()
@@ -158,6 +291,7 @@ void VKDevice::CreateDevice()
         }
     }
     RHI_ASSERT(queueFamilyIndex < queueFamilyCount);
+    graphicQueueFamilyIndex_ = queueFamilyIndex;
 
     float priorities[] = {1.0f,};
     VkDeviceQueueCreateInfo queueCreateInfo{.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, .pNext = nullptr, .flags = 0, .queueCount = 1, .queueFamilyIndex = queueFamilyIndex, .pQueuePriorities = priorities,};
@@ -207,6 +341,9 @@ void VKDevice::CreateSwapchain()
         .imageExtent = vkSwapchainExtent_,
         .imageArrayLayers = 1,
         .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+        .preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
+        .compositeAlpha = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
+        .presentMode = VK_PRESENT_MODE_FIFO_KHR,
     };
 
 
@@ -471,54 +608,25 @@ void VKDevice::CreateDescriptorPool()
 {
     RHI_ASSERT(swapChainImages_.size() > 0);
 
-    VkDescriptorPoolSize poolSize {
-            .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            .descriptorCount = static_cast<uint32_t>(swapChainImages_.size()),
+    std::array<VkDescriptorPoolSize, 2> poolSizes = {
+            VkDescriptorPoolSize {
+                .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                .descriptorCount = 1, //static_cast<uint32_t>(swapChainImages_.size()),
+            },
+            VkDescriptorPoolSize {
+                    .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1, //static_cast<uint32_t>(swapChainImages_.size()),
+            },
     };
 
     VkDescriptorPoolCreateInfo poolInfo {
             .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-            .poolSizeCount = 1,
-            .pPoolSizes = &poolSize,
+            .poolSizeCount = (std::uint32_t)poolSizes.size(),
+            .pPoolSizes = poolSizes.data(),
             .maxSets = static_cast<uint32_t>(swapChainImages_.size()),
     };
 
     CALL_VK(vkCreateDescriptorPool(vkDevice_, &poolInfo, nullptr, &vkDescriptorPool_));
-}
-
-void VKDevice::CreateDescriptorSets()
-{
-    VkDescriptorSetLayout layout;
-    VkDescriptorSetAllocateInfo allocInfo  {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-            .descriptorSetCount = 1,
-            .pSetLayouts = &layout,
-            .descriptorPool = 0, // TODO
-    };
-
-    VkDescriptorSet descriptorSet;
-    CALL_VK(vkAllocateDescriptorSets(vkDevice_, &allocInfo, &descriptorSet));
-
-    VkDescriptorBufferInfo bufferInfo{
-            .buffer = 0, // TODO need a buffer object
-            .offset = 0,
-            .range  = VK_WHOLE_SIZE,
-    };
-
-    VkWriteDescriptorSet descriptorWrite{
-            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-            .dstSet = descriptorSet,
-            .dstBinding = 0,
-            .dstArrayElement = 0,
-            .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            .descriptorCount = 1,
-            .pBufferInfo = &bufferInfo,
-            .pImageInfo = nullptr, // optional
-            .pTexelBufferView = nullptr, // optional
-
-    };
-    vkUpdateDescriptorSets(vkDevice_, 1, &descriptorWrite, 0, nullptr);
-
 }
 
 void VKDevice::CreateCommandBuffers()
@@ -562,6 +670,30 @@ RenderPassHnd VKDevice::CreateRenderPass(const RenderPassCreateInfo& createInfo)
 UniformBufferObjectHnd VKDevice::CreateUniformBufferObject(const GraphicPipeline* graphicPipeline)
 {
     return UniformBufferObjectHnd(new VKUniformBufferObject(this, (const VKGraphicPipeline*)graphicPipeline));
+}
+
+UniformBufferObjectHnd VKDevice::CreateUniformBufferObject(const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size)
+{
+    auto pipeline = (const VKGraphicPipeline*)graphicPipeline;
+    auto ubo = new VKUniformBufferObject(this, pipeline, bindingPoint, buffer, offset, size);
+    return UniformBufferObjectHnd(ubo);
+}
+
+UniformBufferObjectHnd VKDevice::CreateUniformBufferObject(const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint, const Texture* texture, const Sampler* sampler)
+{
+    auto pipeline = (const VKGraphicPipeline*)graphicPipeline;
+    auto ubo = new VKUniformBufferObject(this, pipeline, bindingPoint, texture, sampler);
+    return UniformBufferObjectHnd(ubo);
+}
+
+TextureHnd VKDevice::CreateTexture(const ImageCreateInfo& imageCreateInfo)
+{
+    return TextureHnd(new VKTexture(this, imageCreateInfo));
+}
+
+SamplerHnd VKDevice::CreateSampler()
+{
+    return SamplerHnd(new VKSampler(this));
 }
 
 void VKDevice::SetupSynchronizeObjects()
@@ -652,9 +784,7 @@ void VKDevice::SetImageLayout(VkCommandBuffer cmdBuffer, VkImage image, VkImageL
 void VKDevice::BeginRenderpass()
 {
     CALL_VK(vkAcquireNextImageKHR(vkDevice_, vkSwapchain_, std::numeric_limits<uint64_t>::max(),
-                                     vkImageAvailableSemaphore_, VK_NULL_HANDLE, &imageIndex_));
-
-    vkWaitForFences(vkDevice_, 1, &vkFence_, VK_TRUE, std::numeric_limits<uint64_t>::max());
+                                  vkRenderFinishedSemaphore_, VK_NULL_HANDLE, &imageIndex_));
 
     VkCommandBufferBeginInfo cmdBufferBeginInfo{
             .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -693,18 +823,6 @@ void VKDevice::BeginRenderpass()
     };
 
     vkCmdBeginRenderPass(commandBuffers_[imageIndex_], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-//    vkCmdBindPipeline(commandBuffers_[imageIndex_], VK_PIPELINE_BIND_POINT_GRAPHICS, vkGraphicsPipeline_);
-
-//    // draw some commands
-//    {
-//        vkCmdBindPipeline(commandBuffers_[imageIndex_], VK_PIPELINE_BIND_POINT_GRAPHICS, vkGraphicsPipeline_);
-//        VkBuffer vertexBuffers[] = {vkVertexBuffer_};
-//        VkDeviceSize offsets[] = {0};
-//        vkCmdBindVertexBuffers(commandBuffers_[imageIndex_], 0, 1, vertexBuffers, offsets);
-//
-//        CALL_VK(vkCmdDraw(commandBuffers_[imageIndex_], 3, 1, 0, 0));
-//    }
 }
 
 void VKDevice::EndRenderpass()
@@ -716,7 +834,7 @@ void VKDevice::EndRenderpass()
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.waitSemaphoreCount = 0;
     submitInfo.pWaitSemaphores = &vkImageAvailableSemaphore_;
     submitInfo.pWaitDstStageMask = waitStages;
 
@@ -726,10 +844,11 @@ void VKDevice::EndRenderpass()
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &vkRenderFinishedSemaphore_;
 
-    vkResetFences(vkDevice_, 1, &vkFence_);
+    CALL_VK(vkResetFences(vkDevice_, 1, &vkFence_));
     if (auto code = vkQueueSubmit(vkQueue_, 1, &submitInfo, vkFence_); code != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
+    CALL_VK(vkWaitForFences(vkDevice_, 1, &vkFence_, VK_TRUE, std::numeric_limits<uint64_t>::max()));
 
     LOGI("Drawing frames......");
 
@@ -774,8 +893,7 @@ void VKDevice::BindIndexBuffer(BufferHnd buffer, std::uint32_t offset)
 void VKDevice::BindUniformBufferObject(const UniformBufferObject* ubo, const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint)
 {
     VkPipelineLayout pipelineLayout = ((const VKGraphicPipeline*)graphicPipeline)->GetPipelineLayout();
-    VkDescriptorSet ds = ((const VKUniformBufferObject*) ubo)->GetNative();
-    vkCmdBindDescriptorSets(commandBuffers_[imageIndex_], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, bindingPoint, 1, &ds, 0, nullptr);
+    ((const VKUniformBufferObject*)ubo)->Bind(commandBuffers_[imageIndex_], pipelineLayout);
 }
 
 void VKDevice::Draw(std::uint32_t vertexCount, std::uint32_t instanceCount, std::uint32_t firstVertex, std::uint32_t firstInstance)
@@ -785,8 +903,7 @@ void VKDevice::Draw(std::uint32_t vertexCount, std::uint32_t instanceCount, std:
 
 void VKDevice::Draw(std::uint32_t vertexCount, std::uint32_t firstVertex)
 {
-    vkCmdDraw(commandBuffers_[imageIndex_], 3, 1, 0, 0);
-//    vkCmdDraw(commandBuffers_[imageIndex_], vertexCount, 1, firstVertex, 0);
+    vkCmdDraw(commandBuffers_[imageIndex_], vertexCount, 1, firstVertex, 0);
 }
 
 void VKDevice::DrawIndxed(std::uint32_t indexCount, std::uint32_t firstIndex)
@@ -802,25 +919,7 @@ void VKDevice::BindGraphicPipeline(GraphicPipelineHnd graphicPipeline)
 
 void VKDevice::UpdateUniformBufferObject(UniformBufferObject* ubo, const Buffer* buffer, std::uint32_t offset, std::uint32_t size)
 {
-    VkDescriptorBufferInfo bufferInfo{
-            .buffer = ((const VKBuffer*)buffer)->GetNative(),
-            .offset = offset,
-            .range  = size,
-    };
-
-    VkWriteDescriptorSet descriptorWrite{
-            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-            .dstSet = ((VKUniformBufferObject*)ubo)->GetNative(),
-            .dstBinding = 0,
-            .dstArrayElement = 0,
-            .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            .descriptorCount = 1,
-            .pBufferInfo = &bufferInfo,
-            .pImageInfo = nullptr, // optional
-            .pTexelBufferView = nullptr, // optional
-
-    };
-    vkUpdateDescriptorSets(vkDevice_, 1, &descriptorWrite, 0, nullptr);
+    ((VKUniformBufferObject*)ubo)->UseUniformBufferObject();
 }
 
 NS_RHI_END

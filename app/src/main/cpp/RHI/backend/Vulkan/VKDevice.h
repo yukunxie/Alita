@@ -43,12 +43,24 @@ public:
     VKDevice(ANativeWindow *window);
     ~VKDevice();
 
-    VkDevice GetVulkanDevice() {return vkDevice_;}
+    VkDevice GetDevice() const {return vkDevice_;}
+
+    VkPhysicalDevice GetPhysicalDevice() const {return vkPhysicalDevice_;}
+
+    VkQueue GetQueue() const {return vkQueue_;}
+
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
     VkRenderPass GetRenderPass() {return vkRenderPass_;}
 
     VkDescriptorPool GetDescriptorPool() {return vkDescriptorPool_;}
+
+    std::uint32_t GetGraphicQueueFamilyIndex() const {return graphicQueueFamilyIndex_;}
+
+    static void SetImageLayout(VkCommandBuffer cmdBuffer, VkImage image, VkImageLayout oldImageLayout,
+                        VkImageLayout newImageLayout,
+                        VkPipelineStageFlags srcStages,
+                        VkPipelineStageFlags destStages);
 
 public:
     virtual BufferHnd CreateBuffer(BufferUsageFlagBits usageFlagBits
@@ -67,6 +79,14 @@ public:
     virtual RenderPassHnd CreateRenderPass(const RenderPassCreateInfo& createInfo) override;
 
     virtual UniformBufferObjectHnd CreateUniformBufferObject(const GraphicPipeline* graphicPipeline) override;
+
+    virtual UniformBufferObjectHnd CreateUniformBufferObject(const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size) override;
+
+    virtual UniformBufferObjectHnd CreateUniformBufferObject(const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint, const Texture* texture, const Sampler* sampler) override;
+
+    virtual TextureHnd CreateTexture(const ImageCreateInfo& imageCreateInfo) override;
+
+    virtual SamplerHnd CreateSampler() override ;
 
     virtual void BeginRenderpass() override;
 
@@ -94,7 +114,6 @@ public:
 
     virtual void UpdateUniformBufferObject(UniformBufferObject* ubo, const Buffer* buffer, std::uint32_t offset, std::uint32_t size) override;
 
-
 private:
     void CreateInstance();
     void CreateSurface();
@@ -106,13 +125,9 @@ private:
     void CreateQueue();
     void CreateCommandPool();
     void CreateDescriptorPool();
-    void CreateDescriptorSets();
     void CreateCommandBuffers();
     void SetupSynchronizeObjects();
 
-    void SetImageLayout(VkCommandBuffer cmdBuffer, VkImage image, VkImageLayout oldImageLayout,
-                        VkImageLayout newImageLayout, VkPipelineStageFlags srcStages,
-                        VkPipelineStageFlags destStages);
 
 private:
     QueueFamilyIndices FindQueueFamilies();
@@ -135,6 +150,7 @@ private:
     VkSwapchainKHR                  vkSwapchain_;
     VkFormat                        vkSwapchainImageFormat_;
     VkExtent2D                      vkSwapchainExtent_;
+    VkDebugReportCallbackEXT        vkDebugReportCallback_;
     std::vector<VkImage>            swapChainImages_;
     std::vector<VkImageView>        swapChainImageViews_;
     std::vector<VkFramebuffer>      framebuffers_;
@@ -146,6 +162,7 @@ private:
     VkFence                         vkFence_;
 
     std::uint32_t                   imageIndex_ = 0;
+    std::uint32_t                   graphicQueueFamilyIndex_ = 0;
 
     Viewport                        viewport_;
     Scissor                         scissor_;

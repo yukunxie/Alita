@@ -14,7 +14,7 @@ VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const std::vector<RHI::Pi
         , const PipelineVertexInputStateCreateInfo& vertexInputInfo
         , const PipelineViewportStateCreateInfo& viewportStateCreateInfo)
 {
-    VkDevice vkDevice = device->GetVulkanDevice();
+    VkDevice vkDevice = device->GetDevice();
 
     // Setup shader modules
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages (shaderStageInfos.size());
@@ -53,6 +53,7 @@ VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const std::vector<RHI::Pi
     }
 
     VkPipelineVertexInputStateCreateInfo vertexInputCreateDescription = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
             .vertexBindingDescriptionCount = (std::uint32_t)bindingDescriptions.size(),
             .pVertexBindingDescriptions = bindingDescriptions.data(),
             .vertexAttributeDescriptionCount = (std::uint32_t)attributeDescriptions.size(),
@@ -102,21 +103,41 @@ VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const std::vector<RHI::Pi
     };
 
     // setup uniform buffer object
-    VkDescriptorSetLayoutBinding uboLayoutBinding {
-            .binding = 0,
-            .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            .descriptorCount = 1,
-            .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-            .pImmutableSamplers = nullptr, // optional
+
+    std::array<VkDescriptorSetLayoutBinding, 2> uboLayoutBindings = {
+            VkDescriptorSetLayoutBinding {
+                    .binding = 0,
+                    .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+                    .pImmutableSamplers = nullptr, // optional
+            },
+
+            VkDescriptorSetLayoutBinding {
+                    .binding = 1,
+                    .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+                    .pImmutableSamplers = nullptr, // optional
+            }
     };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo = {
             .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-            .bindingCount = 1,
-            .pBindings = &uboLayoutBinding,
+            .bindingCount = uboLayoutBindings.size(),
+            .pBindings = uboLayoutBindings.data(),
     };
 
     CALL_VK(vkCreateDescriptorSetLayout(vkDevice, &layoutInfo, nullptr, &vkDescriptorSetLayout_));
+
+    VkDescriptorSetAllocateInfo allocInfo  {
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+            .descriptorSetCount = 1,
+            .pSetLayouts = &vkDescriptorSetLayout_,
+            .descriptorPool = device->GetDescriptorPool()
+    };
+
+    CALL_VK(vkAllocateDescriptorSets(device->GetDevice(), &allocInfo, &vkDescriptorSet_));
 
     // setup rasterization info
 

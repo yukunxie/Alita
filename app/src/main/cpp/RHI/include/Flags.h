@@ -1075,6 +1075,62 @@ typedef enum class SubpassDescriptionFlagBits {
     FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 } SubpassDescriptionFlagBits;
 
+typedef enum class ImageUsageFlagBits {
+    TRANSFER_SRC_BIT = 0x00000001,
+    TRANSFER_DST_BIT = 0x00000002,
+    SAMPLED_BIT = 0x00000004,
+    STORAGE_BIT = 0x00000008,
+    COLOR_ATTACHMENT_BIT = 0x00000010,
+    DEPTH_STENCIL_ATTACHMENT_BIT = 0x00000020,
+    TRANSIENT_ATTACHMENT_BIT = 0x00000040,
+    INPUT_ATTACHMENT_BIT = 0x00000080,
+    FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+} ImageUsageFlagBits;
+typedef Flags ImageUsageFlags;
+
+typedef enum class ImageCreateFlagBits {
+    SPARSE_BINDING_BIT = 0x00000001,
+    SPARSE_RESIDENCY_BIT = 0x00000002,
+    SPARSE_ALIASED_BIT = 0x00000004,
+    MUTABLE_FORMAT_BIT = 0x00000008,
+    CUBE_COMPATIBLE_BIT = 0x00000010,
+    ALIAS_BIT = 0x00000400,
+    SPLIT_INSTANCE_BIND_REGIONS_BIT = 0x00000040,
+    FLAG_2D_ARRAY_COMPATIBLE_BIT = 0x00000020,
+    BLOCK_TEXEL_VIEW_COMPATIBLE_BIT = 0x00000080,
+    EXTENDED_USAGE_BIT = 0x00000100,
+    PROTECTED_BIT = 0x00000800,
+    DISJOINT_BIT = 0x00000200,
+    SAMPLE_LOCATIONS_COMPATIBLE_DEPTH_BIT_EXT = 0x00001000,
+    SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR = SPLIT_INSTANCE_BIND_REGIONS_BIT,
+    FLAG_2D_ARRAY_COMPATIBLE_BIT_KHR = FLAG_2D_ARRAY_COMPATIBLE_BIT,
+    BLOCK_TEXEL_VIEW_COMPATIBLE_BIT_KHR = BLOCK_TEXEL_VIEW_COMPATIBLE_BIT,
+    EXTENDED_USAGE_BIT_KHR = EXTENDED_USAGE_BIT,
+    DISJOINT_BIT_KHR = DISJOINT_BIT,
+    ALIAS_BIT_KHR = ALIAS_BIT,
+    FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+} ImageCreateFlagBits;
+typedef Flags ImageCreateFlags;
+
+typedef enum class ImageType {
+    IMAGE_TYPE_1D = 0,
+    IMAGE_TYPE_2D = 1,
+    IMAGE_TYPE_3D = 2,
+    IMAGE_TYPE_BEGIN_RANGE = IMAGE_TYPE_1D,
+    IMAGE_TYPE_END_RANGE = IMAGE_TYPE_3D,
+    IMAGE_TYPE_RANGE_SIZE = (IMAGE_TYPE_3D - IMAGE_TYPE_1D + 1),
+    IMAGE_TYPE_MAX_ENUM = 0x7FFFFFFF
+} ImageType;
+
+typedef enum class ImageTiling {
+    OPTIMAL = 0,
+    LINEAR = 1,
+    BEGIN_RANGE = OPTIMAL,
+    END_RANGE = LINEAR,
+    RANGE_SIZE = (LINEAR - OPTIMAL + 1),
+    MAX_ENUM = 0x7FFFFFFF
+} ImageTiling;
+
 typedef struct Viewport
 {
     std::int32_t x;
@@ -1287,6 +1343,27 @@ typedef struct RenderPassCreateInfo {
     std::vector<SubpassDescription>     subpasses;
     std::vector<SubpassDependency>      dependencies;
 } RenderPassCreateInfo;
+
+typedef struct Extent3D {
+    uint32_t    width;
+    uint32_t    height;
+    uint32_t    depth;
+} Extent3D;
+
+typedef struct ImageCreateInfo {
+    ImageCreateFlags       flags;
+    ImageType              imageType;
+    Format                 format;
+    Extent3D               extent;
+    uint32_t               mipLevels;
+    uint32_t               arrayLayers;
+    SampleCountFlagBits    samples;
+    ImageTiling            tiling;
+    ImageUsageFlags        usage;
+    SharingMode            sharingMode;
+    ImageLayout            initialLayout;
+    const void*            imageData;
+} ImageCreateInfo;
 
 NS_RHI_END
 

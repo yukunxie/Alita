@@ -22,11 +22,29 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            debuggable true
+        }
+        debug {
+            debuggable true
+        }
+        customDebuggableBuildType {
+            debuggable true
         }
     }
     externalNativeBuild {
         cmake {
             path "CMakeLists.txt"
+        }
+    }
+    sourceSets {
+        main {
+            def ndkDir = android.ndkDirectory
+            jniLibs {
+                // Gradle includes libraries in the following path as dependencies
+                // of your CMake or ndk-build project so that they are packaged in
+                // your app’s APK.
+                srcDir "$ndkDir/sources/third_party/vulkan/src/build-android/jniLibs"
+            }
         }
     }
 }

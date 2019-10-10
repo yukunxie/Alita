@@ -14,7 +14,7 @@ VKShader::VKShader(VKDevice* device, const std::vector<std::uint8_t>& shaderSour
     createInfo.codeSize = shaderSource.size();
     createInfo.pCode = reinterpret_cast<const std::uint32_t *>(shaderSource.data());
 
-    if (vkCreateShaderModule(device->GetVulkanDevice(), &createInfo, nullptr, &vkShaderModule_) != VK_SUCCESS) {
+    if (vkCreateShaderModule(device->GetDevice(), &createInfo, nullptr, &vkShaderModule_) != VK_SUCCESS) {
         throw std::runtime_error("failed to create shader module!");
     }
 }

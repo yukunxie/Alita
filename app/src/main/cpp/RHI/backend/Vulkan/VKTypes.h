@@ -19,7 +19,10 @@ VkAttachmentStoreOp ToVkAttachmentStoreOp(AttachmentStoreOp op);
 VkImageLayout ToVkImageLayout(ImageLayout layout);
 VkShaderStageFlagBits ToVkShaderStageFlagBits(ShaderStageFlagBits bits);
 VkVertexInputRate ToVkVertexInputRate(VertexInputRate inputRate);
-
+VkSharingMode ToVkSharingMode(SharingMode sharingMode);
+VkImageTiling ToVkImageTiling(ImageTiling imageTiling);
+VkImageUsageFlags ToVkImageUsageFlags(ImageUsageFlags imageUsageFlags);
+VkImageType ToVkImageType(ImageType imageType);
 
 NS_RHI_END
 

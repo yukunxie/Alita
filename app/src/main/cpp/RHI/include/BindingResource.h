@@ -37,7 +37,7 @@ public:
     {
     }
 
-    BindingResourceType GetResourceType() {return bindingResourceType_;}
+    BindingResourceType GetResourceType() const {return bindingResourceType_;}
 
     std::uint32_t GetBindingPoint() const {return bindingPoint_;}
 

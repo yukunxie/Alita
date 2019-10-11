@@ -5,16 +5,22 @@
 #include "VKGraphicPipeline.h"
 #include "VKTypes.h"
 #include "VKShader.h"
+#include "VKBindGroupLayout.h"
+#include "VKPipelineLayout.h"
 
 #include <array>
 
 NS_RHI_BEGIN
 
-VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const std::vector<RHI::PipelineShaderStageCreateInfo>& shaderStageInfos
-        , const PipelineVertexInputStateCreateInfo& vertexInputInfo
-        , const PipelineViewportStateCreateInfo& viewportStateCreateInfo)
+VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const GraphicPipelineCreateInfo& graphicPipelineCreateInfo)
 {
     VkDevice vkDevice = device->GetDevice();
+
+    const std::vector<RHI::PipelineShaderStageCreateInfo>& shaderStageInfos = graphicPipelineCreateInfo.shaderStageInfos;
+    const PipelineVertexInputStateCreateInfo& vertexInputInfo = graphicPipelineCreateInfo.vertexInputInfo;
+    const PipelineViewportStateCreateInfo& viewportStateCreateInfo = graphicPipelineCreateInfo.viewportState;
+
+    vkPipelineLayout_ = ((const VKPipelineLayout*)graphicPipelineCreateInfo.pPipelineLayout)->GetNative();
 
     // Setup shader modules
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages (shaderStageInfos.size());
@@ -102,43 +108,6 @@ VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const std::vector<RHI::Pi
             .pScissors = scissors.data(),
     };
 
-    // setup uniform buffer object
-
-    std::array<VkDescriptorSetLayoutBinding, 2> uboLayoutBindings = {
-            VkDescriptorSetLayoutBinding {
-                    .binding = 0,
-                    .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                    .descriptorCount = 1,
-                    .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-                    .pImmutableSamplers = nullptr, // optional
-            },
-
-            VkDescriptorSetLayoutBinding {
-                    .binding = 1,
-                    .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                    .descriptorCount = 1,
-                    .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
-                    .pImmutableSamplers = nullptr, // optional
-            }
-    };
-
-    VkDescriptorSetLayoutCreateInfo layoutInfo = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-            .bindingCount = uboLayoutBindings.size(),
-            .pBindings = uboLayoutBindings.data(),
-    };
-
-    CALL_VK(vkCreateDescriptorSetLayout(vkDevice, &layoutInfo, nullptr, &vkDescriptorSetLayout_));
-
-    VkDescriptorSetAllocateInfo allocInfo  {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-            .descriptorSetCount = 1,
-            .pSetLayouts = &vkDescriptorSetLayout_,
-            .descriptorPool = device->GetDescriptorPool()
-    };
-
-    CALL_VK(vkAllocateDescriptorSets(device->GetDevice(), &allocInfo, &vkDescriptorSet_));
-
     // setup rasterization info
 
     VkPipelineRasterizationStateCreateInfo rasterizer = {
@@ -204,18 +173,6 @@ VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const std::vector<RHI::Pi
             .pDynamicStates = dynamicStates,
     };
 
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo = {
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-            .setLayoutCount = 1, // Optional
-            .pSetLayouts = &vkDescriptorSetLayout_, // Optional
-            .pushConstantRangeCount = 0, // Optional
-            .pPushConstantRanges = nullptr, // Optional
-    };
-
-    if (vkCreatePipelineLayout(vkDevice, &pipelineLayoutInfo, nullptr, &vkPipelineLayout_) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create pipeline layout!");
-    }
-
     VkGraphicsPipelineCreateInfo pipelineInfo = {
             .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
             .stageCount = (std::uint32_t)shaderStages.size(),
@@ -225,7 +182,7 @@ VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const std::vector<RHI::Pi
             .pViewportState = &viewportState,
             .pRasterizationState = &rasterizer,
             .pMultisampleState = &multisampling,
-            pipelineInfo.pDepthStencilState = nullptr, // Optional
+            .pDepthStencilState = nullptr, // Optional
             .pColorBlendState = &colorBlending,
             .pDynamicState = nullptr, // Optional
 

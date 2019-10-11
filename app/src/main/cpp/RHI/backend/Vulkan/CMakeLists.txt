@@ -15,11 +15,11 @@ add_library( # Sets the name of the library.
 
         ${HEADS}
         ${SRCS}
-        ./VKUniformBufferObject.cpp
         ./VKTexture.cpp
         ./VKSampler.cpp
         ./VKBindGroupLayout.cpp
         ./VKPipelineLayout.cpp
         ./VKBindingResources.cpp
         ./VKBindGroup.cpp
+        ./VKTextureView.cpp
         )

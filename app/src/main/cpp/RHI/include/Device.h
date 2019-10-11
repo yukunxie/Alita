@@ -11,9 +11,13 @@
 #include "Shader.h"
 #include "RenderPass.h"
 #include "Flags.h"
-#include "UniformBufferObject.h"
 #include "Texture.h"
+#include "TextureView.h"
 #include "Sampler.h"
+#include "BindGroup.h"
+#include "BindGroupLayout.h"
+#include "PipelineLayout.h"
+#include "BindingResource.h"
 
 #include <vector>
 
@@ -29,29 +33,35 @@ public:
 
     virtual void WriteBuffer(const Buffer* buffer, const void* data, std::uint32_t offset, std::uint32_t size) = 0;
 
-    virtual GraphicPipelineHnd CreateGraphicPipeline(const std::vector<RHI::PipelineShaderStageCreateInfo>& shaderStageInfos
-            , const PipelineVertexInputStateCreateInfo& vertexInputInfo
-            , const PipelineViewportStateCreateInfo& viewportState) = 0;
+    virtual GraphicPipelineHnd CreateGraphicPipeline(const GraphicPipelineCreateInfo& graphicPipelineCreateInfo) = 0;
 
     virtual ShaderHnd CreateShader(const std::vector<std::uint8_t>& shaderSource) = 0;
 
     virtual RenderPassHnd CreateRenderPass(const RenderPassCreateInfo& createInfo) = 0;
 
-    virtual UniformBufferObjectHnd CreateUniformBufferObject(const GraphicPipeline* graphicPipeline) = 0;
-
-    virtual UniformBufferObjectHnd CreateUniformBufferObject(const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size) = 0;
-
-    virtual UniformBufferObjectHnd CreateUniformBufferObject(const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint, const Texture* texture, const Sampler* sampler) = 0;
-
     virtual TextureHnd CreateTexture(const ImageCreateInfo& imageCreateInfo) = 0;
 
     virtual SamplerHnd CreateSampler() = 0;
 
+    virtual TextureViewHnd CreateTextureView(const Texture* texture) = 0;
+
+    virtual BindGroupLayoutHnd CreateBindGroupLayout(const DescriptorSetLayoutCreateInfo& layoutCreateInfo) = 0;
+
+    virtual BindGroupHnd CreateBindGroup(const BindGroupLayout* bindGroupLayout, const std::vector<BindingResource*>& bindResources) = 0;
+
+    virtual PipelineLayoutHnd CreatePipelineLayout(const std::vector<BindGroupLayout*>& bindGroupLayouts) = 0;
+
+    virtual BindingResourceHnd CreateBindingResourceBuffer(std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size) = 0;
+
+    virtual BindingResourceHnd CreateBindingResourceCombined(std::uint32_t bindingPoint, const TextureView* textureView, const Sampler* sampler) = 0;
+
+    virtual void WriteBindGroup(const BindGroup* bindGroup) = 0;
+
+    virtual void BindBindGroupToGraphicPipeline(const BindGroup* bindGroup, const GraphicPipeline* graphicPipeline) = 0;
+
     virtual void BindVertexBuffer(BufferHnd buffer, std::uint32_t offset) = 0;
 
     virtual void BindIndexBuffer(BufferHnd buffer, std::uint32_t offset) = 0;
-
-    virtual void BindUniformBufferObject(const UniformBufferObject* ubo, const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint) = 0;
 
     virtual void Draw(std::uint32_t vertexCount
             , std::uint32_t instanceCount
@@ -69,8 +79,6 @@ public:
     virtual void EndRenderpass() = 0;
 
     virtual Viewport GetViewport() = 0;
-
-    virtual void UpdateUniformBufferObject(UniformBufferObject* ubo, const Buffer* buffer, std::uint32_t offset, std::uint32_t size) = 0;
 
     virtual Scissor  GetScissor()  = 0;
 public:

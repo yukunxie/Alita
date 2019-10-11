@@ -70,23 +70,31 @@ public:
 
     virtual void WriteBuffer(const Buffer* buffer, const void* data, std::uint32_t offset, std::uint32_t size) override;
 
-    virtual GraphicPipelineHnd CreateGraphicPipeline(const std::vector<RHI::PipelineShaderStageCreateInfo>& shaderStageInfos
-            , const PipelineVertexInputStateCreateInfo& vertexInputInfo
-            , const PipelineViewportStateCreateInfo& viewportState) override;
+    virtual GraphicPipelineHnd CreateGraphicPipeline(const GraphicPipelineCreateInfo& graphicPipelineCreateInfo) override;
 
     virtual ShaderHnd CreateShader(const std::vector<std::uint8_t>& shaderSource) override;
 
     virtual RenderPassHnd CreateRenderPass(const RenderPassCreateInfo& createInfo) override;
 
-    virtual UniformBufferObjectHnd CreateUniformBufferObject(const GraphicPipeline* graphicPipeline) override;
-
-    virtual UniformBufferObjectHnd CreateUniformBufferObject(const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size) override;
-
-    virtual UniformBufferObjectHnd CreateUniformBufferObject(const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint, const Texture* texture, const Sampler* sampler) override;
-
     virtual TextureHnd CreateTexture(const ImageCreateInfo& imageCreateInfo) override;
 
     virtual SamplerHnd CreateSampler() override ;
+
+    virtual TextureViewHnd CreateTextureView(const Texture* texture) override ;
+
+    virtual BindGroupLayoutHnd CreateBindGroupLayout(const DescriptorSetLayoutCreateInfo& layoutCreateInfo) override ;
+
+    virtual BindGroupHnd CreateBindGroup(const BindGroupLayout* bindGroupLayout, const std::vector<BindingResource*>& bindResources) override ;
+
+    virtual PipelineLayoutHnd CreatePipelineLayout(const std::vector<BindGroupLayout*>& bindGroupLayouts) override ;
+
+    virtual BindingResourceHnd CreateBindingResourceBuffer(std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size) override ;
+
+    virtual BindingResourceHnd CreateBindingResourceCombined(std::uint32_t bindingPoint, const TextureView* textureView, const Sampler* sampler) override ;
+
+    virtual void WriteBindGroup(const BindGroup* bindGroup) override ;
+
+    virtual void BindBindGroupToGraphicPipeline(const BindGroup* bindGroup, const GraphicPipeline* graphicPipeline) override ;
 
     virtual void BeginRenderpass() override;
 
@@ -95,8 +103,6 @@ public:
     virtual void BindVertexBuffer(BufferHnd buffer, std::uint32_t offset) override ;
 
     virtual void BindIndexBuffer(BufferHnd buffer, std::uint32_t offset) override ;
-
-    virtual void BindUniformBufferObject(const UniformBufferObject* ubo, const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint) override;
 
     virtual void Draw(std::uint32_t vertexCount, std::uint32_t instanceCount
             , std::uint32_t firstVertex
@@ -111,8 +117,6 @@ public:
     virtual Viewport GetViewport() override {return viewport_;}
 
     virtual Scissor  GetScissor() override  {return scissor_;}
-
-    virtual void UpdateUniformBufferObject(UniformBufferObject* ubo, const Buffer* buffer, std::uint32_t offset, std::uint32_t size) override;
 
 private:
     void CreateInstance();

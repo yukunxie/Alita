@@ -8,9 +8,13 @@
 #include "VKGraphicPipeline.h"
 #include "VKShader.h"
 #include "VKRenderPass.h"
-#include "VKUniformBufferObject.h"
 #include "VKTexture.h"
 #include "VKSampler.h"
+#include "VKTextureView.h"
+#include "VKPipelineLayout.h"
+#include "VKBindingResources.h"
+#include "VKBindGroupLayout.h"
+#include "VKBindGroup.h"
 
 #include <vector>
 #include <array>
@@ -648,11 +652,9 @@ void VKDevice::CreateCommandBuffers()
     }
 }
 
-GraphicPipelineHnd VKDevice::CreateGraphicPipeline(const std::vector<RHI::PipelineShaderStageCreateInfo>& shaderStageInfos
-        , const PipelineVertexInputStateCreateInfo& vertexInputInfo
-        , const PipelineViewportStateCreateInfo& viewportState)
+GraphicPipelineHnd VKDevice::CreateGraphicPipeline(const GraphicPipelineCreateInfo& graphicPipelineCreateInfo)
 {
-    GraphicPipelineHnd pipeline(new VKGraphicPipeline(this, shaderStageInfos, vertexInputInfo, viewportState));
+    GraphicPipelineHnd pipeline(new VKGraphicPipeline(this, graphicPipelineCreateInfo));
     return pipeline;
 }
 
@@ -667,25 +669,6 @@ RenderPassHnd VKDevice::CreateRenderPass(const RenderPassCreateInfo& createInfo)
     return RenderPassHnd(new VKRenderPass(this, createInfo));
 }
 
-UniformBufferObjectHnd VKDevice::CreateUniformBufferObject(const GraphicPipeline* graphicPipeline)
-{
-    return UniformBufferObjectHnd(new VKUniformBufferObject(this, (const VKGraphicPipeline*)graphicPipeline));
-}
-
-UniformBufferObjectHnd VKDevice::CreateUniformBufferObject(const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size)
-{
-    auto pipeline = (const VKGraphicPipeline*)graphicPipeline;
-    auto ubo = new VKUniformBufferObject(this, pipeline, bindingPoint, buffer, offset, size);
-    return UniformBufferObjectHnd(ubo);
-}
-
-UniformBufferObjectHnd VKDevice::CreateUniformBufferObject(const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint, const Texture* texture, const Sampler* sampler)
-{
-    auto pipeline = (const VKGraphicPipeline*)graphicPipeline;
-    auto ubo = new VKUniformBufferObject(this, pipeline, bindingPoint, texture, sampler);
-    return UniformBufferObjectHnd(ubo);
-}
-
 TextureHnd VKDevice::CreateTexture(const ImageCreateInfo& imageCreateInfo)
 {
     return TextureHnd(new VKTexture(this, imageCreateInfo));
@@ -694,6 +677,47 @@ TextureHnd VKDevice::CreateTexture(const ImageCreateInfo& imageCreateInfo)
 SamplerHnd VKDevice::CreateSampler()
 {
     return SamplerHnd(new VKSampler(this));
+}
+
+TextureViewHnd VKDevice::CreateTextureView(const Texture* texture)
+{
+    return TextureViewHnd(new VKTextureView(this, (VKTexture*)texture));
+}
+
+BindGroupLayoutHnd VKDevice::CreateBindGroupLayout(const DescriptorSetLayoutCreateInfo& layoutCreateInfo)
+{
+    return BindGroupLayoutHnd(new VKBindGroupLayout(this, layoutCreateInfo));
+}
+
+BindGroupHnd VKDevice::CreateBindGroup(const BindGroupLayout* bindGroupLayout, const std::vector<BindingResource*>& bindingResources)
+{
+    return BindGroupHnd(new VKBindGroup(this, (VKBindGroupLayout*)bindGroupLayout, bindingResources));
+}
+
+PipelineLayoutHnd VKDevice::CreatePipelineLayout(const std::vector<BindGroupLayout*>& bindGroupLayouts)
+{
+    return PipelineLayoutHnd(new VKPipelineLayout(this, bindGroupLayouts));
+}
+
+BindingResourceHnd VKDevice::CreateBindingResourceBuffer(std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size)
+{
+    return BindingResourceHnd(new VKBindingBuffer(bindingPoint, (VKBuffer*)buffer, offset, size));
+}
+
+BindingResourceHnd VKDevice::CreateBindingResourceCombined(std::uint32_t bindingPoint, const TextureView* textureView, const Sampler* sampler)
+{
+    return BindingResourceHnd(new VKBindingCombined(bindingPoint, (VKTextureView*)textureView, (VKSampler*)sampler));
+}
+
+void VKDevice::WriteBindGroup(const BindGroup* bindGroup)
+{
+    ((const VKBindGroup*)bindGroup)->WriteToGPU();
+}
+
+void VKDevice::BindBindGroupToGraphicPipeline(const BindGroup* bindGroup, const GraphicPipeline* graphicPipeline)
+{
+    auto vkGraphicPipeline = (const VKGraphicPipeline*)graphicPipeline;
+    ((const VKBindGroup*)bindGroup)->BindToCommandBuffer(commandBuffers_[imageIndex_], vkGraphicPipeline->GetPipelineLayout());
 }
 
 void VKDevice::SetupSynchronizeObjects()
@@ -890,12 +914,6 @@ void VKDevice::BindIndexBuffer(BufferHnd buffer, std::uint32_t offset)
     vkCmdBindIndexBuffer(commandBuffers_[imageIndex_], vkBuffer, offset, VK_INDEX_TYPE_UINT16);
 }
 
-void VKDevice::BindUniformBufferObject(const UniformBufferObject* ubo, const GraphicPipeline* graphicPipeline, std::uint32_t bindingPoint)
-{
-    VkPipelineLayout pipelineLayout = ((const VKGraphicPipeline*)graphicPipeline)->GetPipelineLayout();
-    ((const VKUniformBufferObject*)ubo)->Bind(commandBuffers_[imageIndex_], pipelineLayout);
-}
-
 void VKDevice::Draw(std::uint32_t vertexCount, std::uint32_t instanceCount, std::uint32_t firstVertex, std::uint32_t firstInstance)
 {
     vkCmdDraw(commandBuffers_[imageIndex_], vertexCount, instanceCount, firstVertex, firstInstance);
@@ -917,9 +935,5 @@ void VKDevice::BindGraphicPipeline(GraphicPipelineHnd graphicPipeline)
     pipeline->Bind(commandBuffers_[imageIndex_]);
 }
 
-void VKDevice::UpdateUniformBufferObject(UniformBufferObject* ubo, const Buffer* buffer, std::uint32_t offset, std::uint32_t size)
-{
-    ((VKUniformBufferObject*)ubo)->UseUniformBufferObject();
-}
 
 NS_RHI_END

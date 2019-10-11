@@ -27,10 +27,16 @@ public:
     ~VKBindGroup();
 
     VkDescriptorSet GetNative() const {return vkDescriptorSet_;}
+
+    void WriteToGPU() const;
+
+    void BindToCommandBuffer(VkCommandBuffer vkCommandBuffer, VkPipelineLayout vkPipelineLayout) const;
+
 private:
-    VkDevice        vkDevice_;
-    VkDescriptorSet vkDescriptorSet_;
-    std::vector<const BindingResource* > bindingResources_;
+    VkDevice                    vkDevice_           = nullptr;
+    VkDescriptorSet             vkDescriptorSet_    = 0L;
+
+    std::vector<const BindingResource*> bindingResources_;
 };
 
 NS_RHI_END

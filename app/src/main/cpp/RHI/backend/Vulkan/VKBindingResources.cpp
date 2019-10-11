@@ -7,10 +7,12 @@
 
 NS_RHI_BEGIN
 
-VKBindingBuffer::VKBindingBuffer()
-    : BindingResource(BindingResourceType::BUFFER)
+VKBindingBuffer::VKBindingBuffer(std::uint32_t bindingPoint, const VKBuffer* buffer, std::uint32_t offset, std::uint32_t size)
+    : BindingResource(BindingResourceType::BUFFER, bindingPoint)
+    , buffer_(buffer)
+    , offset_(offset)
+    , size_  (size)
 {
-
 }
 
 VKBindingBuffer::~VKBindingBuffer()
@@ -41,8 +43,10 @@ VKBindingTextureView::~VKBindingTextureView()
 
 }
 
-VKBindingCombined::VKBindingCombined()
-        : BindingResource(BindingResourceType::COMBINED_SAMPLER_TEXTUREVIEW)
+VKBindingCombined::VKBindingCombined(std::uint32_t bindingPoint, const VKTextureView* textureView, const VKSampler* sampler)
+        : BindingResource(BindingResourceType::COMBINED_SAMPLER_TEXTUREVIEW, bindingPoint)
+        , textureView_(textureView)
+        , sampler_ (sampler)
 {
 
 }

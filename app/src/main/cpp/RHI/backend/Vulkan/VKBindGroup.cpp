@@ -3,6 +3,9 @@
 //
 
 #include "VKBindGroup.h"
+#include "VKBuffer.h"
+#include "VKTextureView.h"
+#include "VKSampler.h"
 
 
 NS_RHI_BEGIN
@@ -29,6 +32,69 @@ VKBindGroup::VKBindGroup(VKDevice* device, const VKBindGroupLayout* bindGroupLay
 VKBindGroup::~VKBindGroup()
 {
     // TODO release vulkan resource
+}
+
+void VKBindGroup::WriteToGPU() const
+{
+    for (const BindingResource* resource : bindingResources_)
+    {
+        if (resource->GetResourceType() == BindingResourceType::BUFFER)
+        {
+            auto* buffer = (const VKBindingBuffer*)resource;
+            VkDescriptorBufferInfo bufferInfo{
+                    .buffer = buffer->buffer_->GetNative(),
+                    .offset = buffer->offset_,
+                    .range  = buffer->size_,
+            };
+
+            VkWriteDescriptorSet descriptorWrite{
+                    .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                    .dstSet = vkDescriptorSet_,
+                    .dstBinding = buffer->GetBindingPoint(),
+                    .dstArrayElement = 0,
+                    .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .pBufferInfo = &bufferInfo,
+                    .pImageInfo = nullptr, // optional
+                    .pTexelBufferView = nullptr, // optional
+
+            };
+            vkUpdateDescriptorSets(vkDevice_, 1, &descriptorWrite, 0, nullptr);
+        }
+        else if (resource->GetResourceType() == BindingResourceType::COMBINED_SAMPLER_TEXTUREVIEW)
+        {
+            auto* vkRes = (const VKBindingCombined*)resource;
+
+            VkDescriptorImageInfo imageInfo = {
+                    .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                    .imageView = vkRes->textureView_->GetNative(),
+                    .sampler = vkRes->sampler_->GetNative(),
+            };
+
+            VkWriteDescriptorSet descriptorWrite{
+                    .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                    .dstSet = vkDescriptorSet_,
+                    .dstBinding = vkRes->GetBindingPoint(),
+                    .dstArrayElement = 0,
+                    .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .pBufferInfo = nullptr,
+                    .pImageInfo = &imageInfo, // optional
+                    .pTexelBufferView = nullptr, // optional
+
+            };
+            vkUpdateDescriptorSets(vkDevice_, 1, &descriptorWrite, 0, nullptr);
+        }
+        else
+        {
+            RHI_ASSERT(false);
+        }
+    }
+}
+
+void VKBindGroup::BindToCommandBuffer(VkCommandBuffer vkCommandBuffer, VkPipelineLayout vkPipelineLayout) const
+{
+    vkCmdBindDescriptorSets(vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipelineLayout, 0, 1, &vkDescriptorSet_, 0, nullptr);
 }
 
 NS_RHI_END

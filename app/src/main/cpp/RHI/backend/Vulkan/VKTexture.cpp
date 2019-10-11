@@ -13,6 +13,8 @@ VKTexture::VKTexture(VKDevice* device, const ImageCreateInfo& imageCreateInfo)
     vkDevice_ = device->GetDevice();
     std::uint32_t queueFamilyIndex = device->GetGraphicQueueFamilyIndex();
 
+    vkFormat_ = ToVkFormat(imageCreateInfo.format);
+
     // Check for linear supportability
     VkFormatProperties props;
     bool needBlit = true;
@@ -59,7 +61,7 @@ VKTexture::VKTexture(VKDevice* device, const ImageCreateInfo& imageCreateInfo)
     };
 
     CALL_VK(vkAllocateMemory(vkDevice_, &allocInfo, nullptr, &vkDeviceMemory_));
-    vkBindImageMemory(vkDevice_, vkImage_, vkDeviceMemory_, 0);
+    CALL_VK(vkBindImageMemory(vkDevice_, vkImage_, vkDeviceMemory_, 0));
 
     RHI_ASSERT(imageCreateInfo.format == Format::R8G8B8A8_UNORM);
     VkDeviceSize imageSize = imageCreateInfo.extent.width * imageCreateInfo.extent.height * 4;
@@ -79,27 +81,27 @@ VKTexture::VKTexture(VKDevice* device, const ImageCreateInfo& imageCreateInfo)
 
     SetImageLayout(device);
 
-    VkImageViewCreateInfo viewInfo {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-            .image = vkImage_,
-            .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            .format = ToVkFormat(imageCreateInfo.format),
-            .components = {
-                .r = VK_COMPONENT_SWIZZLE_R,
-                .g = VK_COMPONENT_SWIZZLE_G,
-                .b = VK_COMPONENT_SWIZZLE_B,
-                .a = VK_COMPONENT_SWIZZLE_A,
-            },
-            .subresourceRange = {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .baseArrayLayer = 0,
-                .layerCount = 1,
-            },
-            .flags = 0,
-    };
-    CALL_VK(vkCreateImageView(vkDevice_, &viewInfo, nullptr, &vkImageView_));
+//    VkImageViewCreateInfo viewInfo {
+//            .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+//            .image = vkImage_,
+//            .viewType = VK_IMAGE_VIEW_TYPE_2D,
+//            .format = ToVkFormat(imageCreateInfo.format),
+//            .components = {
+//                .r = VK_COMPONENT_SWIZZLE_R,
+//                .g = VK_COMPONENT_SWIZZLE_G,
+//                .b = VK_COMPONENT_SWIZZLE_B,
+//                .a = VK_COMPONENT_SWIZZLE_A,
+//            },
+//            .subresourceRange = {
+//                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+//                .baseMipLevel = 0,
+//                .levelCount = 1,
+//                .baseArrayLayer = 0,
+//                .layerCount = 1,
+//            },
+//            .flags = 0,
+//    };
+//    CALL_VK(vkCreateImageView(vkDevice_, &viewInfo, nullptr, &vkImageView_));
 }
 
 VKTexture::~VKTexture()

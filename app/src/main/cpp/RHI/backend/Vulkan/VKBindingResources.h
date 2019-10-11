@@ -7,6 +7,8 @@
 
 
 #include "VKDevice.h"
+#include "VKSampler.h"
+#include "VKTextureView.h"
 
 #include "../../include/Macros.h"
 #include "../../include/BindingResource.h"
@@ -17,33 +19,50 @@
 
 NS_RHI_BEGIN
 
-class VKBindingBuffer : public BindingResource
+class VKBindGroup;
+
+class VKBindingBuffer final : public BindingResource
 {
 public:
-    VKBindingBuffer();
-    ~VKBindingBuffer();
+    VKBindingBuffer(std::uint32_t bindingPoint, const VKBuffer* buffer, std::uint32_t offset, std::uint32_t size);
+    virtual ~VKBindingBuffer();
+
+protected:
+    const VKBuffer*     buffer_             = nullptr;
+    std::uint32_t       offset_             = 0;
+    std::uint32_t       size_               = 0;
+
+    friend class VKBindGroup;
 };
 
-class VKBindingSampler : public BindingResource
+class VKBindingSampler final: public BindingResource
 {
 public:
     VKBindingSampler();
-    ~VKBindingSampler();
+    virtual ~VKBindingSampler();
 };
 
-class VKBindingTextureView : public BindingResource
+class VKBindingTextureView final: public BindingResource
 {
 public:
     VKBindingTextureView();
-    ~VKBindingTextureView();
+    virtual ~VKBindingTextureView();
+
+    friend class VKBindGroup;
 };
 
 // combined sampler and texture view
-class VKBindingCombined : public BindingResource
+class VKBindingCombined final: public BindingResource
 {
 public:
-    VKBindingCombined();
-    ~VKBindingCombined();
+    VKBindingCombined(std::uint32_t bindingPoint, const VKTextureView* textureView, const VKSampler* sampler);
+    virtual ~VKBindingCombined();
+
+protected:
+    const VKTextureView*    textureView_  = nullptr;
+    const VKSampler*        sampler_      = nullptr;
+
+    friend class VKBindGroup;
 };
 
 NS_RHI_END

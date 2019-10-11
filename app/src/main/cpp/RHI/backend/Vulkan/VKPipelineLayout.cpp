@@ -6,14 +6,14 @@
 
 NS_RHI_BEGIN
 
-VKPipelineLayout::VKPipelineLayout(VKDevice* device, const std::vector<VKBindGroupLayout*> bindGroupLayouts)
+VKPipelineLayout::VKPipelineLayout(VKDevice* device, const std::vector<BindGroupLayout*>& bindGroupLayouts)
 {
     vkDevice_ = device->GetDevice();
 
     std::vector<VkDescriptorSetLayout> setLayouts;
-    for (const VKBindGroupLayout* bindGroupLayout: bindGroupLayouts)
+    for (const BindGroupLayout* bindGroupLayout: bindGroupLayouts)
     {
-        setLayouts.push_back(bindGroupLayout->GetNative());
+        setLayouts.push_back(((VKBindGroupLayout*)bindGroupLayout)->GetNative());
     }
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {

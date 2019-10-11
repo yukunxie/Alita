@@ -12,8 +12,8 @@
 #include "aux/Aux.h"
 #include "../drivers/vulkan/vulkan_wrapper.h"
 #include "RHI/backend/Vulkan/VKDevice.h"
-#include "RHI/include/GraphicPipleine.h"
-#include "RHI/include/RenderPass.h"
+
+#include "RHI/include/RHI.h"
 
 class RealRenderer
 {
@@ -41,10 +41,14 @@ private:
     RHI::BufferHnd          rhiVertexBuffer_    = nullptr;
     RHI::BufferHnd          rhiIndexBuffer_     = nullptr;
     RHI::BufferHnd          rhiUniformBuffer_   = nullptr;
-    RHI::UniformBufferObjectHnd rhiUBO          = nullptr;
+    RHI::BindGroupHnd       rhiBindGroup_        = nullptr;
+    RHI::BindingResourceHnd rhiBindingBuffer_    = nullptr;
+    RHI::BindingResourceHnd rhiBindingCombined_  = nullptr;
+    RHI::PipelineLayoutHnd  rhiPipelineLayout_  = nullptr;
+    RHI::BindGroupLayoutHnd rhiBindGroupLayout_  = nullptr;
     RHI::TextureHnd         rhiTexture_         = nullptr;
+    RHI::TextureViewHnd     rhiTextureView_     = nullptr;
     RHI::SamplerHnd         rhiSampler_         = nullptr;
-    RHI::UniformBufferObjectHnd rhiUBOSampler   = nullptr;
     RHI::GraphicPipelineHnd rhiGraphicPipeline_ = nullptr;
     RHI::ShaderHnd          rhiVertShader_      = nullptr;
     RHI::ShaderHnd          rhiFragShader_      = nullptr;

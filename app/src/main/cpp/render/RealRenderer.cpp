@@ -16,6 +16,8 @@
 #include "../external/glm/gtx/closest_point.inl"
 #include "../aux/AFileSystem.h"
 
+#include "RHI/include/RHI.h"
+
 #include "external/stb/stb_image.h"
 
 //
@@ -148,6 +150,30 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
             }
     };
 
+    //
+
+    RHI::DescriptorSetLayoutCreateInfo layoutCreateInfo{
+        .bindings = {
+              RHI::DescriptorSetLayoutBinding {
+                  .binding = 0,
+                  .descriptorCount = 1,
+                  .descriptorType = RHI::DescriptorType::UNIFORM_BUFFER,
+                  .stageFlags = (std::uint32_t)RHI::ShaderStageFlagBits::VERTEX_BIT
+              },
+              RHI::DescriptorSetLayoutBinding {
+                      .binding = 1,
+                      .descriptorCount = 1,
+                      .descriptorType = RHI::DescriptorType::COMBINED_IMAGE_SAMPLER,
+                      .stageFlags = (std::uint32_t)RHI::ShaderStageFlagBits::FRAGMENT_BIT
+              },
+        }
+    };
+    rhiBindGroupLayout_ = rhiDevice_->CreateBindGroupLayout(layoutCreateInfo);
+
+    rhiPipelineLayout_ = rhiDevice_->CreatePipelineLayout({rhiBindGroupLayout_.get()});
+
+//    rhiBindGroup_ = rhiDevice_->CreateBindGroup(rhiBindGroupLayout_, )
+
     // Step 2. setup vertex attribute info
 
     RHI::PipelineVertexInputStateCreateInfo vertexInputInfo = {
@@ -208,9 +234,16 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
             .scissors  = std::move(scissors),
     };
 
-    // final, create graphic pipeline state.
+    // final, create graphic pipeline state.create
 
-    rhiGraphicPipeline_ = rhiDevice_->CreateGraphicPipeline(shaderStageInfos, vertexInputInfo, viewportState);
+    RHI::GraphicPipelineCreateInfo graphicPipelineCreateInfo {
+            .pPipelineLayout = rhiPipelineLayout_.get(),
+            .viewportState = viewportState,
+            .shaderStageInfos = shaderStageInfos,
+            .vertexInputInfo = vertexInputInfo,
+    };
+
+    rhiGraphicPipeline_ = rhiDevice_->CreateGraphicPipeline(graphicPipelineCreateInfo);
 
     // ------------ End setup GraphicPipeline object ---------------
 
@@ -254,36 +287,18 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     };
 
     rhiTexture_ = rhiDevice_->CreateTexture(imageCreateInfo);
+    rhiTextureView_ = rhiDevice_->CreateTextureView(rhiTexture_.get());
+
     stbi_image_free(pixels);
 
     rhiSampler_ = rhiDevice_->CreateSampler();
 
     // setup UBO
+    rhiBindingBuffer_ = rhiDevice_->CreateBindingResourceBuffer(0, rhiUniformBuffer_.get(), 0, sizeof(UniformBufferObject));
+    rhiBindingCombined_ = rhiDevice_->CreateBindingResourceCombined(1, rhiTextureView_.get(), rhiSampler_.get());
 
-    rhiUBOSampler = rhiDevice_->CreateUniformBufferObject(rhiGraphicPipeline_.get(), 1, rhiTexture_.get(), rhiSampler_.get());
-    rhiDevice_->UpdateUniformBufferObject(rhiUBOSampler.get(), nullptr, 0, 0);
-
-    rhiUBO = rhiDevice_->CreateUniformBufferObject(rhiGraphicPipeline_.get(), 0, rhiUniformBuffer_.get(), 0, sizeof(UniformBufferObject));
-    rhiDevice_->UpdateUniformBufferObject(rhiUBO.get(), rhiUniformBuffer_.get(), 0, 0);
-
-//    VkDescriptorBufferInfo bufferInfo{
-//            .buffer = ((RHI::VKBuffer*)rhiUBO)->GetNative(),
-//            .offset = 0,
-//            .range  = sizeof(UniformBufferObject),
-//    };
-//
-//    VkWriteDescriptorSet descriptorWrite{
-//            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-//            .dstSet = vkDescriptorSet_,
-//            .dstBinding = bindingPoint_,
-//            .dstArrayElement = 0,
-//            .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-//            .descriptorCount = 1,
-//            .pBufferInfo = &bufferInfo,
-//            .pImageInfo = nullptr, // optional
-//            .pTexelBufferView = nullptr, // optional
-//
-//    };
+    rhiBindGroup_ = rhiDevice_->CreateBindGroup(rhiBindGroupLayout_.get(), {rhiBindingBuffer_.get(), rhiBindingCombined_.get()});
+    rhiDevice_->WriteBindGroup(rhiBindGroup_.get());
 
     return true;
 }
@@ -301,9 +316,6 @@ void RealRenderer::testRotate()
     ubo.proj[1][1] *= -1;
 
     rhiDevice_->WriteBuffer(rhiUniformBuffer_.get(), &ubo, 0, sizeof(UniformBufferObject));
-//    rhiDevice_->UpdateUniformBufferObject(rhiUBO.get(), rhiUniformBuffer_.get(), 0, sizeof(UniformBufferObject));
-
-//    rhiDevice_->UpdateUniformBufferObject(rhiUBOSampler.get(), nullptr, 0, 0);
 }
 
 void RealRenderer::drawFrame()
@@ -313,9 +325,7 @@ void RealRenderer::drawFrame()
     rhiDevice_->BindGraphicPipeline(rhiGraphicPipeline_);
     rhiDevice_->BindVertexBuffer(rhiVertexBuffer_, 0);
     rhiDevice_->BindIndexBuffer(rhiIndexBuffer_, 0);
-    rhiDevice_->BindUniformBufferObject(rhiUBO.get(), rhiGraphicPipeline_.get(), 0);
-    rhiDevice_->UpdateUniformBufferObject(rhiUBOSampler.get(), nullptr, 0, 0);
-//    rhiDevice_->BindUniformBufferObject(rhiUBOSampler.get(), rhiGraphicPipeline_.get(), 1);
+    rhiDevice_->BindBindGroupToGraphicPipeline(rhiBindGroup_.get(), rhiGraphicPipeline_.get());
     rhiDevice_->DrawIndxed(6, 0);
 //    rhiDevice_->Draw(3, 0);
     rhiDevice_->EndRenderpass();

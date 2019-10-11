@@ -38,20 +38,20 @@ private:
     static RealRenderer *instance_;
 
     RHI::VKDevice*          rhiDevice_          = nullptr;
-    RHI::BufferHnd          rhiVertexBuffer_    = nullptr;
-    RHI::BufferHnd          rhiIndexBuffer_     = nullptr;
-    RHI::BufferHnd          rhiUniformBuffer_   = nullptr;
-    RHI::BindGroupHnd       rhiBindGroup_        = nullptr;
-    RHI::BindingResourceHnd rhiBindingBuffer_    = nullptr;
-    RHI::BindingResourceHnd rhiBindingCombined_  = nullptr;
-    RHI::PipelineLayoutHnd  rhiPipelineLayout_  = nullptr;
-    RHI::BindGroupLayoutHnd rhiBindGroupLayout_  = nullptr;
-    RHI::TextureHnd         rhiTexture_         = nullptr;
-    RHI::TextureViewHnd     rhiTextureView_     = nullptr;
-    RHI::SamplerHnd         rhiSampler_         = nullptr;
-    RHI::GraphicPipelineHnd rhiGraphicPipeline_ = nullptr;
-    RHI::ShaderHnd          rhiVertShader_      = nullptr;
-    RHI::ShaderHnd          rhiFragShader_      = nullptr;
-    RHI::RenderPassHnd      rhiRenderPass_      = nullptr;
+    RHI::Buffer*            rhiVertexBuffer_    = nullptr;
+    RHI::Buffer*            rhiIndexBuffer_     = nullptr;
+    RHI::Buffer*            rhiUniformBuffer_   = nullptr;
+    RHI::BindGroup*       rhiBindGroup_        = nullptr;
+    RHI::BindingResource* rhiBindingBuffer_    = nullptr;
+    RHI::BindingResource* rhiBindingCombined_  = nullptr;
+    RHI::PipelineLayout*  rhiPipelineLayout_  = nullptr;
+    RHI::BindGroupLayout* rhiBindGroupLayout_  = nullptr;
+    RHI::Texture*         rhiTexture_         = nullptr;
+    RHI::TextureView*     rhiTextureView_     = nullptr;
+    RHI::Sampler*         rhiSampler_         = nullptr;
+    RHI::GraphicPipeline* rhiGraphicPipeline_ = nullptr;
+    RHI::Shader*          rhiVertShader_      = nullptr;
+    RHI::Shader*          rhiFragShader_      = nullptr;
+    RHI::RenderPass*      rhiRenderPass_      = nullptr;
 };
 #endif //ALITA_ALITA_H

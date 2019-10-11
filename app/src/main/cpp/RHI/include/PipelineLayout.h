@@ -6,15 +6,11 @@
 #define ALITA_PIPELINELAYOUT_H
 
 #include "Macros.h"
-#include <memory>
+#include "RHIObjectBase.h"
 
 NS_RHI_BEGIN
 
-class PipelineLayout;
-
-typedef std::shared_ptr<PipelineLayout> PipelineLayoutHnd;
-
-class PipelineLayout
+class PipelineLayout : public RHIObjectBase
 {
 public:
     virtual ~PipelineLayout(){}

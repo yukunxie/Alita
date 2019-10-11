@@ -6,16 +6,15 @@
 #define ALITA_TEXTURE_H
 
 #include "Macros.h"
+#include "RHIObjectBase.h"
 
-#include <memory>
+
 
 NS_RHI_BEGIN
 
 class Texture;
 
-typedef std::shared_ptr<Texture> TextureHnd;
-
-class Texture
+class Texture : public  RHIObjectBase
 {
 public:
     virtual ~Texture()

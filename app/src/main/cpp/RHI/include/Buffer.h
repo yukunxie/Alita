@@ -6,17 +6,17 @@
 #define ALITA_BUFFER_H
 
 #include "Macros.h"
-#include <memory>
+#include "RHIObjectBase.h"
+
+
 
 NS_RHI_BEGIN
 
 class Buffer;
 
-typedef std::shared_ptr<Buffer> BufferHnd;
-
-class Buffer
+class Buffer : public RHIObjectBase
 {
-public:
+protected:
     virtual ~Buffer(){}
 };
 

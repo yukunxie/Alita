@@ -47,13 +47,17 @@ VKBuffer::VKBuffer(VKDevice* device, BufferUsageFlagBits usageFlagBits, SharingM
     CALL_VK(vkBindBufferMemory(vkDevice_, vkBuffer_, vkBufferMemory_, 0));
 }
 
+VKBuffer::~VKBuffer()
+{
+    // TODO release vulkan resource.
+}
+
 void VKBuffer::UpdateBuffer(const void* data, std::uint32_t offset, std::uint32_t size)
 {
     void* accessPointer;
     CALL_VK(vkMapMemory(vkDevice_, vkBufferMemory_, offset, size, 0, &accessPointer));
     memcpy(accessPointer, data, (size_t) size);
     vkUnmapMemory(vkDevice_, vkBufferMemory_);
-//    CALL_VK(vkBindBufferMemory(vkDevice_, vkBuffer_, vkBufferMemory_, 0));
 }
 
 NS_RHI_END

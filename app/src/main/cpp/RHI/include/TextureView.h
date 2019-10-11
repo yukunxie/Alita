@@ -6,16 +6,15 @@
 #define ALITA_TEXTUREVIEW_H
 
 #include "Macros.h"
+#include "RHIObjectBase.h"
 
-#include <memory>
+
 
 NS_RHI_BEGIN
 
 class TextureView;
 
-typedef std::shared_ptr<TextureView> TextureViewHnd;
-
-class TextureView
+class TextureView : public RHIObjectBase
 {
 public:
     virtual ~TextureView()

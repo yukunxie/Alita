@@ -6,15 +6,11 @@
 #define ALITA_BINDGROUP_H
 
 #include "Macros.h"
-#include <memory>
+#include "RHIObjectBase.h"
 
 NS_RHI_BEGIN
 
-class BindGroup;
-
-typedef std::shared_ptr<BindGroup> BindGroupHnd;
-
-class BindGroup
+class BindGroup : public RHIObjectBase
 {
 public:
     virtual ~BindGroup(){}

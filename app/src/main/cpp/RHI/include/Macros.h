@@ -12,6 +12,17 @@
 
 #define RHI_ASSERT(cond) assert(cond)
 
+#define RHI_SAFE_RETAIN(obj)    \
+do {                            \
+if (obj) obj->Retain();         \
+} while (0)
+
+#define RHI_SAFE_RELEASE(obj)   \
+do {                            \
+if (obj) obj->Release();        \
+} while (0)
+
+#define RHI_CAST(TYPE, obj) (static_cast<TYPE>(obj))
 
 // Android log function wrappers
 static const char *kTAG = "RHI";

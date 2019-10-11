@@ -6,15 +6,11 @@
 #define ALITA_BINDGROUPLAYOUT_H
 
 #include "Macros.h"
-#include <memory>
+#include "RHIObjectBase.h"
 
 NS_RHI_BEGIN
 
-class BindGroupLayout;
-
-typedef std::shared_ptr<BindGroupLayout> BindGroupLayoutHnd;
-
-class BindGroupLayout
+class BindGroupLayout : public RHIObjectBase
 {
 public:
     virtual ~BindGroupLayout(){}

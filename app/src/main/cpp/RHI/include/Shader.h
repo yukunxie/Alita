@@ -7,16 +7,15 @@
 
 
 #include "Macros.h"
+#include "RHIObjectBase.h"
 
-#include <memory>
+
 
 NS_RHI_BEGIN
 
 class Shader;
 
-typedef std::shared_ptr<Shader> ShaderHnd;
-
-class Shader
+class Shader : public  RHIObjectBase
 {
 public:
     virtual ~Shader()

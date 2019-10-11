@@ -6,16 +6,15 @@
 #define ALITA_SAMPLER_H
 
 #include "Macros.h"
+#include "RHIObjectBase.h"
 
-#include <memory>
+
 
 NS_RHI_BEGIN
 
 class Sampler;
 
-typedef std::shared_ptr<Sampler> SamplerHnd;
-
-class Sampler
+class Sampler : public  RHIObjectBase
 {
 public:
     virtual ~Sampler()

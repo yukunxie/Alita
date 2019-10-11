@@ -6,8 +6,7 @@
 #define ALITA_BINDINGRESOURCE_H
 
 #include "Macros.h"
-#include "../../../../../../../../../Library/Android/sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/c++/v1/cstdint"
-#include <memory>
+#include "RHIObjectBase.h"
 
 NS_RHI_BEGIN
 
@@ -22,9 +21,7 @@ enum class BindingResourceType
     COMBINED_SAMPLER_TEXTUREVIEW,
 };
 
-typedef std::shared_ptr<BindingResource> BindingResourceHnd;
-
-class BindingResource
+class BindingResource : public  RHIObjectBase
 {
 public:
     BindingResource(BindingResourceType bindingResourceType, std::uint32_t bindingPoint = 0)

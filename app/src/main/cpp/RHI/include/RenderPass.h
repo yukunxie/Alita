@@ -6,15 +6,11 @@
 #define ALITA_RENDERPASS_H
 
 #include "Macros.h"
-#include <memory>
+#include "RHIObjectBase.h"
 
 NS_RHI_BEGIN
 
-class RenderPass;
-
-typedef std::shared_ptr<RenderPass> RenderPassHnd;
-
-class RenderPass
+class RenderPass : public RHIObjectBase
 {
 public:
     virtual ~RenderPass(){}

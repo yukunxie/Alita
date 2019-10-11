@@ -139,13 +139,13 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     std::vector<RHI::PipelineShaderStageCreateInfo> shaderStageInfos = {
             RHI::PipelineShaderStageCreateInfo {
                 .stage = RHI::ShaderStageFlagBits::VERTEX_BIT,
-                .shader = rhiVertShader_.get(),
+                .shader = rhiVertShader_,
                 .entryName = "main"
             },
 
             RHI::PipelineShaderStageCreateInfo {
                 .stage = RHI::ShaderStageFlagBits::FRAGMENT_BIT,
-                .shader = rhiFragShader_.get(),
+                .shader = rhiFragShader_,
                 .entryName = "main"
             }
     };
@@ -170,7 +170,7 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     };
     rhiBindGroupLayout_ = rhiDevice_->CreateBindGroupLayout(layoutCreateInfo);
 
-    rhiPipelineLayout_ = rhiDevice_->CreatePipelineLayout({rhiBindGroupLayout_.get()});
+    rhiPipelineLayout_ = rhiDevice_->CreatePipelineLayout({rhiBindGroupLayout_});
 
 //    rhiBindGroup_ = rhiDevice_->CreateBindGroup(rhiBindGroupLayout_, )
 
@@ -237,7 +237,7 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     // final, create graphic pipeline state.create
 
     RHI::GraphicPipelineCreateInfo graphicPipelineCreateInfo {
-            .pPipelineLayout = rhiPipelineLayout_.get(),
+            .pPipelineLayout = rhiPipelineLayout_,
             .viewportState = viewportState,
             .shaderStageInfos = shaderStageInfos,
             .vertexInputInfo = vertexInputInfo,
@@ -287,18 +287,18 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     };
 
     rhiTexture_ = rhiDevice_->CreateTexture(imageCreateInfo);
-    rhiTextureView_ = rhiDevice_->CreateTextureView(rhiTexture_.get());
+    rhiTextureView_ = rhiDevice_->CreateTextureView(rhiTexture_);
 
     stbi_image_free(pixels);
 
     rhiSampler_ = rhiDevice_->CreateSampler();
 
     // setup UBO
-    rhiBindingBuffer_ = rhiDevice_->CreateBindingResourceBuffer(0, rhiUniformBuffer_.get(), 0, sizeof(UniformBufferObject));
-    rhiBindingCombined_ = rhiDevice_->CreateBindingResourceCombined(1, rhiTextureView_.get(), rhiSampler_.get());
+    rhiBindingBuffer_ = rhiDevice_->CreateBindingResourceBuffer(0, rhiUniformBuffer_, 0, sizeof(UniformBufferObject));
+    rhiBindingCombined_ = rhiDevice_->CreateBindingResourceCombined(1, rhiTextureView_, rhiSampler_);
 
-    rhiBindGroup_ = rhiDevice_->CreateBindGroup(rhiBindGroupLayout_.get(), {rhiBindingBuffer_.get(), rhiBindingCombined_.get()});
-    rhiDevice_->WriteBindGroup(rhiBindGroup_.get());
+    rhiBindGroup_ = rhiDevice_->CreateBindGroup(rhiBindGroupLayout_, {rhiBindingBuffer_, rhiBindingCombined_});
+    rhiDevice_->WriteBindGroup(rhiBindGroup_);
 
     return true;
 }
@@ -315,7 +315,7 @@ void RealRenderer::testRotate()
     ubo.proj = glm::perspective(glm::radians(45.0f), rhiDevice_->GetViewport().width / (float) rhiDevice_->GetViewport().height, 0.1f, 10.0f);
     ubo.proj[1][1] *= -1;
 
-    rhiDevice_->WriteBuffer(rhiUniformBuffer_.get(), &ubo, 0, sizeof(UniformBufferObject));
+    rhiDevice_->WriteBuffer(rhiUniformBuffer_, &ubo, 0, sizeof(UniformBufferObject));
 }
 
 void RealRenderer::drawFrame()
@@ -325,7 +325,7 @@ void RealRenderer::drawFrame()
     rhiDevice_->BindGraphicPipeline(rhiGraphicPipeline_);
     rhiDevice_->BindVertexBuffer(rhiVertexBuffer_, 0);
     rhiDevice_->BindIndexBuffer(rhiIndexBuffer_, 0);
-    rhiDevice_->BindBindGroupToGraphicPipeline(rhiBindGroup_.get(), rhiGraphicPipeline_.get());
+    rhiDevice_->SetBindGroupToGraphicPipeline(rhiBindGroup_, rhiGraphicPipeline_);
     rhiDevice_->DrawIndxed(6, 0);
 //    rhiDevice_->Draw(3, 0);
     rhiDevice_->EndRenderpass();

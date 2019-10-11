@@ -89,9 +89,10 @@ VKDevice::~VKDevice()
     }
 }
 
-BufferHnd VKDevice::CreateBuffer(BufferUsageFlagBits usageFlagBits, SharingMode sharingMode, std::uint32_t sizeOfBytes, const void* data)
+Buffer* VKDevice::CreateBuffer(BufferUsageFlagBits usageFlagBits, SharingMode sharingMode, std::uint32_t sizeOfBytes, const void* data)
 {
-    BufferHnd buffer(new VKBuffer(this, usageFlagBits, sharingMode, sizeOfBytes, data));
+    Buffer* buffer = new VKBuffer(this, usageFlagBits, sharingMode, sizeOfBytes, data);
+    RHI_SAFE_RETAIN(buffer);
     return buffer;
 }
 
@@ -652,72 +653,93 @@ void VKDevice::CreateCommandBuffers()
     }
 }
 
-GraphicPipelineHnd VKDevice::CreateGraphicPipeline(const GraphicPipelineCreateInfo& graphicPipelineCreateInfo)
+GraphicPipeline* VKDevice::CreateGraphicPipeline(const GraphicPipelineCreateInfo& graphicPipelineCreateInfo)
 {
-    GraphicPipelineHnd pipeline(new VKGraphicPipeline(this, graphicPipelineCreateInfo));
+    GraphicPipeline* pipeline = new VKGraphicPipeline(this, graphicPipelineCreateInfo);
+    RHI_SAFE_RETAIN(pipeline);
     return pipeline;
 }
 
-ShaderHnd VKDevice::CreateShader(const std::vector<std::uint8_t>& shaderSource)
+Shader* VKDevice::CreateShader(const std::vector<std::uint8_t>& shaderSource)
 {
-    ShaderHnd shader(new VKShader(this, shaderSource));
+    Shader* shader = new VKShader(this, shaderSource);
+    RHI_SAFE_RETAIN(shader);
     return shader;
 }
 
-RenderPassHnd VKDevice::CreateRenderPass(const RenderPassCreateInfo& createInfo)
+RenderPass* VKDevice::CreateRenderPass(const RenderPassCreateInfo& createInfo)
 {
-    return RenderPassHnd(new VKRenderPass(this, createInfo));
+    RenderPass* renderPass = new VKRenderPass(this, createInfo);
+    RHI_SAFE_RETAIN(renderPass);
+    return renderPass;
 }
 
-TextureHnd VKDevice::CreateTexture(const ImageCreateInfo& imageCreateInfo)
+Texture* VKDevice::CreateTexture(const ImageCreateInfo& imageCreateInfo)
 {
-    return TextureHnd(new VKTexture(this, imageCreateInfo));
+    Texture* texture = new VKTexture(this, imageCreateInfo);
+    RHI_SAFE_RETAIN(texture);
+    return texture;
 }
 
-SamplerHnd VKDevice::CreateSampler()
+Sampler* VKDevice::CreateSampler()
 {
-    return SamplerHnd(new VKSampler(this));
+    Sampler* sampler = new VKSampler(this);
+    RHI_SAFE_RETAIN(sampler);
+    return sampler;
 }
 
-TextureViewHnd VKDevice::CreateTextureView(const Texture* texture)
+TextureView* VKDevice::CreateTextureView(const Texture* texture)
 {
-    return TextureViewHnd(new VKTextureView(this, (VKTexture*)texture));
+    TextureView* textureView = new VKTextureView(this, (VKTexture*)texture);
+    RHI_SAFE_RETAIN(textureView);
+    return textureView;
 }
 
-BindGroupLayoutHnd VKDevice::CreateBindGroupLayout(const DescriptorSetLayoutCreateInfo& layoutCreateInfo)
+BindGroupLayout* VKDevice::CreateBindGroupLayout(const DescriptorSetLayoutCreateInfo& layoutCreateInfo)
 {
-    return BindGroupLayoutHnd(new VKBindGroupLayout(this, layoutCreateInfo));
+    BindGroupLayout* bindGroupLayout = new VKBindGroupLayout(this, layoutCreateInfo);
+    RHI_SAFE_RETAIN(bindGroupLayout);
+    return bindGroupLayout;
 }
 
-BindGroupHnd VKDevice::CreateBindGroup(const BindGroupLayout* bindGroupLayout, const std::vector<BindingResource*>& bindingResources)
+BindGroup* VKDevice::CreateBindGroup(const BindGroupLayout* bindGroupLayout, const std::vector<BindingResource*>& bindingResources)
 {
-    return BindGroupHnd(new VKBindGroup(this, (VKBindGroupLayout*)bindGroupLayout, bindingResources));
+    BindGroup* bindGroup = new VKBindGroup(this, (VKBindGroupLayout*)bindGroupLayout, bindingResources);
+    RHI_SAFE_RETAIN(bindGroup);
+    return bindGroup;
 }
 
-PipelineLayoutHnd VKDevice::CreatePipelineLayout(const std::vector<BindGroupLayout*>& bindGroupLayouts)
+PipelineLayout* VKDevice::CreatePipelineLayout(const std::vector<BindGroupLayout*>& bindGroupLayouts)
 {
-    return PipelineLayoutHnd(new VKPipelineLayout(this, bindGroupLayouts));
+    PipelineLayout* pipelineLayout = new VKPipelineLayout(this, bindGroupLayouts);
+    RHI_SAFE_RETAIN(pipelineLayout);
+    return pipelineLayout;
 }
 
-BindingResourceHnd VKDevice::CreateBindingResourceBuffer(std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size)
+BindingResource* VKDevice::CreateBindingResourceBuffer(std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size)
 {
-    return BindingResourceHnd(new VKBindingBuffer(bindingPoint, (VKBuffer*)buffer, offset, size));
+    BindingResource* bindingResource = new VKBindingBuffer(bindingPoint, (VKBuffer*)buffer, offset, size);
+    RHI_SAFE_RETAIN(bindingResource);
+    return bindingResource;
 }
 
-BindingResourceHnd VKDevice::CreateBindingResourceCombined(std::uint32_t bindingPoint, const TextureView* textureView, const Sampler* sampler)
+BindingResource* VKDevice::CreateBindingResourceCombined(std::uint32_t bindingPoint, const TextureView* textureView, const Sampler* sampler)
 {
-    return BindingResourceHnd(new VKBindingCombined(bindingPoint, (VKTextureView*)textureView, (VKSampler*)sampler));
+    BindingResource* bindingResource = new VKBindingCombined(bindingPoint, (VKTextureView*)textureView, (VKSampler*)sampler);
+    RHI_SAFE_RETAIN(bindingResource);
+    return bindingResource;
 }
 
 void VKDevice::WriteBindGroup(const BindGroup* bindGroup)
 {
-    ((const VKBindGroup*)bindGroup)->WriteToGPU();
+    RHI_CAST(const VKBindGroup*, bindGroup)->WriteToGPU();
 }
 
-void VKDevice::BindBindGroupToGraphicPipeline(const BindGroup* bindGroup, const GraphicPipeline* graphicPipeline)
+void VKDevice::SetBindGroupToGraphicPipeline(const BindGroup *bindGroup,
+                                             const GraphicPipeline *graphicPipeline)
 {
-    auto vkGraphicPipeline = (const VKGraphicPipeline*)graphicPipeline;
-    ((const VKBindGroup*)bindGroup)->BindToCommandBuffer(commandBuffers_[imageIndex_], vkGraphicPipeline->GetPipelineLayout());
+    auto vkGraphicPipeline = RHI_CAST(const VKGraphicPipeline*, graphicPipeline);
+    RHI_CAST(const VKBindGroup*, bindGroup)->BindToCommandBuffer(commandBuffers_[imageIndex_], vkGraphicPipeline->GetPipelineLayout());
 }
 
 void VKDevice::SetupSynchronizeObjects()
@@ -900,17 +922,17 @@ void VKDevice::EndRenderpass()
     vkQueueWaitIdle(vkQueue_);
 }
 
-void VKDevice::BindVertexBuffer(BufferHnd buffer, std::uint32_t offset)
+void VKDevice::BindVertexBuffer(Buffer* buffer, std::uint32_t offset)
 {
-    VkBuffer vkBuffer = ((VKBuffer*)buffer.get())->GetNative();
+    VkBuffer vkBuffer = ((VKBuffer*)buffer)->GetNative();
     VkBuffer vertexBuffers[] = {vkBuffer};
     VkDeviceSize offsets[] = {offset};
     vkCmdBindVertexBuffers(commandBuffers_[imageIndex_], 0, 1, vertexBuffers, offsets);
 }
 
-void VKDevice::BindIndexBuffer(BufferHnd buffer, std::uint32_t offset)
+void VKDevice::BindIndexBuffer(Buffer* buffer, std::uint32_t offset)
 {
-    VkBuffer vkBuffer = ((VKBuffer*)buffer.get())->GetNative();
+    VkBuffer vkBuffer = ((VKBuffer*)buffer)->GetNative();
     vkCmdBindIndexBuffer(commandBuffers_[imageIndex_], vkBuffer, offset, VK_INDEX_TYPE_UINT16);
 }
 
@@ -929,9 +951,9 @@ void VKDevice::DrawIndxed(std::uint32_t indexCount, std::uint32_t firstIndex)
     vkCmdDrawIndexed(commandBuffers_[imageIndex_], indexCount, 1, firstIndex, 0, 0);
 }
 
-void VKDevice::BindGraphicPipeline(GraphicPipelineHnd graphicPipeline)
+void VKDevice::BindGraphicPipeline(GraphicPipeline* graphicPipeline)
 {
-    VKGraphicPipeline* pipeline = (VKGraphicPipeline*)graphicPipeline.get();
+    VKGraphicPipeline* pipeline = (VKGraphicPipeline*)graphicPipeline;
     pipeline->Bind(commandBuffers_[imageIndex_]);
 }
 

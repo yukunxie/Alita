@@ -28,6 +28,9 @@ public:
 
     void UpdateBuffer(const void* data, std::uint32_t offset, std::uint32_t size);
 
+protected:
+    virtual ~VKBuffer();
+
 private:
     VkDevice        vkDevice_       = nullptr;
     VkBuffer        vkBuffer_       = 0;

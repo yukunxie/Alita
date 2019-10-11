@@ -63,46 +63,47 @@ public:
                         VkPipelineStageFlags destStages);
 
 public:
-    virtual BufferHnd CreateBuffer(BufferUsageFlagBits usageFlagBits
+    virtual Buffer* CreateBuffer(BufferUsageFlagBits usageFlagBits
             , SharingMode sharingMode
             , std::uint32_t sizeOfBytes
             , const void* data) override;
 
     virtual void WriteBuffer(const Buffer* buffer, const void* data, std::uint32_t offset, std::uint32_t size) override;
 
-    virtual GraphicPipelineHnd CreateGraphicPipeline(const GraphicPipelineCreateInfo& graphicPipelineCreateInfo) override;
+    virtual GraphicPipeline* CreateGraphicPipeline(const GraphicPipelineCreateInfo& graphicPipelineCreateInfo) override;
 
-    virtual ShaderHnd CreateShader(const std::vector<std::uint8_t>& shaderSource) override;
+    virtual Shader* CreateShader(const std::vector<std::uint8_t>& shaderSource) override;
 
-    virtual RenderPassHnd CreateRenderPass(const RenderPassCreateInfo& createInfo) override;
+    virtual RenderPass* CreateRenderPass(const RenderPassCreateInfo& createInfo) override;
 
-    virtual TextureHnd CreateTexture(const ImageCreateInfo& imageCreateInfo) override;
+    virtual Texture* CreateTexture(const ImageCreateInfo& imageCreateInfo) override;
 
-    virtual SamplerHnd CreateSampler() override ;
+    virtual Sampler* CreateSampler() override ;
 
-    virtual TextureViewHnd CreateTextureView(const Texture* texture) override ;
+    virtual TextureView* CreateTextureView(const Texture* texture) override ;
 
-    virtual BindGroupLayoutHnd CreateBindGroupLayout(const DescriptorSetLayoutCreateInfo& layoutCreateInfo) override ;
+    virtual BindGroupLayout* CreateBindGroupLayout(const DescriptorSetLayoutCreateInfo& layoutCreateInfo) override ;
 
-    virtual BindGroupHnd CreateBindGroup(const BindGroupLayout* bindGroupLayout, const std::vector<BindingResource*>& bindResources) override ;
+    virtual BindGroup* CreateBindGroup(const BindGroupLayout* bindGroupLayout, const std::vector<BindingResource*>& bindResources) override ;
 
-    virtual PipelineLayoutHnd CreatePipelineLayout(const std::vector<BindGroupLayout*>& bindGroupLayouts) override ;
+    virtual PipelineLayout* CreatePipelineLayout(const std::vector<BindGroupLayout*>& bindGroupLayouts) override ;
 
-    virtual BindingResourceHnd CreateBindingResourceBuffer(std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size) override ;
+    virtual BindingResource* CreateBindingResourceBuffer(std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size) override ;
 
-    virtual BindingResourceHnd CreateBindingResourceCombined(std::uint32_t bindingPoint, const TextureView* textureView, const Sampler* sampler) override ;
+    virtual BindingResource* CreateBindingResourceCombined(std::uint32_t bindingPoint, const TextureView* textureView, const Sampler* sampler) override ;
 
     virtual void WriteBindGroup(const BindGroup* bindGroup) override ;
 
-    virtual void BindBindGroupToGraphicPipeline(const BindGroup* bindGroup, const GraphicPipeline* graphicPipeline) override ;
+    virtual void SetBindGroupToGraphicPipeline(const BindGroup *bindGroup,
+                                               const GraphicPipeline *graphicPipeline) override ;
 
     virtual void BeginRenderpass() override;
 
     virtual void EndRenderpass() override;
 
-    virtual void BindVertexBuffer(BufferHnd buffer, std::uint32_t offset) override ;
+    virtual void BindVertexBuffer(Buffer* buffer, std::uint32_t offset) override ;
 
-    virtual void BindIndexBuffer(BufferHnd buffer, std::uint32_t offset) override ;
+    virtual void BindIndexBuffer(Buffer* buffer, std::uint32_t offset) override ;
 
     virtual void Draw(std::uint32_t vertexCount, std::uint32_t instanceCount
             , std::uint32_t firstVertex
@@ -112,7 +113,7 @@ public:
 
     virtual void DrawIndxed(std::uint32_t indexCount, std::uint32_t firstIndex) override;
 
-    virtual void BindGraphicPipeline(GraphicPipelineHnd graphicPipeline) override;
+    virtual void BindGraphicPipeline(GraphicPipeline* graphicPipeline) override;
 
     virtual Viewport GetViewport() override {return viewport_;}
 

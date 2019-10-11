@@ -25,6 +25,7 @@ android {
             debuggable true
         }
         debug {
+            applicationIdSuffix ".debug"
             debuggable true
         }
         customDebuggableBuildType {

@@ -9,12 +9,11 @@
 #include "Flags.h"
 #include "BindGroupLayout.h"
 #include "PipelineLayout.h"
+#include "RHIObjectBase.h"
 
-#include <memory>
+
 
 NS_RHI_BEGIN
-
-class GraphicPipeline;
 
 typedef struct GraphicPipelineCreateInfo
 {
@@ -25,9 +24,8 @@ typedef struct GraphicPipelineCreateInfo
 
 } GraphicPipelineCreateInfo;
 
-typedef std::shared_ptr<GraphicPipeline> GraphicPipelineHnd;
 
-class GraphicPipeline
+class GraphicPipeline : public  RHIObjectBase
 {
 public:
     virtual ~GraphicPipeline()

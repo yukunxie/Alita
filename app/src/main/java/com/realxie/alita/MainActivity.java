@@ -7,10 +7,13 @@ import android.content.res.AssetManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Surface;
-import android.widget.TextView;
+import android.util.Log;
 
 public class MainActivity extends AppCompatActivity {
+
+    private final static String TAG = MainActivity.class.getSimpleName();
+
+    private VulkanSurfaceView vulkanSurfaceView_ = null;
 
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -26,10 +29,28 @@ public class MainActivity extends AppCompatActivity {
                 new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.INTERNET}, PackageManager.PERMISSION_GRANTED);
 
         // init vulkan context
-        VulkanSurfaceView surfaceView = findViewById(R.id.MainView);
-        initVulkanContextJNI(surfaceView.surfaceHolder.getSurface());
+        vulkanSurfaceView_ = findViewById(R.id.MainView);
+        initVulkanContextJNI(vulkanSurfaceView_.surfaceHolder.getSurface());
 
         setAssetManagerJNI((Context)this, getApplication().getAssets());
+    }
+
+    @Override
+    protected void onResume() {
+        Log.i(TAG, "onResume");
+        super.onResume();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        Log.i(TAG, "onWindowFocusChanged");
+        super.onWindowFocusChanged(hasFocus);
+    }
+
+    @Override
+    protected void onPause() {
+        Log.i(TAG, "onPause");
+        super.onPause();
     }
 
     /**

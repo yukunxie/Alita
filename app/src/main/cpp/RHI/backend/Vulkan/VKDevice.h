@@ -18,6 +18,7 @@ NS_RHI_BEGIN
 class VKBuffer;
 class VKGraphicPipeline;
 class VKShader;
+class VKQueue;
 
 struct SwapChainSupportDetails
 {
@@ -62,6 +63,10 @@ public:
                         VkPipelineStageFlags srcStages,
                         VkPipelineStageFlags destStages);
 
+    VkCommandBuffer GetCommandBuffer() const {return commandBuffers_[imageIndex_];}
+
+    const QueueFamilyIndices& GetQueueFamilyIndices() const {return queueFamilyIndices_;}
+
 public:
     virtual Buffer* CreateBuffer(BufferUsageFlagBits usageFlagBits
             , SharingMode sharingMode
@@ -92,6 +97,10 @@ public:
 
     virtual BindingResource* CreateBindingResourceCombined(std::uint32_t bindingPoint, const TextureView* textureView, const Sampler* sampler) override ;
 
+    virtual Queue* CreateQueue() override;
+
+    virtual CommandEncoder* CreateCommandEncoder() override;
+
     virtual void WriteBindGroup(const BindGroup* bindGroup) override ;
 
     virtual void SetBindGroupToGraphicPipeline(const BindGroup *bindGroup,
@@ -119,6 +128,8 @@ public:
 
     virtual Scissor  GetScissor() override  {return scissor_;}
 
+    virtual Queue* GetQueue() override;
+
 private:
     void CreateInstance();
     void CreateSurface();
@@ -127,7 +138,7 @@ private:
     void CreateSwapchain();
     void CreateRenderPass();
     void CreateFramebuffers();
-    void CreateQueue();
+    void CreateVKQueue();
     void CreateCommandPool();
     void CreateDescriptorPool();
     void CreateCommandBuffers();
@@ -171,6 +182,9 @@ private:
 
     Viewport                        viewport_;
     Scissor                         scissor_;
+
+    // VK*
+    VKQueue*                        queue_      = nullptr;
 
 };
 

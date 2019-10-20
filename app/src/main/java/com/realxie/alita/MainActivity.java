@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         Log.i(TAG, "onResume");
         super.onResume();
+        vulkanSurfaceView_.setPaused(false);
     }
 
     @Override
@@ -51,6 +52,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         Log.i(TAG, "onPause");
         super.onPause();
+        vulkanSurfaceView_.setPaused(true);
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        Log.i(TAG, "onDestroy");
+        super.onDestroy();
+        vulkanSurfaceView_.setExit(true);
     }
 
     /**

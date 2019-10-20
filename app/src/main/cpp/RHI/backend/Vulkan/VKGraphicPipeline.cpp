@@ -196,6 +196,24 @@ VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const GraphicPipelineCrea
 
     if (vkCreateGraphicsPipelines(vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkGraphicsPipeline_) != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics pipeline!"); }
+
+
+//    //
+//    VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {
+//            .sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
+//            .pNext = nullptr,
+//            .flags = 0,
+//            .initialDataSize = 0,
+//            .pInitialData    = nullptr,
+//    };
+//
+//    VkPipelineCache vkPipelineCache_ = 0L;
+//    VkResult ret =  vkCreatePipelineCache(vkDevice, &pipelineCacheCreateInfo, nullptr, &vkPipelineCache_);
+
+
+
+    //    size_t pDataSize = 0;
+//    vkGetPipelineCacheData(vkDevice, vkGraphicsPipeline_, &pDataSize, nullptr);
 }
 
 VKGraphicPipeline::~VKGraphicPipeline()

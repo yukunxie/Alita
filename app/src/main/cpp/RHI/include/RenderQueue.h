@@ -7,6 +7,7 @@
 
 #include "Macros.h"
 #include "RHIObjectBase.h"
+#include "CommandBuffer.h"
 
 NS_RHI_BEGIN
 
@@ -16,6 +17,9 @@ public:
     virtual ~RenderQueue()
     {
     }
+
+public:
+    virtual void Submit(const CommandBuffer* commandBuffer) = 0;
 };
 
 NS_RHI_END

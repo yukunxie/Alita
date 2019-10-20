@@ -136,17 +136,19 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     rhiVertShader_ = rhiDevice_->CreateShader(vertData);
     rhiFragShader_ = rhiDevice_->CreateShader(fragData);
 
-    std::vector<RHI::PipelineShaderStageCreateInfo> shaderStageInfos = {
+    std::vector<RHI::PipelineShaderStageCreateInfo> shaderStageInfos {
             RHI::PipelineShaderStageCreateInfo {
                 .stage = RHI::ShaderStageFlagBits::VERTEX_BIT,
                 .shader = rhiVertShader_,
-                .entryName = "main"
+                .entryName = "main",
+                .pSpecializationInfo = nullptr,
             },
 
             RHI::PipelineShaderStageCreateInfo {
                 .stage = RHI::ShaderStageFlagBits::FRAGMENT_BIT,
                 .shader = rhiFragShader_,
-                .entryName = "main"
+                .entryName = "main",
+                .pSpecializationInfo = nullptr,
             }
     };
 

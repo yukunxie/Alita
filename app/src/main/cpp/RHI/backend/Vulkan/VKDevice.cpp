@@ -15,6 +15,9 @@
 #include "VKBindingResources.h"
 #include "VKBindGroupLayout.h"
 #include "VKBindGroup.h"
+#include "VKQueue.h"
+#include "VKRenderQueue.h"
+#include "VKCommandEncoder.h"
 
 #include <vector>
 #include <array>
@@ -71,7 +74,7 @@ VKDevice::VKDevice(ANativeWindow *window)
     CreateDevice();
     queueFamilyIndices_ = FindQueueFamilies();
     CreateSwapchain();
-    CreateQueue();
+    CreateVKQueue();
     CreateRenderPass();
     CreateFramebuffers();
     CreateCommandPool();
@@ -592,7 +595,7 @@ void VKDevice::CreateFramebuffers()
     }
 };
 
-void VKDevice::CreateQueue()
+void VKDevice::CreateVKQueue()
 {
     vkGetDeviceQueue(vkDevice_, queueFamilyIndices_.presentFamily, 0, &vkQueue_);
 }
@@ -728,6 +731,20 @@ BindingResource* VKDevice::CreateBindingResourceCombined(std::uint32_t bindingPo
     BindingResource* bindingResource = new VKBindingCombined(bindingPoint, (VKTextureView*)textureView, (VKSampler*)sampler);
     RHI_SAFE_RETAIN(bindingResource);
     return bindingResource;
+}
+
+Queue* VKDevice::CreateQueue()
+{
+    VKQueue* renderQueue = new VKQueue(this);
+    RHI_SAFE_RETAIN(renderQueue);
+    return renderQueue;
+}
+
+CommandEncoder* VKDevice::CreateCommandEncoder()
+{
+    VKCommandEncoder* commandEncoder = new VKCommandEncoder(this);
+    RHI_SAFE_RETAIN(commandEncoder);
+    return commandEncoder;
 }
 
 void VKDevice::WriteBindGroup(const BindGroup* bindGroup)
@@ -957,5 +974,10 @@ void VKDevice::BindGraphicPipeline(GraphicPipeline* graphicPipeline)
     pipeline->Bind(commandBuffers_[imageIndex_]);
 }
 
+Queue* VKDevice::GetQueue()
+{
+    RHI_ASSERT(queue_ != nullptr);
+    return queue_;
+}
 
 NS_RHI_END

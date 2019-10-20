@@ -19,7 +19,8 @@ if (obj) obj->Retain();         \
 
 #define RHI_SAFE_RELEASE(obj)   \
 do {                            \
-if (obj) obj->Release();        \
+    if (obj) obj->Release();    \
+    obj = nullptr;              \
 } while (0)
 
 #define RHI_CAST(TYPE, obj) (static_cast<TYPE>(obj))

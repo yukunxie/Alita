@@ -29,7 +29,8 @@ protected:
     void ParseAttachmentReferences(const std::vector<AttachmentReference>& attachments, std::vector<VkAttachmentReference>& attachmentReferences);
 
 private:
-    VkRenderPass   vkRenderPass_;
+    VkRenderPass   vkRenderPass_        = 0L;
+    VkCommandBuffer vkCommandBuffer_    = 0L;
 };
 
 NS_RHI_END

@@ -22,4 +22,8 @@ add_library( # Sets the name of the library.
         ./VKBindingResources.cpp
         ./VKBindGroup.cpp
         ./VKTextureView.cpp
+        ./VKCommandEncoder.cpp
+        ./VKCommandBuffer.cpp
+        ./VKRenderPassEncoder.cpp
+        ./VKQueue.cpp
         )

@@ -5,19 +5,27 @@
 #ifndef ALITA_DEVICE_H
 #define ALITA_DEVICE_H
 
-#include "Macros.h"
-#include "Buffer.h"
-#include "GraphicPipleine.h"
-#include "Shader.h"
-#include "RenderPass.h"
-#include "Flags.h"
-#include "Texture.h"
-#include "TextureView.h"
-#include "Sampler.h"
 #include "BindGroup.h"
 #include "BindGroupLayout.h"
-#include "PipelineLayout.h"
 #include "BindingResource.h"
+#include "Buffer.h"
+#include "CommandBuffer.h"
+#include "CommandEncoder.h"
+#include "Flags.h"
+#include "GraphicPipleine.h"
+#include "Macros.h"
+#include "PipelineLayout.h"
+#include "Queue.h"
+#include "RHI.h"
+#include "RHIObjectBase.h"
+#include "RenderPass.h"
+#include "RenderPassEncoder.h"
+#include "RenderQueue.h"
+#include "RenderTarget.h"
+#include "Sampler.h"
+#include "Shader.h"
+#include "Texture.h"
+#include "TextureView.h"
 
 #include <vector>
 
@@ -55,6 +63,10 @@ public:
 
     virtual BindingResource* CreateBindingResourceCombined(std::uint32_t bindingPoint, const TextureView* textureView, const Sampler* sampler) = 0;
 
+    virtual Queue* CreateQueue() = 0;
+
+    virtual CommandEncoder* CreateCommandEncoder() = 0;
+
     virtual void WriteBindGroup(const BindGroup* bindGroup) = 0;
 
     virtual void SetBindGroupToGraphicPipeline(const BindGroup *bindGroup,
@@ -82,6 +94,8 @@ public:
     virtual Viewport GetViewport() = 0;
 
     virtual Scissor  GetScissor()  = 0;
+
+    virtual Queue*   GetQueue() = 0;
 public:
     ~Device(){}
 };

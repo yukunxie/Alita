@@ -4,6 +4,8 @@
 
 #include "VKRenderPass.h"
 #include "VKTypes.h"
+#include "VKGraphicPipeline.h"
+#include "VKBuffer.h"
 
 #include <vector>
 #include <array>
@@ -14,6 +16,8 @@ NS_RHI_BEGIN
 
 VKRenderPass::VKRenderPass(VKDevice* device, const RenderPassCreateInfo& createInfo)
 {
+    vkCommandBuffer_ = device->GetCommandBuffer();
+
     // Setup descriptions for attachments.
     std::vector<VkAttachmentDescription> attachmentDescriptions(createInfo.attachments.size());
     ParseAttachmentDescriptions(createInfo, attachmentDescriptions);
@@ -39,6 +43,7 @@ VKRenderPass::VKRenderPass(VKDevice* device, const RenderPassCreateInfo& createI
 
 VKRenderPass::~VKRenderPass()
 {
+
 }
 
 void VKRenderPass::ParseAttachmentDescriptions(const RenderPassCreateInfo& createInfo, std::vector<VkAttachmentDescription>& descriptions)

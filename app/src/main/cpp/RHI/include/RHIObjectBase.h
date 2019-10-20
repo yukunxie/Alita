@@ -8,10 +8,24 @@
 #include "Macros.h"
 
 #include <memory>
+#include <stdint.h>
 
 NS_RHI_BEGIN
 
-class RHIObjectBase
+class RHINoncopyable
+{
+public:
+    RHINoncopyable() = default;
+
+    RHINoncopyable(RHINoncopyable&&) = default;
+    RHINoncopyable& operator =(RHINoncopyable&&) = default;
+
+private:
+    RHINoncopyable(const RHINoncopyable&) = delete;
+    RHINoncopyable& operator=(const RHINoncopyable&) = delete;
+};
+
+class RHIObjectBase : public RHINoncopyable
 {
 protected:
     virtual ~RHIObjectBase()

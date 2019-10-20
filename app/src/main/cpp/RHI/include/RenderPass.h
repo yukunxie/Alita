@@ -13,7 +13,7 @@ NS_RHI_BEGIN
 class RenderPass : public RHIObjectBase
 {
 public:
-    virtual ~RenderPass(){}
+    virtual ~RenderPass() = default;
 };
 
 NS_RHI_END

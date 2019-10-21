@@ -30,7 +30,7 @@ public:
 
     void WriteToGPU() const;
 
-    void BindToCommandBuffer(VkCommandBuffer vkCommandBuffer, VkPipelineLayout vkPipelineLayout) const;
+    void BindToCommandBuffer(std::uint32_t index, VkCommandBuffer vkCommandBuffer, VkPipelineLayout vkPipelineLayout) const;
 
 private:
     VkDevice                    vkDevice_           = nullptr;

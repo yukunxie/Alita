@@ -7,6 +7,7 @@
 #include "VKShader.h"
 #include "VKBindGroupLayout.h"
 #include "VKPipelineLayout.h"
+#include "VKRenderPass.h"
 
 #include <array>
 
@@ -15,6 +16,8 @@ NS_RHI_BEGIN
 VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const GraphicPipelineCreateInfo& graphicPipelineCreateInfo)
 {
     VkDevice vkDevice = device->GetDevice();
+
+    CreateRenderPass(device);
 
     const std::vector<RHI::PipelineShaderStageCreateInfo>& shaderStageInfos = graphicPipelineCreateInfo.shaderStageInfos;
     const PipelineVertexInputStateCreateInfo& vertexInputInfo = graphicPipelineCreateInfo.vertexInputInfo;
@@ -187,43 +190,73 @@ VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const GraphicPipelineCrea
             .pDynamicState = nullptr, // Optional
 
             .layout = vkPipelineLayout_,
-            .renderPass = device->GetRenderPass(),
+            .renderPass = renderPass_->GetNative(),
             .subpass = 0,
 
             .basePipelineHandle = VK_NULL_HANDLE, // Optional
             .basePipelineIndex = -1, // Optional
     };
 
-    if (vkCreateGraphicsPipelines(vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkGraphicsPipeline_) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create graphics pipeline!"); }
-
-
-//    //
-//    VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {
-//            .sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
-//            .pNext = nullptr,
-//            .flags = 0,
-//            .initialDataSize = 0,
-//            .pInitialData    = nullptr,
-//    };
-//
-//    VkPipelineCache vkPipelineCache_ = 0L;
-//    VkResult ret =  vkCreatePipelineCache(vkDevice, &pipelineCacheCreateInfo, nullptr, &vkPipelineCache_);
-
-
-
-    //    size_t pDataSize = 0;
-//    vkGetPipelineCacheData(vkDevice, vkGraphicsPipeline_, &pDataSize, nullptr);
+    if (vkCreateGraphicsPipelines(vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkGraphicsPipeline_) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create graphics pipeline!");
+    }
 }
 
 VKGraphicPipeline::~VKGraphicPipeline()
 {
-    // TODO release vulkan resource.
+    // TODO release vulkan resource
+
+    RHI_SAFE_RELEASE(renderPass_);
 }
 
 void VKGraphicPipeline::Bind(VkCommandBuffer cmdBuffer)
 {
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkGraphicsPipeline_);
+}
+
+
+void VKGraphicPipeline::CreateRenderPass(VKDevice* device)
+{
+    RenderPassCreateInfo renderPassCreateInfo {
+            .attachments = {
+                    RHI::AttachmentDescription {
+                            .format = RHI::Format::B8G8R8A8_UNORM,
+                            .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
+                            .loadOp = RHI::AttachmentLoadOp::CLEAR,
+                            .storeOp = RHI::AttachmentStoreOp::STORE,
+                            .stencilLoadOp = RHI::AttachmentLoadOp::DONT_CARE,
+                            .stencilStoreOp = RHI::AttachmentStoreOp::DONT_CARE,
+                            .initialLayout = RHI::ImageLayout::UNDEFINED,
+                            .finalLayout = RHI::ImageLayout::PRESENT_SRC_KHR
+                    },
+            },
+            .subpasses = {
+                    SubpassDescription {
+                            .colorAttachments = {
+                                    RHI::AttachmentReference {
+                                            .attachment = 0,
+                                            .layout = RHI::ImageLayout::COLOR_ATTACHMENT_OPTIMAL
+                                    },
+                            },
+                            .colorAttachments = {
+                                    AttachmentReference {
+                                            .attachment = 0,
+                                            .layout = ImageLayout::COLOR_ATTACHMENT_OPTIMAL
+                                    },
+                            },
+                            .depthStencilAttachment = {},
+                            .inputAttachments = {},
+                            .pipelineBindPoint = RHI::PipelineBindPoint::GRAPHICS,
+                            .preserveAttachments = {},
+                            .resolveAttachments = {}
+                    },
+            },
+            .dependencies = {}
+    };
+
+    renderPass_ = (VKRenderPass*)device->CreateRenderPass(renderPassCreateInfo);
+    RHI_SAFE_RETAIN(renderPass_);
 }
 
 NS_RHI_END

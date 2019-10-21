@@ -44,6 +44,8 @@ public:
 
     virtual void EndPass() = 0;
 
+    virtual void SetBindGroup(std::uint32_t index, const BindGroup* bindGroup, const std::vector<std::uint32_t>& dynamicOffsets = {}) = 0;
+
     //    void setBlendColor(GPUColor color);
     //    void executeBundles(sequence<GPURenderBundle> bundles);
 };

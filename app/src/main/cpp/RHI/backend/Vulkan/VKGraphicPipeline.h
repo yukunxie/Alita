@@ -16,6 +16,8 @@
 
 NS_RHI_BEGIN
 
+class VKRenderPass;
+
 class VKGraphicPipeline : public GraphicPipeline
 {
 public:
@@ -29,8 +31,13 @@ public:
     VkPipelineLayout GetPipelineLayout() const {return vkPipelineLayout_;}
 
 private:
+
+    void CreateRenderPass(VKDevice* device);
+
+private:
     VkPipeline                      vkGraphicsPipeline_     = 0;
     VkPipelineLayout                vkPipelineLayout_       = 0;
+    VKRenderPass*                   renderPass_             = nullptr;
 
     friend class VKDevice;
 };

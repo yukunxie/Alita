@@ -37,21 +37,24 @@ protected:
 private:
     static RealRenderer *instance_;
 
-    RHI::VKDevice*          rhiDevice_          = nullptr;
-    RHI::Buffer*            rhiVertexBuffer_    = nullptr;
-    RHI::Buffer*            rhiIndexBuffer_     = nullptr;
-    RHI::Buffer*            rhiUniformBuffer_   = nullptr;
-    RHI::BindGroup*       rhiBindGroup_        = nullptr;
-    RHI::BindingResource* rhiBindingBuffer_    = nullptr;
-    RHI::BindingResource* rhiBindingCombined_  = nullptr;
-    RHI::PipelineLayout*  rhiPipelineLayout_  = nullptr;
-    RHI::BindGroupLayout* rhiBindGroupLayout_  = nullptr;
-    RHI::Texture*         rhiTexture_         = nullptr;
-    RHI::TextureView*     rhiTextureView_     = nullptr;
-    RHI::Sampler*         rhiSampler_         = nullptr;
-    RHI::GraphicPipeline* rhiGraphicPipeline_ = nullptr;
-    RHI::Shader*          rhiVertShader_      = nullptr;
-    RHI::Shader*          rhiFragShader_      = nullptr;
-    RHI::RenderPass*      rhiRenderPass_      = nullptr;
+    RHI::VKDevice*        rhiDevice_            = nullptr;
+    RHI::Buffer*          rhiVertexBuffer_      = nullptr;
+    RHI::Buffer*          rhiIndexBuffer_       = nullptr;
+    RHI::Buffer*          rhiUniformBuffer_     = nullptr;
+    RHI::BindGroup*       rhiBindGroup_         = nullptr;
+    RHI::BindingResource* rhiBindingBuffer_     = nullptr;
+    RHI::BindingResource* rhiBindingCombined_   = nullptr;
+    RHI::PipelineLayout*  rhiPipelineLayout_    = nullptr;
+    RHI::BindGroupLayout* rhiBindGroupLayout_   = nullptr;
+    RHI::Texture*         rhiTexture_           = nullptr;
+    RHI::TextureView*     rhiTextureView_       = nullptr;
+    RHI::Sampler*         rhiSampler_           = nullptr;
+    RHI::GraphicPipeline* rhiGraphicPipeline_   = nullptr;
+    RHI::Shader*          rhiVertShader_        = nullptr;
+    RHI::Shader*          rhiFragShader_        = nullptr;
+    RHI::RenderPass*      rhiRenderPass_        = nullptr;
+    RHI::Queue*           rhiQueue_             = nullptr;
+    RHI::CommandEncoder*  rhiCommandEncoder_    = nullptr;
+    RHI::SwapChain*       rhiSwapChain_         = nullptr;
 };
 #endif //ALITA_ALITA_H

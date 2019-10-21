@@ -28,7 +28,7 @@ public:
     ~VKCommandEncoder();
 
 public:
-    virtual RenderPassEncoder* BeginRenderPass(/*GPURenderPassDescriptor descriptor*/) override;
+    virtual RenderPassEncoder* BeginRenderPass(const RenderPassDescriptor& descriptor) override;
 
     virtual CommandBuffer* Finish() override ;
 

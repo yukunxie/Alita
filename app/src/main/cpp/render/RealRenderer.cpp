@@ -302,6 +302,11 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     rhiBindGroup_ = rhiDevice_->CreateBindGroup(rhiBindGroupLayout_, {rhiBindingBuffer_, rhiBindingCombined_});
     rhiDevice_->WriteBindGroup(rhiBindGroup_);
 
+    rhiQueue_ = rhiDevice_->CreateQueue();
+    rhiCommandEncoder_ = rhiDevice_->CreateCommandEncoder();
+
+    rhiSwapChain_ = rhiDevice_->CreateSwapChain();
+
     return true;
 }
 
@@ -323,12 +328,60 @@ void RealRenderer::testRotate()
 void RealRenderer::drawFrame()
 {
     testRotate();
+    
     rhiDevice_->BeginRenderpass();
-    rhiDevice_->BindGraphicPipeline(rhiGraphicPipeline_);
-    rhiDevice_->BindVertexBuffer(rhiVertexBuffer_, 0);
-    rhiDevice_->BindIndexBuffer(rhiIndexBuffer_, 0);
-    rhiDevice_->SetBindGroupToGraphicPipeline(rhiBindGroup_, rhiGraphicPipeline_);
-    rhiDevice_->DrawIndxed(6, 0);
-//    rhiDevice_->Draw(3, 0);
+
+    std::vector<RHI::RenderPassColorAttachmentDescriptor> colorAttachments = {
+            RHI::RenderPassColorAttachmentDescriptor {
+                .attachment = rhiSwapChain_->GetCurrentTexture(),
+                .resolveTarget = nullptr,
+                .loadOp = RHI::AttachmentLoadOp::CLEAR,
+                .storeOp= RHI::AttachmentStoreOp::STORE
+            }
+    };
+    RHI::RenderPassDescriptor renderPassDescriptor = {
+        .colorAttachments = colorAttachments,
+    };
+//
+    auto renderPassEncoder = rhiCommandEncoder_->BeginRenderPass(renderPassDescriptor);
+
+    {
+        renderPassEncoder->SetGraphicPipeline(rhiGraphicPipeline_);
+        renderPassEncoder->SetVertexBuffer(rhiVertexBuffer_, 0);
+        renderPassEncoder->SetIndexBuffer(rhiIndexBuffer_, 0);
+        renderPassEncoder->SetBindGroup(0, rhiBindGroup_);
+        renderPassEncoder->DrawIndxed(6, 0);
+    }
+
+    renderPassEncoder->EndPass();
+
+    auto commandBuffer = rhiCommandEncoder_->Finish();
+
+    rhiQueue_->Submit(commandBuffer);
+
     rhiDevice_->EndRenderpass();
+
+//    renderPassEncoder->SetGraphicPipeline(rhiGraphicPipeline_);
+//    renderPassEncoder->SetVertexBuffer(rhiVertexBuffer_, 0);
+//    renderPassEncoder->SetIndexBuffer(rhiIndexBuffer_, 0);
+//    rhiDevice_->SetBindGroupToGraphicPipeline(rhiBindGroup_, rhiGraphicPipeline_);
+//    renderPassEncoder->DrawIndxed(6, 0);
+
+//    {
+//        testRotate();
+//        rhiDevice_->BeginRenderpass();
+//        rhiDevice_->BindGraphicPipeline(rhiGraphicPipeline_);
+//        rhiDevice_->BindVertexBuffer(rhiVertexBuffer_, 0);
+//        rhiDevice_->BindIndexBuffer(rhiIndexBuffer_, 0);
+//        rhiDevice_->SetBindGroupToGraphicPipeline(rhiBindGroup_, rhiGraphicPipeline_);
+//        rhiDevice_->DrawIndxed(6, 0);
+//        rhiDevice_->EndRenderpass();
+//    }
+
+
+    // TODO
+    //rhiQueue_->Submit(nullptr);
+
+//    rhiDevice_->Draw(3, 0);
+//    rhiDevice_->EndRenderpass();
 }

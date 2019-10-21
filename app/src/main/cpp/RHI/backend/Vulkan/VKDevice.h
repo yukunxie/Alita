@@ -5,13 +5,13 @@
 #ifndef ALITA_VKDEVICE_H
 #define ALITA_VKDEVICE_H
 
-#include "../../include/Macros.h"
-#include "../../include/Device.h"
+#include "../../include/RHI.h"
 #include "drivers/vulkan/vulkan_wrapper.h"
 
 #include <vulkan/vulkan.h>
 #include <android/native_window.h>
 #include <vector>
+#include <map>
 
 NS_RHI_BEGIN
 
@@ -50,9 +50,11 @@ public:
 
     VkQueue GetQueue() const {return vkQueue_;}
 
-    uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+    VkSwapchainKHR GetVkSwapChain() const {return vkSwapchain_;}
 
-    VkRenderPass GetRenderPass() {return vkRenderPass_;}
+    VkExtent2D GetSwapChainExtent2D() const {return vkSwapchainExtent_;}
+
+    uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
     VkDescriptorPool GetDescriptorPool() {return vkDescriptorPool_;}
 
@@ -66,6 +68,10 @@ public:
     VkCommandBuffer GetCommandBuffer() const {return commandBuffers_[imageIndex_];}
 
     const QueueFamilyIndices& GetQueueFamilyIndices() const {return queueFamilyIndices_;}
+
+    std::uint32_t GetNextImageIndex();
+
+    VkSemaphore  GetRenderFinishedSemaphore() const {return vkRenderFinishedSemaphore_;};
 
 public:
     virtual Buffer* CreateBuffer(BufferUsageFlagBits usageFlagBits
@@ -101,28 +107,14 @@ public:
 
     virtual CommandEncoder* CreateCommandEncoder() override;
 
+    virtual SwapChain* CreateSwapChain() override;
+
     virtual void WriteBindGroup(const BindGroup* bindGroup) override ;
 
-    virtual void SetBindGroupToGraphicPipeline(const BindGroup *bindGroup,
-                                               const GraphicPipeline *graphicPipeline) override ;
 
     virtual void BeginRenderpass() override;
 
     virtual void EndRenderpass() override;
-
-    virtual void BindVertexBuffer(Buffer* buffer, std::uint32_t offset) override ;
-
-    virtual void BindIndexBuffer(Buffer* buffer, std::uint32_t offset) override ;
-
-    virtual void Draw(std::uint32_t vertexCount, std::uint32_t instanceCount
-            , std::uint32_t firstVertex
-            , std::uint32_t firstInstance) override;
-
-    virtual void Draw(std::uint32_t vertexCount, std::uint32_t firstVertex) override;
-
-    virtual void DrawIndxed(std::uint32_t indexCount, std::uint32_t firstIndex) override;
-
-    virtual void BindGraphicPipeline(GraphicPipeline* graphicPipeline) override;
 
     virtual Viewport GetViewport() override {return viewport_;}
 
@@ -136,8 +128,6 @@ private:
     void CreatePhysicDevice();
     void CreateDevice();
     void CreateSwapchain();
-    void CreateRenderPass();
-    void CreateFramebuffers();
     void CreateVKQueue();
     void CreateCommandPool();
     void CreateDescriptorPool();
@@ -159,7 +149,6 @@ private:
     VkDevice                        vkDevice_               = nullptr;
     VkQueue                         vkQueue_                = nullptr;
     VkPhysicalDevice                vkPhysicalDevice_       = nullptr;
-    VkRenderPass                    vkRenderPass_;
     VkCommandPool                   vkCommandPool_;
     VkDescriptorPool                vkDescriptorPool_;
     VkSurfaceKHR                    vkSurface_;
@@ -167,9 +156,9 @@ private:
     VkFormat                        vkSwapchainImageFormat_;
     VkExtent2D                      vkSwapchainExtent_;
     VkDebugReportCallbackEXT        vkDebugReportCallback_;
-    std::vector<VkImage>            swapChainImages_;
-    std::vector<VkImageView>        swapChainImageViews_;
-    std::vector<VkFramebuffer>      framebuffers_;
+//    std::vector<VkImage>            swapChainImages_;
+//    std::vector<VkImageView>        swapChainImageViews_;
+//    std::vector<VkFramebuffer>      framebuffers_;
     std::vector<VkCommandBuffer>    commandBuffers_;
     QueueFamilyIndices              queueFamilyIndices_;
 
@@ -185,6 +174,8 @@ private:
 
     // VK*
     VKQueue*                        queue_      = nullptr;
+
+    std::map<std::uint64_t, RenderPass*> renderPassCaches_;
 
 };
 

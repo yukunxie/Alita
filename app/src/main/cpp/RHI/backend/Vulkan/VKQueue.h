@@ -22,21 +22,14 @@ public:
     VKQueue(VKDevice* device);
     virtual ~VKQueue();
 
-    void Reset(VkSwapchainKHR vkSwapchain, std::uint32_t imageIndex) {
-        vkSwapchain_ = vkSwapchain;
-        imageIndex_ = imageIndex;
-    }
-
 public:
     virtual void Submit(CommandBuffer* commandBuffer) override;
 
 private:
+    VKDevice* device_   = nullptr;
     VkDevice  vkDevice_ = nullptr;
     VkQueue   vkQueue_  = 0L;
     VkFence   vkFence_  = 0L;
-    VkSwapchainKHR  vkSwapchain_    = 0;
-    std::uint32_t   imageIndex_     = 0;
-
 };
 
 NS_RHI_END

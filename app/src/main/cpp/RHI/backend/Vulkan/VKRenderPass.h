@@ -30,7 +30,6 @@ protected:
 
 private:
     VkRenderPass   vkRenderPass_        = 0L;
-    VkCommandBuffer vkCommandBuffer_    = 0L;
 };
 
 NS_RHI_END

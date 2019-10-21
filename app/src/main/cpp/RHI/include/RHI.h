@@ -24,6 +24,7 @@
 #include "RenderTarget.h"
 #include "Sampler.h"
 #include "Shader.h"
+#include "SwapChain.h"
 #include "Texture.h"
 #include "TextureView.h"
 

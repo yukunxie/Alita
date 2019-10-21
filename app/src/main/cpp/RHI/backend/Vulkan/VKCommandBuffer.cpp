@@ -7,13 +7,18 @@
 NS_RHI_BEGIN
 
 VKCommandBuffer::VKCommandBuffer(VKDevice* device)
+    : device_(device)
 {
-    vkDevice_ = device->GetDevice();
     vkCommandBuffer_ = device->GetCommandBuffer();
 }
 
 VKCommandBuffer::~VKCommandBuffer()
 {
+}
+
+void VKCommandBuffer::ResetCommandBuffer()
+{
+    vkCommandBuffer_ = device_->GetCommandBuffer();
 }
 
 

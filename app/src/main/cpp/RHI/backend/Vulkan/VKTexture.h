@@ -22,11 +22,11 @@ public:
     VKTexture(VKDevice* device, const ImageCreateInfo& imageCreateInfo);
     virtual ~VKTexture();
 
-    VkImage GetVkImage() const {return vkImage_;}
-
-    VkImageView GetNative() const {return vkImageView_;}
+    VkImage GetNative() const {return vkImage_;}
 
     VkFormat GetFormat() const {return vkFormat_;}
+
+    Extent3D GetTextureSize() const {return textureSize_;}
 
 private:
     void SetImageLayout(const VKDevice* device);
@@ -34,9 +34,10 @@ private:
 private:
     VkDevice        vkDevice_       = nullptr;
     VkImage         vkImage_        = 0L;
-    VkImageView     vkImageView_    = 0L;
     VkDeviceMemory  vkDeviceMemory_ = 0L;
     VkFormat        vkFormat_       = VkFormat::VK_FORMAT_R8G8B8A8_UNORM;
+
+    Extent3D        textureSize_ ;
 };
 
 NS_RHI_END

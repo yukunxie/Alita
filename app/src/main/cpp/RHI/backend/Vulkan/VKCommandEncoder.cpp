@@ -11,11 +11,9 @@ NS_RHI_BEGIN
 VKCommandEncoder::VKCommandEncoder(VKDevice* device)
 {
     device_ = device;
+
     commandBuffer_ = new VKCommandBuffer(device_);
     RHI_SAFE_RETAIN(commandBuffer_);
-
-    renderPassEncoder_ = new VKRenderPassEncoder();
-    RHI_SAFE_RETAIN(renderPassEncoder_);
 }
 
 VKCommandEncoder::~VKCommandEncoder()
@@ -24,9 +22,15 @@ VKCommandEncoder::~VKCommandEncoder()
     RHI_SAFE_RELEASE(renderPassEncoder_);
 }
 
-RenderPassEncoder* VKCommandEncoder::BeginRenderPass(/*GPURenderPassDescriptor descriptor*/)
+RenderPassEncoder* VKCommandEncoder::BeginRenderPass(const RenderPassDescriptor& descriptor)
 {
-    renderPassEncoder_->BeginPass(commandBuffer_->GetNative());
+    if (renderPassEncoder_ == nullptr)
+    {
+        renderPassEncoder_ = new VKRenderPassEncoder(device_);
+        RHI_SAFE_RETAIN(renderPassEncoder_);
+    }
+    commandBuffer_->ResetCommandBuffer();
+    renderPassEncoder_->BeginPass(commandBuffer_->GetNative(), descriptor);
     return renderPassEncoder_;
 }
 

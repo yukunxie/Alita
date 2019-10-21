@@ -92,9 +92,9 @@ void VKBindGroup::WriteToGPU() const
     }
 }
 
-void VKBindGroup::BindToCommandBuffer(VkCommandBuffer vkCommandBuffer, VkPipelineLayout vkPipelineLayout) const
+void VKBindGroup::BindToCommandBuffer(std::uint32_t index, VkCommandBuffer vkCommandBuffer, VkPipelineLayout vkPipelineLayout) const
 {
-    vkCmdBindDescriptorSets(vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipelineLayout, 0, 1, &vkDescriptorSet_, 0, nullptr);
+    vkCmdBindDescriptorSets(vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipelineLayout, index, 1, &vkDescriptorSet_, 0, nullptr);
 }
 
 NS_RHI_END

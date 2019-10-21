@@ -26,4 +26,5 @@ add_library( # Sets the name of the library.
         ./VKCommandBuffer.cpp
         ./VKRenderPassEncoder.cpp
         ./VKQueue.cpp
+        ./VKSwapChain.cpp
         )

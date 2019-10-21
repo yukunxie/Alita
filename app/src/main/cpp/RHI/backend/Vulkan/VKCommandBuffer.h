@@ -26,8 +26,10 @@ public:
 
     VkCommandBuffer GetNative() const {return vkCommandBuffer_;}
 
+    void ResetCommandBuffer() ;
+
 private:
-    VkDevice  vkDevice_;
+    VKDevice*       device_ = nullptr;
     VkCommandBuffer vkCommandBuffer_;
 };
 

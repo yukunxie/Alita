@@ -8,6 +8,7 @@
 NS_RHI_BEGIN
 
 VKQueue::VKQueue(VKDevice* device)
+    : device_(device)
 {
     vkDevice_ = device->GetDevice();
 
@@ -29,6 +30,10 @@ VKQueue::~VKQueue()
 void VKQueue::Submit(CommandBuffer* commandBuffer)
 {
     auto vkCommandBuffer = RHI_CAST(VKCommandBuffer*, commandBuffer)->GetNative();
+    CALL_VK(vkEndCommandBuffer(vkCommandBuffer));
+
+    auto vkSwapchain = device_->GetVkSwapChain();
+    auto imageIndex  = device_->GetNextImageIndex();
 
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -40,8 +45,10 @@ void VKQueue::Submit(CommandBuffer* commandBuffer)
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &vkCommandBuffer;
 
+    auto renderFinishedSemaphore = device_->GetRenderFinishedSemaphore();
+
     submitInfo.signalSemaphoreCount = 0;
-    submitInfo.pSignalSemaphores = nullptr;
+    submitInfo.pSignalSemaphores = &renderFinishedSemaphore;
 
     CALL_VK(vkResetFences(vkDevice_, 1, &vkFence_));
     if (auto code = vkQueueSubmit(vkQueue_, 1, &submitInfo, vkFence_); code != VK_SUCCESS) {
@@ -54,8 +61,8 @@ void VKQueue::Submit(CommandBuffer* commandBuffer)
             .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
             .pNext = nullptr,
             .swapchainCount = 1,
-            .pSwapchains = &vkSwapchain_,
-            .pImageIndices = &imageIndex_,
+            .pSwapchains = &vkSwapchain,
+            .pImageIndices = &imageIndex,
             .waitSemaphoreCount = 0,
             .pWaitSemaphores = nullptr,
             .pResults = &result

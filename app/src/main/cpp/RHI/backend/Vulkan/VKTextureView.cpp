@@ -10,9 +10,11 @@ VKTextureView::VKTextureView(VKDevice* device, const VKTexture* vkTexture)
 {
     vkDevice_ = device->GetDevice();
 
+    textureSize_ = vkTexture->GetTextureSize();
+
     VkImageViewCreateInfo viewInfo {
             .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-            .image = vkTexture->GetVkImage(),
+            .image = vkTexture->GetNative(),
             .viewType = VK_IMAGE_VIEW_TYPE_2D,
             .format = vkTexture->GetFormat(),
             .components = {
@@ -33,9 +35,19 @@ VKTextureView::VKTextureView(VKDevice* device, const VKTexture* vkTexture)
     CALL_VK(vkCreateImageView(vkDevice_, &viewInfo, nullptr, &vkImageView_));
 }
 
+VKTextureView::VKTextureView(VKDevice* device, const VkImageViewCreateInfo& imageViewCreateInfo, const Extent3D& textureSize)
+{
+    vkDevice_ = device->GetDevice();
+    textureSize_ = textureSize;
+    CALL_VK(vkCreateImageView(vkDevice_, &imageViewCreateInfo, nullptr, &vkImageView_));
+}
+
 VKTextureView::~VKTextureView()
 {
-
+    if (vkImageView_)
+    {
+        vkDestroyImageView(vkDevice_, vkImageView_, nullptr);
+    }
 }
 
 NS_RHI_END

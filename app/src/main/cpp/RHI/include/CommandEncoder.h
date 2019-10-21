@@ -9,6 +9,7 @@
 #include "RHIObjectBase.h"
 #include "CommandBuffer.h"
 #include "RenderPassEncoder.h"
+#include "Descriptors.h"
 
 NS_RHI_BEGIN
 
@@ -20,7 +21,7 @@ public:
     }
 
 public:
-    virtual RenderPassEncoder* BeginRenderPass(/*GPURenderPassDescriptor descriptor*/) = 0;
+    virtual RenderPassEncoder* BeginRenderPass(const RenderPassDescriptor& descriptor) = 0;
 
     virtual CommandBuffer* Finish() = 0;
 };

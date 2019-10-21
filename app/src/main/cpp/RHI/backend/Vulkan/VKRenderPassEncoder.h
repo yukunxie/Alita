@@ -16,13 +16,15 @@
 
 NS_RHI_BEGIN
 
+class VKRenderPass;
+
 class VKRenderPassEncoder : public RenderPassEncoder
 {
 public:
-    VKRenderPassEncoder() = default;
+    VKRenderPassEncoder(VKDevice* device);
     virtual ~VKRenderPassEncoder();
 
-    void BeginPass(VkCommandBuffer vkCommandBuffer);
+    void BeginPass(VkCommandBuffer vkCommandBuffer, const RenderPassDescriptor& descriptor);
 
 public:
     virtual void SetGraphicPipeline(const GraphicPipeline* pipeline) override;
@@ -47,10 +49,19 @@ public:
 
     virtual void SetStencilReference(std::uint32_t reference) override;
 
+    virtual void SetBindGroup(std::uint32_t index, const BindGroup* bindGroup, const std::vector<std::uint32_t>& dynamicOffsets = {}) override;
+
     virtual void EndPass() override;
 
 private:
+    VkDevice        vkDevice_           = nullptr;
     VkCommandBuffer vkCommandBuffer_    = 0L;
+//    VkRenderPass    vkRenderPass_       = 0L;
+    VkFramebuffer   vkFramebuffer_      = 0L;
+
+    const GraphicPipeline* graphicPipeline_ = nullptr;
+
+    class VKRenderPass* renderPass_ = nullptr;
 };
 
 NS_RHI_END

@@ -22,13 +22,17 @@ class VKTextureView final: public TextureView
 {
 public:
     VKTextureView(VKDevice* device, const VKTexture* vkTexture);
+    VKTextureView(VKDevice* device, const VkImageViewCreateInfo& imageViewCreateInfo, const Extent3D& textureSize);
     virtual ~VKTextureView();
 
     VkImageView GetNative() const {return vkImageView_;}
 
+    Extent3D GetTextureSize() const {return textureSize_;}
+
 private:
     VkDevice        vkDevice_       = nullptr;
     VkImageView     vkImageView_    = 0L;
+    Extent3D        textureSize_;
 };
 
 NS_RHI_END

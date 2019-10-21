@@ -26,6 +26,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "TextureView.h"
+#include "SwapChain.h"
 
 #include <vector>
 
@@ -67,25 +68,9 @@ public:
 
     virtual CommandEncoder* CreateCommandEncoder() = 0;
 
+    virtual SwapChain* CreateSwapChain() = 0;
+
     virtual void WriteBindGroup(const BindGroup* bindGroup) = 0;
-
-    virtual void SetBindGroupToGraphicPipeline(const BindGroup *bindGroup,
-                                               const GraphicPipeline *graphicPipeline) = 0;
-
-    virtual void BindVertexBuffer(Buffer* buffer, std::uint32_t offset) = 0;
-
-    virtual void BindIndexBuffer(Buffer* buffer, std::uint32_t offset) = 0;
-
-    virtual void Draw(std::uint32_t vertexCount
-            , std::uint32_t instanceCount
-            , std::uint32_t firstVertex
-            , std::uint32_t firstInstance) = 0;
-
-    virtual void Draw(std::uint32_t vertexCount, std::uint32_t firstVertex) = 0;
-
-    virtual void DrawIndxed(std::uint32_t indexCount, std::uint32_t firstIndex) = 0;
-
-    virtual void BindGraphicPipeline(GraphicPipeline* graphicPipeline) = 0;
 
     virtual void BeginRenderpass() = 0;
 

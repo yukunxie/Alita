@@ -81,8 +81,6 @@ VKDevice::VKDevice(ANativeWindow *window)
     CreateVKQueue();
     CreateCommandPool();
     CreateDescriptorPool();
-    CreateCommandBuffers();
-    SetupSynchronizeObjects();
 }
 
 VKDevice::~VKDevice()
@@ -573,26 +571,6 @@ void VKDevice::CreateDescriptorPool()
     CALL_VK(vkCreateDescriptorPool(vkDevice_, &poolInfo, nullptr, &vkDescriptorPool_));
 }
 
-void VKDevice::CreateCommandBuffers()
-{
-    uint32_t imageCount = 0;
-    vkGetSwapchainImagesKHR(vkDevice_, vkSwapchain_, &imageCount, nullptr);
-
-    commandBuffers_.resize(imageCount);
-
-    for (size_t i = 0; i < commandBuffers_.size(); i++) {
-        VkCommandBufferAllocateInfo cmdBufferCreateInfo{
-                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-                .pNext = nullptr,
-                .commandPool = vkCommandPool_,
-                .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-                .commandBufferCount = 1
-        };
-
-        CALL_VK(vkAllocateCommandBuffers(vkDevice_, &cmdBufferCreateInfo, &commandBuffers_[i]));
-    }
-}
-
 GraphicPipeline* VKDevice::CreateGraphicPipeline(const GraphicPipelineCreateInfo& graphicPipelineCreateInfo)
 {
     GraphicPipeline* pipeline = new VKGraphicPipeline(this, graphicPipelineCreateInfo);
@@ -764,22 +742,6 @@ void VKDevice::WriteBindGroup(const BindGroup* bindGroup)
     RHI_CAST(const VKBindGroup*, bindGroup)->WriteToGPU();
 }
 
-void VKDevice::SetupSynchronizeObjects()
-{
-    VkSemaphoreCreateInfo semaphoreInfo = {};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-    CALL_VK(vkCreateSemaphore(vkDevice_, &semaphoreInfo, nullptr, &vkImageAvailableSemaphore_));
-    CALL_VK(vkCreateSemaphore(vkDevice_, &semaphoreInfo, nullptr, &vkRenderFinishedSemaphore_));
-
-    VkFenceCreateInfo fenceCreateInfo = {
-        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0
-    };
-    CALL_VK(vkCreateFence(vkDevice_, &fenceCreateInfo, nullptr, &vkFence_));
-}
-
 void VKDevice::SetImageLayout(VkCommandBuffer cmdBuffer, VkImage image, VkImageLayout oldImageLayout,
                     VkImageLayout newImageLayout, VkPipelineStageFlags srcStages,
                     VkPipelineStageFlags destStages)
@@ -838,7 +800,12 @@ void VKDevice::SetImageLayout(VkCommandBuffer cmdBuffer, VkImage image, VkImageL
             break;
 
         case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-            imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+            imageMemoryBarrier.srcAccessMask = 0;
+            imageMemoryBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+                    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            srcStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            destStages = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
             break;
 
         default:
@@ -847,21 +814,6 @@ void VKDevice::SetImageLayout(VkCommandBuffer cmdBuffer, VkImage image, VkImageL
 
     vkCmdPipelineBarrier(cmdBuffer, srcStages, destStages, 0, 0, NULL, 0, NULL, 1,
                          &imageMemoryBarrier);
-}
-
-std::uint32_t VKDevice::GetNextImageIndex()
-{
-    return imageIndex_;
-}
-
-void VKDevice::BeginRenderpass()
-{
-    CALL_VK(vkAcquireNextImageKHR(vkDevice_, vkSwapchain_, std::numeric_limits<uint64_t>::max(),
-                                  vkRenderFinishedSemaphore_, VK_NULL_HANDLE, &imageIndex_));
-}
-
-void VKDevice::EndRenderpass()
-{
 }
 
 Queue* VKDevice::GetQueue()

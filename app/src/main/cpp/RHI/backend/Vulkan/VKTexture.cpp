@@ -51,6 +51,13 @@ VKTexture::VKTexture(VKDevice* device, const ImageCreateInfo& imageCreateInfo)
             .flags = 0,
     };
 
+    VkMemoryPropertyFlags memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+    if (vkFormat_ == VkFormat::VK_FORMAT_D24_UNORM_S8_UINT)
+    {
+        imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    }
+
     CALL_VK(vkCreateImage(vkDevice_, &imageInfo, nullptr, &vkImage_));
 
     VkMemoryRequirements memRequirements;
@@ -59,27 +66,30 @@ VKTexture::VKTexture(VKDevice* device, const ImageCreateInfo& imageCreateInfo)
     VkMemoryAllocateInfo allocInfo {
             .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
             .allocationSize = memRequirements.size,
-            .memoryTypeIndex = device->FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT),
+            .memoryTypeIndex = device->FindMemoryType(memRequirements.memoryTypeBits, memoryPropertyFlags),
     };
 
     CALL_VK(vkAllocateMemory(vkDevice_, &allocInfo, nullptr, &vkDeviceMemory_));
     CALL_VK(vkBindImageMemory(vkDevice_, vkImage_, vkDeviceMemory_, 0));
 
-    RHI_ASSERT(imageCreateInfo.format == Format::R8G8B8A8_UNORM);
-    VkDeviceSize imageSize = imageCreateInfo.extent.width * imageCreateInfo.extent.height * 4;
+//    RHI_ASSERT(imageCreateInfo.format == Format::R8G8B8A8_UNORM);
 
-    const VkImageSubresource subres = {
-            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .mipLevel = 0, .arrayLayer = 0,
-    };
-    VkSubresourceLayout layout;
-    vkGetImageSubresourceLayout(vkDevice_, vkImage_, &subres,
-                                &layout);
+    if (imageCreateInfo.imageData)
+    {
+        const VkImageSubresource subres = {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .mipLevel = 0, .arrayLayer = 0,
+        };
+        VkSubresourceLayout layout;
+        vkGetImageSubresourceLayout(vkDevice_, vkImage_, &subres,
+                                    &layout);
 
-//    std::vector<uint8_t> tmpData(static_cast<size_t>(imageSize), 255);
-    void* data;
-    vkMapMemory(vkDevice_, vkDeviceMemory_, 0, imageSize, 0, &data);
-    memcpy(data, imageCreateInfo.imageData, static_cast<size_t>(imageSize));
-    vkUnmapMemory(vkDevice_, vkDeviceMemory_);
+        VkDeviceSize imageSize = imageCreateInfo.extent.width * imageCreateInfo.extent.height * 4;
+
+        void* data;
+        vkMapMemory(vkDevice_, vkDeviceMemory_, 0, imageSize, 0, &data);
+        memcpy(data, imageCreateInfo.imageData, static_cast<size_t>(imageSize));
+        vkUnmapMemory(vkDevice_, vkDeviceMemory_);
+    }
 
     SetImageLayout(device);
 }
@@ -119,10 +129,20 @@ void VKTexture::SetImageLayout(const VKDevice* device)
             .pInheritanceInfo = nullptr};
     CALL_VK(vkBeginCommandBuffer(gfxCmd, &cmd_buf_info));
 
-    device->SetImageLayout(gfxCmd, vkImage_, VK_IMAGE_LAYOUT_UNDEFINED,
-                           VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            VK_PIPELINE_STAGE_HOST_BIT,
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+    if (vkFormat_ == VkFormat::VK_FORMAT_D24_UNORM_S8_UINT)
+    {
+        device->SetImageLayout(gfxCmd, vkImage_, VK_IMAGE_LAYOUT_UNDEFINED,
+                               VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                               VK_PIPELINE_STAGE_HOST_BIT,
+                               VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+    }
+    else
+    {
+        device->SetImageLayout(gfxCmd, vkImage_, VK_IMAGE_LAYOUT_UNDEFINED,
+                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                               VK_PIPELINE_STAGE_HOST_BIT,
+                               VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+    }
 
     CALL_VK(vkEndCommandBuffer(gfxCmd));
     VkFenceCreateInfo fenceInfo = {

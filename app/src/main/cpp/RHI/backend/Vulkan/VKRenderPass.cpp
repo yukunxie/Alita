@@ -25,6 +25,16 @@ VKRenderPass::VKRenderPass(VKDevice* device, const RenderPassCreateInfo& createI
     std::vector<std::vector<VkAttachmentReference>> attachReferences;
     ParseSubpassDescriptions(createInfo, subpassDescriptions, attachReferences);
 
+    // TODO realxie configurable
+    VkAttachmentReference depthAttachmentRef = {};
+    depthAttachmentRef.attachment = 1;
+    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    subpassDescriptions[0].pDepthStencilAttachment = &depthAttachmentRef;
+
+    VkSubpassDependency dependency = {};
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependency.dstSubpass = 0;
+
     VkRenderPassCreateInfo renderPassInfo = {
             .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
             .pNext = nullptr,
@@ -32,8 +42,8 @@ VKRenderPass::VKRenderPass(VKDevice* device, const RenderPassCreateInfo& createI
             .pAttachments = attachmentDescriptions.data(),
             .subpassCount = (std::uint32_t)subpassDescriptions.size(),
             .pSubpasses = subpassDescriptions.data(),
-            .dependencyCount = 0,
-            .pDependencies = nullptr
+            .dependencyCount = 1,
+            .pDependencies = &dependency
     };
 
     CALL_VK(vkCreateRenderPass(device->GetDevice(), &renderPassInfo, nullptr, &vkRenderPass_));

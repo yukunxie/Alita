@@ -115,7 +115,7 @@ VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const GraphicPipelineCrea
 
     VkPipelineRasterizationStateCreateInfo rasterizer = {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-            .depthClampEnable = VK_FALSE,
+            .depthClampEnable = VK_TRUE,
             .rasterizerDiscardEnable = VK_FALSE,
             .polygonMode = VK_POLYGON_MODE_FILL,
             .lineWidth = 1.0f,
@@ -176,6 +176,21 @@ VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const GraphicPipelineCrea
             .pDynamicStates = dynamicStates,
     };
 
+    VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+            .depthTestEnable = VK_TRUE,
+            .depthWriteEnable = VK_TRUE,
+            .depthCompareOp = VK_COMPARE_OP_LESS,
+
+            .depthBoundsTestEnable = VK_TRUE,
+            .minDepthBounds = 0.0f, // Optional
+            .maxDepthBounds = 1.0f, // Optional
+
+            .stencilTestEnable = VK_FALSE,
+            .front = {}, // Optional
+            .back = {}, // Optional
+    };
+
     VkGraphicsPipelineCreateInfo pipelineInfo = {
             .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
             .stageCount = (std::uint32_t)shaderStages.size(),
@@ -185,7 +200,7 @@ VKGraphicPipeline::VKGraphicPipeline(VKDevice* device, const GraphicPipelineCrea
             .pViewportState = &viewportState,
             .pRasterizationState = &rasterizer,
             .pMultisampleState = &multisampling,
-            .pDepthStencilState = nullptr, // Optional
+            .pDepthStencilState = &depthStencilStateCreateInfo,
             .pColorBlendState = &colorBlending,
             .pDynamicState = nullptr, // Optional
 
@@ -225,10 +240,20 @@ void VKGraphicPipeline::CreateRenderPass(VKDevice* device)
                             .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
                             .loadOp = RHI::AttachmentLoadOp::CLEAR,
                             .storeOp = RHI::AttachmentStoreOp::STORE,
-                            .stencilLoadOp = RHI::AttachmentLoadOp::DONT_CARE,
-                            .stencilStoreOp = RHI::AttachmentStoreOp::DONT_CARE,
+                            .stencilLoadOp = RHI::AttachmentLoadOp::CLEAR,
+                            .stencilStoreOp = RHI::AttachmentStoreOp::STORE,
                             .initialLayout = RHI::ImageLayout::UNDEFINED,
                             .finalLayout = RHI::ImageLayout::PRESENT_SRC_KHR
+                    },
+                    RHI::AttachmentDescription {
+                            .format = RHI::Format::D24_UNORM_S8_UINT,
+                            .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
+                            .loadOp = RHI::AttachmentLoadOp::CLEAR,
+                            .storeOp = RHI::AttachmentStoreOp::STORE,
+                            .stencilLoadOp = RHI::AttachmentLoadOp::CLEAR,
+                            .stencilStoreOp = RHI::AttachmentStoreOp::STORE,
+                            .initialLayout = RHI::ImageLayout::UNDEFINED,
+                            .finalLayout = RHI::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL
                     },
             },
             .subpasses = {
@@ -239,13 +264,12 @@ void VKGraphicPipeline::CreateRenderPass(VKDevice* device)
                                             .layout = RHI::ImageLayout::COLOR_ATTACHMENT_OPTIMAL
                                     },
                             },
-                            .colorAttachments = {
-                                    AttachmentReference {
-                                            .attachment = 0,
-                                            .layout = ImageLayout::COLOR_ATTACHMENT_OPTIMAL
+                            .depthStencilAttachment = {
+                                    RHI::AttachmentReference {
+                                            .attachment = 1,
+                                            .layout = RHI::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                                     },
                             },
-                            .depthStencilAttachment = {},
                             .inputAttachments = {},
                             .pipelineBindPoint = RHI::PipelineBindPoint::GRAPHICS,
                             .preserveAttachments = {},

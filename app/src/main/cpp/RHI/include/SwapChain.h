@@ -8,6 +8,7 @@
 #include "Macros.h"
 #include "RHIObjectBase.h"
 #include "TextureView.h"
+#include "Queue.h"
 
 
 
@@ -21,6 +22,8 @@ public:
     virtual ~SwapChain() = default;
 
     virtual TextureView* GetCurrentTexture() = 0;
+
+    virtual void Present(const Queue* queue) = 0;
 };
 
 NS_RHI_END

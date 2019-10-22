@@ -73,15 +73,61 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
 
     rhiDevice_ = new RHI::VKDevice(window);
 
+//    const std::vector<TVertex> vertices = {
+//            {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+//            {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+//            {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+//            {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+//    };
+
     const std::vector<TVertex> vertices = {
-            {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-            {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-            {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-            {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+            // Front face
+            {{-1.0f, -1.0f,  1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
+            {{ 1.0f, -1.0f,  1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+            {{ 1.0f,  1.0f,  1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+            {{-1.0f,  1.0f,  1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+
+            // Back face
+            {{-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
+            {{-1.0f,  1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+            {{ 1.0f,  1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+            {{ 1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+
+            // Top face
+            {{-1.0f,  1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
+            {{-1.0f,  1.0f,  1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+            {{ 1.0f,  1.0f,  1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+            {{ 1.0f,  1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+
+            // Bottom face
+            {{-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
+            {{ 1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+            {{ 1.0f, -1.0f,  1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+            {{-1.0f, -1.0f,  1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+
+            // Right face
+            {{1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
+            {{1.0f,  1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+            {{1.0f,  1.0f,  1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+            {{1.0f, -1.0f,  1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+
+            // Left face
+            {{-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
+            {{-1.0f, -1.0f,  1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+            {{-1.0f,  1.0f,  1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+            {{-1.0f,  1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
     };
+
     rhiVertexBuffer_ = rhiDevice_->CreateBuffer(RHI::BufferUsageFlagBits::VERTEX_BUFFER_BIT, RHI::SharingMode::EXCLUSIVE, sizeof(vertices[0]) * vertices.size(), vertices.data());
 
-    const std::vector<uint16_t> indices = { 0, 1, 2, 2, 3, 0};
+    const std::vector<uint16_t> indices = {
+            0,  1,  2,      0,  2,  3,    // front
+            4,  5,  6,      4,  6,  7,    // back
+            8,  9,  10,     8,  10, 11,   // top
+            12, 13, 14,     12, 14, 15,   // bottom
+            16, 17, 18,     16, 18, 19,   // right
+            20, 21, 22,     20, 22, 23,   // left
+    };
     rhiIndexBuffer_ = rhiDevice_->CreateBuffer(RHI::BufferUsageFlagBits::INDEX_BUFFER_BIT, RHI::SharingMode::EXCLUSIVE, sizeof(indices[0]) * indices.size(), indices.data());
 
     UniformBufferObject ubo = {};
@@ -92,40 +138,6 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     ubo.proj[1][1] *= -1;
 
     rhiUniformBuffer_ = rhiDevice_->CreateBuffer(RHI::BufferUsageFlagBits::UNIFORM_BUFFER_BIT, RHI::SharingMode::EXCLUSIVE, sizeof(UniformBufferObject), &ubo);
-
-    RHI::RenderPassCreateInfo renderPassCreateInfo {
-        .attachments = {
-                RHI::AttachmentDescription {
-                    .format = RHI::Format::B8G8R8_UNORM,
-                    .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
-                    .loadOp = RHI::AttachmentLoadOp::CLEAR,
-                    .storeOp = RHI::AttachmentStoreOp::STORE,
-                    .stencilLoadOp = RHI::AttachmentLoadOp::DONT_CARE,
-                    .stencilStoreOp = RHI::AttachmentStoreOp::DONT_CARE,
-                    .initialLayout = RHI::ImageLayout::UNDEFINED,
-                    .finalLayout = RHI::ImageLayout::PRESENT_SRC_KHR
-                },
-        },
-        .subpasses = {
-                RHI::SubpassDescription {
-                    .colorAttachments = {
-                            RHI::AttachmentReference {
-                                .attachment = 0,
-                                .layout = RHI::ImageLayout::COLOR_ATTACHMENT_OPTIMAL
-                            },
-                    },
-                    .colorAttachments = {},
-                    .depthStencilAttachment = {},
-                    .inputAttachments = {},
-                    .pipelineBindPoint = RHI::PipelineBindPoint::GRAPHICS,
-                    .preserveAttachments = {},
-                    .resolveAttachments = {}
-                },
-        },
-        .dependencies = {}
-    };
-
-    rhiRenderPass_ = rhiDevice_->CreateRenderPass(renderPassCreateInfo);
 
     // ------------ Start setup GraphicPipeline object ---------------
 
@@ -174,8 +186,6 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
 
     rhiPipelineLayout_ = rhiDevice_->CreatePipelineLayout({rhiBindGroupLayout_});
 
-//    rhiBindGroup_ = rhiDevice_->CreateBindGroup(rhiBindGroupLayout_, )
-
     // Step 2. setup vertex attribute info
 
     RHI::PipelineVertexInputStateCreateInfo vertexInputInfo = {
@@ -190,7 +200,7 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
                     RHI::VertexInputAttributeDescription {
                             .binding = 0,
                             .location = 0,
-                            .format = RHI::Format::R32G32_SFLOAT,
+                            .format = RHI::Format::R32G32B32_SFLOAT,
                             .offset = offsetof(TVertex, pos)
                     },
                     RHI::VertexInputAttributeDescription {
@@ -214,16 +224,6 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     std::vector<RHI::Viewport> viewports = {
             viewport,
     };
-
-//      // Two viewports.
-//    std::vector<RHI::Viewport> viewports = {
-//            RHI::Viewport {
-//                .x = 0, .y = 0, .width = viewport.width, .height = viewport.height / 2, .minDepth = 0.0f, .maxDepth = 1.0f
-//            },
-//            RHI::Viewport {
-//                    .x = 0, .y = viewport.height / 2, .width = viewport.width, .height = viewport.height / 2, .minDepth = 0.0f, .maxDepth = 1.0f
-//            },
-//    };
 
     std::vector<RHI::Scissor>  scissors = {
             RHI::Scissor{
@@ -259,19 +259,6 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
         throw std::runtime_error("failed to load texture image!");
     }
 
-//    ImageCreateFlags       flags;
-//    ImageType              imageType;
-//    Format                 format;
-//    Extent3D               extent;
-//    uint32_t               mipLevels;
-//    uint32_t               arrayLayers;
-//    SampleCountFlagBits    samples;
-//    ImageTiling            tiling;
-//    ImageUsageFlags        usage;
-//    SharingMode            sharingMode;
-//    ImageLayout            initialLayout;
-//    const void*            imageData;
-
     RHI::ImageCreateInfo imageCreateInfo {
         .imageType = RHI::ImageType::IMAGE_TYPE_2D,
         .format    = RHI::Format::R8G8B8A8_UNORM,
@@ -292,6 +279,30 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     rhiTextureView_ = rhiDevice_->CreateTextureView(rhiTexture_);
 
     stbi_image_free(pixels);
+
+    // Create Depth Stencil texture and textureview
+    {
+        VkExtent2D extent2D = rhiDevice_->GetSwapChainExtent2D();
+
+        RHI::ImageCreateInfo imageCreateInfo {
+                .imageType = RHI::ImageType::IMAGE_TYPE_2D,
+                .format    = RHI::Format::D24_UNORM_S8_UINT,
+                .extent = {
+                        .width = (std::uint32_t)extent2D.width,
+                        .height= (std::uint32_t)extent2D.height,
+                        .depth = 1
+                },
+                .mipLevels = 1,
+                .arrayLayers = 1,
+                .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
+                .tiling = RHI::ImageTiling::OPTIMAL,
+                .sharingMode = RHI::SharingMode::EXCLUSIVE,
+                .imageData = nullptr,
+        };
+
+        rhiDSTexture_ = rhiDevice_->CreateTexture(imageCreateInfo);
+        rhiDSTextureView_ = rhiDevice_->CreateTextureView(rhiDSTexture_);
+    }
 
     rhiSampler_ = rhiDevice_->CreateSampler();
 
@@ -318,8 +329,8 @@ void RealRenderer::testRotate()
 
     UniformBufferObject ubo = {};
     ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), rhiDevice_->GetViewport().width / (float) rhiDevice_->GetViewport().height, 0.1f, 10.0f);
+    ubo.view = glm::lookAt(glm::vec3(.0f, 8.0f, .0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.proj = glm::perspective(glm::radians(45.0f), rhiDevice_->GetViewport().width / (float) rhiDevice_->GetViewport().height, 2.0f, 20.0f);
     ubo.proj[1][1] *= -1;
 
     rhiDevice_->WriteBuffer(rhiUniformBuffer_, &ubo, 0, sizeof(UniformBufferObject));
@@ -328,8 +339,6 @@ void RealRenderer::testRotate()
 void RealRenderer::drawFrame()
 {
     testRotate();
-    
-    rhiDevice_->BeginRenderpass();
 
     std::vector<RHI::RenderPassColorAttachmentDescriptor> colorAttachments = {
             RHI::RenderPassColorAttachmentDescriptor {
@@ -339,18 +348,28 @@ void RealRenderer::drawFrame()
                 .storeOp= RHI::AttachmentStoreOp::STORE
             }
     };
-    RHI::RenderPassDescriptor renderPassDescriptor = {
-        .colorAttachments = colorAttachments,
+
+    RHI::RenderPassDescriptor renderPassDescriptor;
+    renderPassDescriptor.colorAttachments = std::move(colorAttachments);
+    renderPassDescriptor.depthStencilAttachment = {
+            .attachment = rhiDSTextureView_,
+            .depthLoadOp = RHI::AttachmentLoadOp::CLEAR,
+            .depthLoadValue = 1.0f,
+            .depthStoreOp = RHI::AttachmentStoreOp::STORE,
+            .stencilLoadOp = RHI::AttachmentLoadOp::CLEAR,
+            .stencilLoadValue = 0,
+            .stencilStoreOp = RHI::AttachmentStoreOp::STORE,
     };
-//
+
     auto renderPassEncoder = rhiCommandEncoder_->BeginRenderPass(renderPassDescriptor);
 
+    // Render a tile with texture.
     {
         renderPassEncoder->SetGraphicPipeline(rhiGraphicPipeline_);
         renderPassEncoder->SetVertexBuffer(rhiVertexBuffer_, 0);
         renderPassEncoder->SetIndexBuffer(rhiIndexBuffer_, 0);
         renderPassEncoder->SetBindGroup(0, rhiBindGroup_);
-        renderPassEncoder->DrawIndxed(6, 0);
+        renderPassEncoder->DrawIndxed(36, 0);
     }
 
     renderPassEncoder->EndPass();
@@ -359,29 +378,6 @@ void RealRenderer::drawFrame()
 
     rhiQueue_->Submit(commandBuffer);
 
-    rhiDevice_->EndRenderpass();
-
-//    renderPassEncoder->SetGraphicPipeline(rhiGraphicPipeline_);
-//    renderPassEncoder->SetVertexBuffer(rhiVertexBuffer_, 0);
-//    renderPassEncoder->SetIndexBuffer(rhiIndexBuffer_, 0);
-//    rhiDevice_->SetBindGroupToGraphicPipeline(rhiBindGroup_, rhiGraphicPipeline_);
-//    renderPassEncoder->DrawIndxed(6, 0);
-
-//    {
-//        testRotate();
-//        rhiDevice_->BeginRenderpass();
-//        rhiDevice_->BindGraphicPipeline(rhiGraphicPipeline_);
-//        rhiDevice_->BindVertexBuffer(rhiVertexBuffer_, 0);
-//        rhiDevice_->BindIndexBuffer(rhiIndexBuffer_, 0);
-//        rhiDevice_->SetBindGroupToGraphicPipeline(rhiBindGroup_, rhiGraphicPipeline_);
-//        rhiDevice_->DrawIndxed(6, 0);
-//        rhiDevice_->EndRenderpass();
-//    }
-
-
-    // TODO
-    //rhiQueue_->Submit(nullptr);
-
-//    rhiDevice_->Draw(3, 0);
-//    rhiDevice_->EndRenderpass();
+    // Render to screen.
+    rhiSwapChain_->Present(rhiQueue_);
 }

@@ -72,10 +72,6 @@ public:
 
     virtual void WriteBindGroup(const BindGroup* bindGroup) = 0;
 
-    virtual void BeginRenderpass() = 0;
-
-    virtual void EndRenderpass() = 0;
-
     virtual Viewport GetViewport() = 0;
 
     virtual Scissor  GetScissor()  = 0;

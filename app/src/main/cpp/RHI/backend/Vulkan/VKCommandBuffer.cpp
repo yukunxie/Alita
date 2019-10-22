@@ -9,16 +9,24 @@ NS_RHI_BEGIN
 VKCommandBuffer::VKCommandBuffer(VKDevice* device)
     : device_(device)
 {
-    vkCommandBuffer_ = device->GetCommandBuffer();
+    VkCommandBufferAllocateInfo cmdBufferCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+            .pNext = nullptr,
+            .commandPool = device->GetCommandBufferPool(),
+            .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+            .commandBufferCount = 1
+    };
+
+    CALL_VK(vkAllocateCommandBuffers(device->GetDevice(), &cmdBufferCreateInfo, &vkCommandBuffer_));
 }
 
 VKCommandBuffer::~VKCommandBuffer()
 {
+    vkFreeCommandBuffers(device_->GetDevice(), device_->GetCommandBufferPool(), 1, &vkCommandBuffer_);
 }
 
 void VKCommandBuffer::ResetCommandBuffer()
 {
-    vkCommandBuffer_ = device_->GetCommandBuffer();
 }
 
 

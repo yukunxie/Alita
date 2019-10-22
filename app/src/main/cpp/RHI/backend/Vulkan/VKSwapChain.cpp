@@ -3,6 +3,7 @@
 //
 
 #include "VKSwapChain.h"
+#include "VKQueue.h"
 
 NS_RHI_BEGIN
 
@@ -51,6 +52,11 @@ VKSwapChain::VKSwapChain(VKDevice* device)
         RHI_SAFE_RETAIN(textureImage);
         swapChainImageViews_[i] = textureImage;
     }
+
+    // Create a semaphore to sync swapchain
+    VkSemaphoreCreateInfo semaphoreInfo = {};
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    CALL_VK(vkCreateSemaphore(vkDevice, &semaphoreInfo, nullptr, &vkImageAvailableSemaphore_));
 }
 
 VKSwapChain::~VKSwapChain()
@@ -60,13 +66,44 @@ VKSwapChain::~VKSwapChain()
         RHI_SAFE_RELEASE(textureView);
     }
     swapChainImageViews_.clear();
+    vkDestroySemaphore(device_->GetDevice(), vkImageAvailableSemaphore_, nullptr);
 }
 
 TextureView* VKSwapChain::GetCurrentTexture()
 {
-    auto imageIndex = device_->GetNextImageIndex();
-    RHI_ASSERT(imageIndex >= 0 && imageIndex < swapChainImageViews_.size());
-    return swapChainImageViews_[imageIndex];
+    CALL_VK(vkAcquireNextImageKHR(device_->GetDevice(), device_->GetVkSwapChain(), std::numeric_limits<uint64_t>::max(),
+                                  vkImageAvailableSemaphore_, VK_NULL_HANDLE, &imageIndex_));
+    device_->AddWaitingSemaphore(vkImageAvailableSemaphore_);
+    return swapChainImageViews_[imageIndex_];
+}
+
+void VKSwapChain::Present(const Queue* queue)
+{
+    VkSwapchainKHR vkSwapchain = device_->GetVkSwapChain();
+    VkResult result;
+    VkPresentInfoKHR presentInfo{
+            .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+            .pNext = nullptr,
+            .swapchainCount = 1,
+            .pSwapchains = &vkSwapchain,
+            .pImageIndices = &imageIndex_,
+            .waitSemaphoreCount = 0,
+            .pWaitSemaphores = nullptr,
+            .pResults = &result
+    };
+
+    VkQueue vkQueue = RHI_CAST(const VKQueue*, queue)->GetNative();
+    if (auto code = vkQueuePresentKHR(vkQueue, &presentInfo); code == VK_ERROR_OUT_OF_DATE_KHR ||
+                                                               code == VK_SUBOPTIMAL_KHR)
+    {
+        // TODO: recreate swapchain
+    }
+    else if (code != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to present swap chain image!");
+    }
+
+    vkQueueWaitIdle(vkQueue);
 }
 
 NS_RHI_END

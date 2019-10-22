@@ -65,13 +65,15 @@ public:
                         VkPipelineStageFlags srcStages,
                         VkPipelineStageFlags destStages);
 
-    VkCommandBuffer GetCommandBuffer() const {return commandBuffers_[imageIndex_];}
+    VkCommandPool GetCommandBufferPool() const {return vkCommandPool_;}
 
     const QueueFamilyIndices& GetQueueFamilyIndices() const {return queueFamilyIndices_;}
 
-    std::uint32_t GetNextImageIndex();
+    void AddWaitingSemaphore(VkSemaphore semaphore) {waitingSemaphores_.push_back(semaphore);}
 
-    VkSemaphore  GetRenderFinishedSemaphore() const {return vkRenderFinishedSemaphore_;};
+    const std::vector<VkSemaphore>& GetWaitingSemaphores() {return waitingSemaphores_;}
+
+    void ClearWaitingSemaphores() {waitingSemaphores_.clear();}
 
 public:
     virtual Buffer* CreateBuffer(BufferUsageFlagBits usageFlagBits
@@ -111,11 +113,6 @@ public:
 
     virtual void WriteBindGroup(const BindGroup* bindGroup) override ;
 
-
-    virtual void BeginRenderpass() override;
-
-    virtual void EndRenderpass() override;
-
     virtual Viewport GetViewport() override {return viewport_;}
 
     virtual Scissor  GetScissor() override  {return scissor_;}
@@ -131,9 +128,6 @@ private:
     void CreateVKQueue();
     void CreateCommandPool();
     void CreateDescriptorPool();
-    void CreateCommandBuffers();
-    void SetupSynchronizeObjects();
-
 
 private:
     QueueFamilyIndices FindQueueFamilies();
@@ -156,26 +150,17 @@ private:
     VkFormat                        vkSwapchainImageFormat_;
     VkExtent2D                      vkSwapchainExtent_;
     VkDebugReportCallbackEXT        vkDebugReportCallback_;
-//    std::vector<VkImage>            swapChainImages_;
-//    std::vector<VkImageView>        swapChainImageViews_;
-//    std::vector<VkFramebuffer>      framebuffers_;
-    std::vector<VkCommandBuffer>    commandBuffers_;
     QueueFamilyIndices              queueFamilyIndices_;
 
-    VkSemaphore                     vkImageAvailableSemaphore_;
-    VkSemaphore                     vkRenderFinishedSemaphore_;
-    VkFence                         vkFence_;
-
-    std::uint32_t                   imageIndex_ = 0;
     std::uint32_t                   graphicQueueFamilyIndex_ = 0;
 
     Viewport                        viewport_;
     Scissor                         scissor_;
 
     // VK*
-    VKQueue*                        queue_      = nullptr;
-
-    std::map<std::uint64_t, RenderPass*> renderPassCaches_;
+    VKQueue*                                queue_      = nullptr;
+    std::map<std::uint64_t, RenderPass*>    renderPassCaches_;
+    std::vector<VkSemaphore>                waitingSemaphores_;
 
 };
 

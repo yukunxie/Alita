@@ -15,13 +15,15 @@ class VKSwapChain : public SwapChain
 public:
     VKSwapChain(VKDevice* device);
     virtual ~VKSwapChain();
-
 public:
     virtual TextureView* GetCurrentTexture() override ;
+    virtual void Present(const Queue* queue) override ;
 
 private:
-    VKDevice*                       device_             = nullptr;
+    VKDevice*                       device_                     = nullptr;
+    VkSemaphore                     vkImageAvailableSemaphore_  = 0L;
     std::vector<VKTextureView*>     swapChainImageViews_;
+    std::uint32_t imageIndex_   = 0;
 };
 
 NS_RHI_END

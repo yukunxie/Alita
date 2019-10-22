@@ -73,7 +73,7 @@ static const char *kTAG = "RHI";
             case VK_ERROR_NOT_PERMITTED_EXT: message = "VK_ERROR_NOT_PERMITTED_EXT";break;\
             default: break; \
         }\
-        __android_log_print(ANDROID_LOG_ERROR, "Tutorial ",                            \
+        __android_log_print(ANDROID_LOG_ERROR, "Alita",                            \
                         "Vulkan error [%s – %d]. File[%s], line[%d] \n", message, code, __FILE__,     \
                         __LINE__);  \
                         assert(false); \

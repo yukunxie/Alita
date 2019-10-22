@@ -22,6 +22,8 @@ public:
     VKQueue(VKDevice* device);
     virtual ~VKQueue();
 
+    VkQueue GetNative() const {return vkQueue_;}
+
 public:
     virtual void Submit(CommandBuffer* commandBuffer) override;
 

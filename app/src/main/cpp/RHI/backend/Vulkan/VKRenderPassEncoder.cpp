@@ -27,10 +27,20 @@ VKRenderPassEncoder::VKRenderPassEncoder(VKDevice* device)
                             .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
                             .loadOp = RHI::AttachmentLoadOp::CLEAR,
                             .storeOp = RHI::AttachmentStoreOp::STORE,
-                            .stencilLoadOp = RHI::AttachmentLoadOp::DONT_CARE,
-                            .stencilStoreOp = RHI::AttachmentStoreOp::DONT_CARE,
+                            .stencilLoadOp = RHI::AttachmentLoadOp::CLEAR,
+                            .stencilStoreOp = RHI::AttachmentStoreOp::STORE,
                             .initialLayout = RHI::ImageLayout::UNDEFINED,
                             .finalLayout = RHI::ImageLayout::PRESENT_SRC_KHR
+                    },
+                    RHI::AttachmentDescription {
+                            .format = RHI::Format::D24_UNORM_S8_UINT,
+                            .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
+                            .loadOp = RHI::AttachmentLoadOp::CLEAR,
+                            .storeOp = RHI::AttachmentStoreOp::STORE,
+                            .stencilLoadOp = RHI::AttachmentLoadOp::CLEAR,
+                            .stencilStoreOp = RHI::AttachmentStoreOp::STORE,
+                            .initialLayout = RHI::ImageLayout::UNDEFINED,
+                            .finalLayout = RHI::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL
                     },
             },
             .subpasses = {
@@ -41,13 +51,12 @@ VKRenderPassEncoder::VKRenderPassEncoder(VKDevice* device)
                                             .layout = RHI::ImageLayout::COLOR_ATTACHMENT_OPTIMAL
                                     },
                             },
-                            .colorAttachments = {
-                                    AttachmentReference {
-                                            .attachment = 0,
-                                            .layout = ImageLayout::COLOR_ATTACHMENT_OPTIMAL
+                            .depthStencilAttachment = {
+                                    RHI::AttachmentReference {
+                                            .attachment = 1,
+                                            .layout = RHI::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                                     },
                             },
-                            .depthStencilAttachment = {},
                             .inputAttachments = {},
                             .pipelineBindPoint = RHI::PipelineBindPoint::GRAPHICS,
                             .preserveAttachments = {},
@@ -59,47 +68,6 @@ VKRenderPassEncoder::VKRenderPassEncoder(VKDevice* device)
 
     renderPass_ = (VKRenderPass*)device->CreateRenderPass(renderPassCreateInfo);
     RHI_SAFE_RETAIN(renderPass_);
-
-//    VkAttachmentDescription attachmentDescriptions = {
-//            .format = VkFormat::VK_FORMAT_R8G8B8A8_UNORM,
-//            .samples = VK_SAMPLE_COUNT_1_BIT,
-//            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-//            .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-//            .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-//            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-//            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-//            .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-//    };
-//
-//    VkAttachmentReference colourReference = {
-//            .attachment = 0,
-//            .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-//    };
-//
-//    VkSubpassDescription subpassDescription = {
-//            .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-//            .flags = 0,
-//            .inputAttachmentCount = 0,
-//            .pInputAttachments = nullptr,
-//            .colorAttachmentCount = 1,
-//            .pColorAttachments = &colourReference,
-//            .pResolveAttachments = nullptr,
-//            .pDepthStencilAttachment = nullptr,
-//            .preserveAttachmentCount = 0,
-//            .pPreserveAttachments = nullptr
-//    };
-//
-//    VkRenderPassCreateInfo renderPassInfo = {
-//            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-//            .pNext = nullptr, .attachmentCount = 1,
-//            .pAttachments = &attachmentDescriptions,
-//            .subpassCount = 1,
-//            .pSubpasses = &subpassDescription,
-//            .dependencyCount = 0,
-//            .pDependencies = nullptr
-//    };
-//
-//    CALL_VK(vkCreateRenderPass(vkDevice_, &renderPassInfo, nullptr, &vkRenderPass_));
 }
 
 VKRenderPassEncoder::~VKRenderPassEncoder()
@@ -134,26 +102,37 @@ void VKRenderPassEncoder::BeginPass(VkCommandBuffer vkCommandBuffer, const Rende
     }
 
     VKTextureView* colorAttachment = RHI_CAST(VKTextureView*, descriptor.colorAttachments[0].attachment);
-    VkImageView attachments[] = {colorAttachment->GetNative()};
+
+    std::vector<VkImageView> attachments = {colorAttachment->GetNative()};
+
+    VKTextureView* dsAttachment = RHI_CAST(VKTextureView*, descriptor.depthStencilAttachment.attachment);
+    if (dsAttachment)
+    {
+        attachments.push_back(dsAttachment->GetNative());
+    }
+
     const Extent3D& textureSize = colorAttachment->GetTextureSize();
     VkFramebufferCreateInfo framebufferInfo {
             .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
             .pNext = nullptr,
             .renderPass = renderPass_->GetNative(),
             .layers = 1,
-            .attachmentCount = 1,  // 2 if using depth
-            .pAttachments = attachments,
+            .attachmentCount = (std::uint32_t)attachments.size(),  // 2 if using depth
+            .pAttachments = attachments.data(),
             .width = textureSize.width,
             .height = textureSize.height,
     };
 
     CALL_VK(vkCreateFramebuffer(vkDevice_, &framebufferInfo, nullptr, &vkFramebuffer_));
 
-    VkClearValue clearVals{
-            .color.float32[0] = 1.0f,
-            .color.float32[1] = 0.0f,
-            .color.float32[2] = 1.0f,
-            .color.float32[3] = 1.0f
+    std::array<VkClearValue, 2> clearVals = {
+            VkClearValue {
+                .color = {0.0f, 0.0f, 1.0f, 1.0f}
+            },
+            VkClearValue {
+                .depthStencil.depth = 1.0f,
+                .depthStencil.stencil = 0,
+            },
     };
 
     VkRenderPassBeginInfo renderPassBeginInfo = {
@@ -165,8 +144,8 @@ void VKRenderPassEncoder::BeginPass(VkCommandBuffer vkCommandBuffer, const Rende
                     .offset = {.x = 0, .y = 0 },
                     .extent = {.width = textureSize.width, .height = textureSize.height}
             },
-            .clearValueCount = 1,
-            .pClearValues = &clearVals
+            .clearValueCount = (std::uint32_t)clearVals.size(),
+            .pClearValues = clearVals.data()
     };
 
     vkCmdBeginRenderPass(vkCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);

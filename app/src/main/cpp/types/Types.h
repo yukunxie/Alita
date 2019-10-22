@@ -13,7 +13,7 @@ using TVector3 = glm::vec3;
 using TVector2 = glm::vec2;
 
 struct TVertex {
-    TVector2 pos;
+    TVector3 pos;
     TVector3 color;
     TVector2 texCoord;
 };

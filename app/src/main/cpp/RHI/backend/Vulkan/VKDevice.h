@@ -6,12 +6,17 @@
 #define ALITA_VKDEVICE_H
 
 #include "../../include/RHI.h"
+#include "../../include/xxhash64.h"
 #include "drivers/vulkan/vulkan_wrapper.h"
 
 #include <vulkan/vulkan.h>
 #include <android/native_window.h>
+
 #include <vector>
 #include <map>
+#include <unordered_map>
+#include <bitset>
+#include <array>
 
 NS_RHI_BEGIN
 
@@ -37,6 +42,95 @@ struct QueueFamilyIndices
         return graphicsFamily >= 0 && presentFamily >= 0;
     }
 };
+
+struct RenderPassCacheQuery
+{
+    void SetColor(uint32_t index, TextureFormat format, LoadOp loadOp)
+    {
+        colorFormats[index] = format;
+        colorLoadOp[index]  = loadOp;
+        colorMask.set(index, 1);
+    }
+
+    void SetDepthStencil(TextureFormat format, LoadOp depthLoadOp, LoadOp stencilLoadOp)
+    {
+        this->hasDepthStencil = true;
+        this->depthStencilFormat = format;
+        this->depthLoadOp = depthLoadOp;
+        this->stencilLoadOp = stencilLoadOp;
+    }
+
+    bool operator == (const RenderPassCacheQuery& other) const
+    {
+        bool ret = true;
+        ret &= hasDepthStencil == other.hasDepthStencil;
+        ret &= this->depthStencilFormat == other.depthStencilFormat;
+        ret &= this->depthLoadOp == other.depthLoadOp;
+        ret &= this->stencilLoadOp == other.stencilLoadOp;
+        ret &= memcmp(colorFormats.data(), other.colorFormats.data(), sizeof(colorFormats[0]) * colorFormats.size());
+        ret &= memcmp(colorLoadOp.data(), other.colorLoadOp.data(), sizeof(colorLoadOp[0]) * colorLoadOp.size());
+        return ret;
+    }
+
+    size_t operator()() const
+    {
+        size_t byteSize = 0;
+        byteSize += sizeof(this->depthStencilFormat);
+        byteSize += sizeof(this->depthLoadOp);
+        byteSize += sizeof(this->stencilLoadOp);
+        byteSize += sizeof(colorFormats[0]) * colorFormats.size();
+        byteSize += sizeof(colorLoadOp[0]) * colorLoadOp.size();
+        byteSize += sizeof(this->hasDepthStencil);
+
+        std::vector<std::uint8_t> buffer(byteSize, 0);
+        std::uint8_t* pData = buffer.data();
+
+        memcpy(pData, colorFormats.data(), sizeof(colorFormats[0]) * colorFormats.size());
+        pData += sizeof(colorFormats[0]) * colorFormats.size();
+
+        memcpy(pData, colorLoadOp.data(), sizeof(colorLoadOp[0]) * colorLoadOp.size());
+        pData += sizeof(colorLoadOp[0]) * colorLoadOp.size();
+
+        memcpy(pData, &depthStencilFormat, sizeof(depthStencilFormat));
+        pData += sizeof(depthStencilFormat);
+
+        memcpy(pData, &depthLoadOp, sizeof(depthLoadOp));
+        pData += sizeof(depthLoadOp);
+
+        memcpy(pData, &stencilLoadOp, sizeof(stencilLoadOp));
+        pData += sizeof(stencilLoadOp);
+
+        memcpy(pData, &hasDepthStencil, sizeof(hasDepthStencil));
+
+        static XXHash64 _hashFunc (0x21378732);
+
+        return (size_t)(_hashFunc.hash(pData, byteSize, 0));
+    }
+
+    // member data
+    std::bitset<kMaxColorAttachments> colorMask;
+    std::array<TextureFormat, kMaxColorAttachments> colorFormats;
+    std::array<LoadOp, kMaxColorAttachments> colorLoadOp;
+    TextureFormat depthStencilFormat;
+    LoadOp depthLoadOp;
+    LoadOp stencilLoadOp;
+    bool hasDepthStencil = false;
+};
+
+struct RenderPassCacheQueryFuncs
+{
+    size_t operator()(const RenderPassCacheQuery& query) const
+    {
+        return query();
+    }
+
+    bool operator()(const RenderPassCacheQuery& a, const RenderPassCacheQuery& b) const
+    {
+        return a == b;
+    }
+};
+
+typedef std::unordered_map<RenderPassCacheQuery, RenderPass*, RenderPassCacheQueryFuncs, RenderPassCacheQueryFuncs> RenderPassCache;
 
 class VKDevice : public Device
 {
@@ -77,6 +171,8 @@ public:
 
     const VkFormat GetPresentColorFormat() const {return VkFormat::VK_FORMAT_B8G8R8A8_UNORM;}
 
+    RenderPass* GetOrCreateRenderPass(const RenderPassCacheQuery& query);
+
 public:
     virtual Buffer* CreateBuffer(BufferUsageFlagBits usageFlagBits
             , SharingMode sharingMode
@@ -88,8 +184,6 @@ public:
     virtual RenderPipeline* CreateRenderPipeline(const RenderPipelineDescriptor& descriptor) override;
 
     virtual Shader* CreateShader(const std::vector<std::uint8_t>& shaderSource) override;
-
-    virtual RenderPass* CreateRenderPass(const RenderPassCreateInfo& createInfo) override;
 
     virtual Texture* CreateTexture(const ImageCreateInfo& imageCreateInfo) override;
 
@@ -161,9 +255,9 @@ private:
 
     // VK*
     VKQueue*                                queue_      = nullptr;
-    std::map<std::uint64_t, RenderPass*>    renderPassCaches_;
     std::vector<VkSemaphore>                waitingSemaphores_;
 
+    RenderPassCache renderPassCache_;
 };
 
 NS_RHI_END

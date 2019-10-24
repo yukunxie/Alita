@@ -3,6 +3,7 @@
 //
 
 #include "VKTextureView.h"
+#include "VKTypes.h"
 
 NS_RHI_BEGIN
 
@@ -10,10 +11,14 @@ VKTextureView::VKTextureView(VKDevice* device, const VKTexture* vkTexture)
 {
     vkDevice_ = device->GetDevice();
 
+//    texture_ = vkTexture;
+//    RHI_SAFE_RETAIN(texture_);
+
     textureSize_ = vkTexture->GetTextureSize();
+    textureFormat_ = vkTexture->GetFormat();
 
     VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    if (vkTexture->GetFormat() == VkFormat::VK_FORMAT_D24_UNORM_S8_UINT)
+    if (vkTexture->GetVkFormat() == VkFormat::VK_FORMAT_D24_UNORM_S8_UINT)
     {
         aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
     }
@@ -22,7 +27,7 @@ VKTextureView::VKTextureView(VKDevice* device, const VKTexture* vkTexture)
             .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
             .image = vkTexture->GetNative(),
             .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            .format = vkTexture->GetFormat(),
+            .format = vkTexture->GetVkFormat(),
             .components = {
                     .r = VK_COMPONENT_SWIZZLE_R,
                     .g = VK_COMPONENT_SWIZZLE_G,
@@ -45,6 +50,7 @@ VKTextureView::VKTextureView(VKDevice* device, const VkImageViewCreateInfo& imag
 {
     vkDevice_ = device->GetDevice();
     textureSize_ = textureSize;
+    textureFormat_ = GetTextureFormat(imageViewCreateInfo.format);
     CALL_VK(vkCreateImageView(vkDevice_, &imageViewCreateInfo, nullptr, &vkImageView_));
 }
 
@@ -54,6 +60,8 @@ VKTextureView::~VKTextureView()
     {
         vkDestroyImageView(vkDevice_, vkImageView_, nullptr);
     }
+
+    RHI_SAFE_RELEASE(texture_);
 }
 
 NS_RHI_END

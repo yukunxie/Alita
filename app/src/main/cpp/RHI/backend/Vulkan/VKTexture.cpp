@@ -15,6 +15,8 @@ VKTexture::VKTexture(VKDevice* device, const ImageCreateInfo& imageCreateInfo)
 
     vkFormat_ = ToVkFormat(imageCreateInfo.format);
 
+    textureFormat_ = GetTextureFormat(vkFormat_);
+
     // Check for linear supportability
     VkFormatProperties props;
     bool needBlit = true;

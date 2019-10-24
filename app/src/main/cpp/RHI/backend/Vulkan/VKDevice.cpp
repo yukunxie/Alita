@@ -92,6 +92,23 @@ VKDevice::~VKDevice()
     }
 }
 
+RenderPass* VKDevice::GetOrCreateRenderPass(const RenderPassCacheQuery& query)
+{
+    auto it = renderPassCache_.find(query);
+    if (it != renderPassCache_.end())
+    {
+        RHI_SAFE_RETAIN(it->second);
+        return it->second;
+    }
+    auto renderPass = new VKRenderPass(this, query);
+    renderPassCache_[query] = renderPass;
+    RHI_SAFE_RETAIN(renderPass);
+
+    // retain before release
+    RHI_SAFE_RETAIN(renderPass);
+    return renderPass;
+}
+
 Buffer* VKDevice::CreateBuffer(BufferUsageFlagBits usageFlagBits, SharingMode sharingMode, std::uint32_t sizeOfBytes, const void* data)
 {
     Buffer* buffer = new VKBuffer(this, usageFlagBits, sharingMode, sizeOfBytes, data);
@@ -556,81 +573,6 @@ Shader* VKDevice::CreateShader(const std::vector<std::uint8_t>& shaderSource)
     Shader* shader = new VKShader(this, shaderSource);
     RHI_SAFE_RETAIN(shader);
     return shader;
-}
-
-RenderPass* VKDevice::CreateRenderPass(const RenderPassCreateInfo& createInfo)
-{
-//    renderPassCaches_
-
-    std::uint64_t hash = 0;
-    {
-        std::uint32_t size = sizeof(createInfo.flags);
-        size += createInfo.attachments.size() * sizeof(createInfo.attachments[0]);
-        if (createInfo.subpasses.size() > 0) {
-            const SubpassDescription& subpasses = createInfo.subpasses[0];
-            std::uint32_t ssize = 0;
-            {
-                ssize += sizeof(subpasses.flags);
-                ssize += sizeof(subpasses.pipelineBindPoint);
-                ssize += subpasses.inputAttachments.size() * sizeof(subpasses.inputAttachments[0]);
-                ssize += subpasses.colorAttachments.size() * sizeof(subpasses.colorAttachments[0]);
-                ssize += subpasses.resolveAttachments.size() * sizeof(subpasses.resolveAttachments[0]);
-                ssize += subpasses.depthStencilAttachment.size() * sizeof(subpasses.depthStencilAttachment[0]);
-                ssize += subpasses.preserveAttachments.size() * sizeof(subpasses.preserveAttachments[0]);
-            }
-            size += createInfo.subpasses.size() * ssize;
-        }
-        size += createInfo.dependencies.size() * sizeof(createInfo.dependencies[0]);
-
-        std::vector<std::uint8_t> tmp(size, 0);
-        std::uint8_t* pData = tmp.data();
-        memcpy(pData, &createInfo.flags, sizeof(createInfo.flags));
-        pData += sizeof(createInfo.flags);
-
-        memcpy(pData, createInfo.attachments.data(), createInfo.attachments.size() * sizeof(createInfo.attachments[0]));
-        pData += createInfo.attachments.size() * sizeof(createInfo.attachments[0]);
-
-        for (const SubpassDescription& subpass: createInfo.subpasses)
-        {
-            memcpy(pData, &subpass.flags, sizeof(subpass.flags));
-            pData += sizeof(subpass.flags);
-
-            memcpy(pData, &subpass.pipelineBindPoint, sizeof(subpass.pipelineBindPoint));
-            pData += sizeof(subpass.pipelineBindPoint);
-
-            memcpy(pData, subpass.inputAttachments.data(), subpass.inputAttachments.size() * sizeof(subpass.inputAttachments[0]));
-            pData += subpass.inputAttachments.size() * sizeof(subpass.inputAttachments[0]);
-
-            memcpy(pData, subpass.colorAttachments.data(), subpass.colorAttachments.size() * sizeof(subpass.colorAttachments[0]));
-            pData += subpass.colorAttachments.size() * sizeof(subpass.colorAttachments[0]);
-
-            memcpy(pData, subpass.resolveAttachments.data(), subpass.resolveAttachments.size() * sizeof(subpass.resolveAttachments[0]));
-            pData += subpass.resolveAttachments.size() * sizeof(subpass.resolveAttachments[0]);
-
-            memcpy(pData, subpass.depthStencilAttachment.data(), subpass.depthStencilAttachment.size() * sizeof(subpass.depthStencilAttachment[0]));
-            pData += subpass.depthStencilAttachment.size() * sizeof(subpass.depthStencilAttachment[0]);
-
-            memcpy(pData, subpass.preserveAttachments.data(), subpass.preserveAttachments.size() * sizeof(subpass.preserveAttachments[0]));
-            pData += subpass.preserveAttachments.size() * sizeof(subpass.preserveAttachments[0]);
-        }
-
-        memcpy(pData, createInfo.dependencies.data(), createInfo.dependencies.size() * sizeof(createInfo.dependencies[0]));
-
-        hash = gXXHash64Generator.hash(tmp.data(), tmp.size(), 0);
-    }
-
-    if (auto it = renderPassCaches_.find(hash); it != renderPassCaches_.end())
-    {
-        return it->second;
-    }
-
-    RenderPass* renderPass = new VKRenderPass(this, createInfo);
-    RHI_SAFE_RETAIN(renderPass);
-
-    renderPassCaches_[hash] = renderPass;
-    RHI_SAFE_RETAIN(renderPass);
-
-    return renderPass;
 }
 
 Texture* VKDevice::CreateTexture(const ImageCreateInfo& imageCreateInfo)

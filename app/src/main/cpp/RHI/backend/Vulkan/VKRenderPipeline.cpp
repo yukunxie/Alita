@@ -13,389 +13,6 @@
 
 NS_RHI_BEGIN
 
-//VKRenderPipeline::VKRenderPipeline(VKDevice* device, const GraphicPipelineCreateInfo& graphicPipelineCreateInfo)
-//{
-//    VkDevice vkDevice = device->GetDevice();
-//
-//    CreateRenderPass(device);
-//
-//    const std::vector<RHI::PipelineShaderStageCreateInfo>& shaderStageInfos = graphicPipelineCreateInfo.shaderStageInfos;
-//    const PipelineVertexInputStateCreateInfo& vertexInputInfo = graphicPipelineCreateInfo.vertexInputInfo;
-//    const PipelineViewportStateCreateInfo& viewportStateCreateInfo = graphicPipelineCreateInfo.viewportState;
-//
-//    vkPipelineLayout_ = ((const VKPipelineLayout*)graphicPipelineCreateInfo.pPipelineLayout)->GetNative();
-//
-//    // Setup shader modules
-//    std::vector<VkPipelineShaderStageCreateInfo> shaderStages (shaderStageInfos.size());
-//    for (size_t i = 0; i < shaderStageInfos.size(); ++i)
-//    {
-//        const auto& src = shaderStageInfos[i];
-//        auto& dst = shaderStages[i];
-//        dst.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-//        dst.stage = ToVkShaderStageFlagBits(src.stage);
-//        dst.flags = src.flags;
-//        dst.module = ((VKShader*)src.shader)->GetNative();
-//        dst.pName = src.entryName.c_str();
-//    }
-//
-//    // setup vertex attribute input info
-//
-//    std::vector<VkVertexInputBindingDescription> bindingDescriptions(vertexInputInfo.vertexBindingDescriptions.size());
-//    for (size_t i = 0; i < vertexInputInfo.vertexBindingDescriptions.size(); ++i)
-//    {
-//        const auto& src = vertexInputInfo.vertexBindingDescriptions[i];
-//        auto& dst = bindingDescriptions[i];
-//        dst.binding = src.binding;
-//        dst.stride = src.stride;
-//        dst.inputRate = ToVkVertexInputRate(src.inputRate);
-//    }
-//
-//    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(vertexInputInfo.vertexAttributeDescriptions.size());
-//    for (size_t i = 0; i < vertexInputInfo.vertexAttributeDescriptions.size(); ++i)
-//    {
-//        const auto& src = vertexInputInfo.vertexAttributeDescriptions[i];
-//        auto& dst = attributeDescriptions[i];
-//        dst.binding = src.binding;
-//        dst.location = src.location;
-//        dst.offset = src.offset;
-//        dst.format = ToVkFormat(src.format);
-//    }
-//
-//    VkPipelineVertexInputStateCreateInfo vertexInputCreateDescription = {
-//            .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-//            .vertexBindingDescriptionCount = (std::uint32_t)bindingDescriptions.size(),
-//            .pVertexBindingDescriptions = bindingDescriptions.data(),
-//            .vertexAttributeDescriptionCount = (std::uint32_t)attributeDescriptions.size(),
-//            .pVertexAttributeDescriptions = attributeDescriptions.data()
-//    };
-//
-//    // setup ..
-//
-//    VkPipelineInputAssemblyStateCreateInfo inputAssembly = {
-//            .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-//            .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-//            .primitiveRestartEnable = VK_FALSE
-//    };
-//
-//    // setup viewport
-//
-//    std::vector<VkViewport> viewports(viewportStateCreateInfo.viewports.size());
-//    for (size_t i = 0; i < viewportStateCreateInfo.viewports.size(); ++i)
-//    {
-//        const auto& src = viewportStateCreateInfo.viewports[i];
-//        auto& dst = viewports[i];
-//        dst.x = src.x;
-//        dst.y = src.y;
-//        dst.width  = src.width;
-//        dst.height = src.height;
-//        dst.minDepth = src.minDepth;
-//        dst.maxDepth = src.maxDepth;
-//    }
-//
-//    std::vector<VkRect2D> scissors(viewportStateCreateInfo.scissors.size());
-//    for (size_t i = 0; i < viewportStateCreateInfo.scissors.size(); ++i)
-//    {
-//        const auto &src = viewportStateCreateInfo.scissors[i];
-//        auto &dst = scissors[i];
-//        dst.offset.x = src.x;
-//        dst.offset.y = src.y;
-//        dst.extent.width = src.width;
-//        dst.extent.height = src.height;
-//    }
-//
-//    VkPipelineViewportStateCreateInfo viewportState = {
-//            .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-//            .viewportCount = (std::uint32_t)viewports.size(),
-//            .pViewports = viewports.data(),
-//            .scissorCount = (std::uint32_t)scissors.size(),
-//            .pScissors = scissors.data(),
-//    };
-//
-//    // setup rasterization info
-//
-//    VkPipelineRasterizationStateCreateInfo rasterizer = {
-//            .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-//            .depthClampEnable = VK_TRUE,
-//            .rasterizerDiscardEnable = VK_FALSE,
-//            .polygonMode = VK_POLYGON_MODE_FILL,
-//            .lineWidth = 1.0f,
-//            .cullMode = VK_CULL_MODE_NONE,
-//            .depthBiasEnable = VK_FALSE,
-//            .depthBiasConstantFactor = 0.0f,    // Optional
-//            .depthBiasClamp = 0.0f,             // Optional
-//            .depthBiasSlopeFactor = 0.0f,       // Optional
-//    };
-//
-//    VkPipelineMultisampleStateCreateInfo multisampling = {
-//            .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-//            .sampleShadingEnable = VK_FALSE,
-//            .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
-//            .minSampleShading = 1.0f, // Optional
-//            .pSampleMask = nullptr, // Optional
-//            .alphaToCoverageEnable = VK_FALSE, // Optional
-//            .alphaToOneEnable = VK_FALSE, // Optional
-//    };
-//
-//    VkPipelineColorBlendAttachmentState colorBlendAttachment = {
-//            .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
-//            .blendEnable = VK_FALSE,
-//
-//            .srcColorBlendFactor = VK_BLEND_FACTOR_ONE, // Optional
-//            .dstColorBlendFactor = VK_BLEND_FACTOR_ZERO, // Optional
-//            .colorBlendOp = VK_BLEND_OP_ADD, // Optional
-//            .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE, // Optional
-//            .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO, //Optional
-//            .alphaBlendOp = VK_BLEND_OP_ADD, // Optional
-//
-//            //            .blendEnable = VK_TRUE,
-//            //            .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
-//            //            .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-//            //            .colorBlendOp = VK_BLEND_OP_ADD,
-//            //            .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
-//            //            .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
-//            //            .alphaBlendOp = VK_BLEND_OP_ADD,
-//    };
-//
-//    VkPipelineColorBlendStateCreateInfo colorBlending = {
-//            .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-//            .logicOpEnable = VK_FALSE,
-//            .logicOp = VK_LOGIC_OP_COPY, // Optional
-//            .attachmentCount = 1,
-//            .pAttachments = &colorBlendAttachment,
-//            .blendConstants[0] = 0.0f, // Optional
-//            .blendConstants[1] = 0.0f, // Optional
-//            .blendConstants[2] = 0.0f, // Optional
-//            .blendConstants[3] = 0.0f, // Optional
-//    };
-//
-//    VkDynamicState dynamicStates[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_LINE_WIDTH };
-//
-//    VkPipelineDynamicStateCreateInfo dynamicState = {
-//            .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-//            .dynamicStateCount = 2,
-//            .pDynamicStates = dynamicStates,
-//    };
-//
-//    VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo {
-//            .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-//            .depthTestEnable = VK_TRUE,
-//            .depthWriteEnable = VK_TRUE,
-//            .depthCompareOp = VK_COMPARE_OP_LESS,
-//
-//            .depthBoundsTestEnable = VK_TRUE,
-//            .minDepthBounds = 0.0f, // Optional
-//            .maxDepthBounds = 1.0f, // Optional
-//
-//            .stencilTestEnable = VK_FALSE,
-//            .front = {}, // Optional
-//            .back = {}, // Optional
-//    };
-//
-//    VkGraphicsPipelineCreateInfo pipelineInfo = {
-//            .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-//            .stageCount = (std::uint32_t)shaderStages.size(),
-//            .pStages = shaderStages.data(),
-//            .pVertexInputState = &vertexInputCreateDescription,
-//            .pInputAssemblyState = &inputAssembly,
-//            .pViewportState = &viewportState,
-//            .pRasterizationState = &rasterizer,
-//            .pMultisampleState = &multisampling,
-//            .pDepthStencilState = &depthStencilStateCreateInfo,
-//            .pColorBlendState = &colorBlending,
-//            .pDynamicState = nullptr, // Optional
-//
-//            .layout = vkPipelineLayout_,
-//            .renderPass = renderPass_->GetNative(),
-//            .subpass = 0,
-//
-//            .basePipelineHandle = VK_NULL_HANDLE, // Optional
-//            .basePipelineIndex = -1, // Optional
-//    };
-//
-//    if (vkCreateGraphicsPipelines(vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkGraphicsPipeline_) != VK_SUCCESS)
-//    {
-//        throw std::runtime_error("failed to create graphics pipeline!");
-//    }
-//}
-
-static VkPrimitiveTopology GetPrimitiveTopology(PrimitiveTopology topology)
-{
-    return (VkPrimitiveTopology)topology;
-}
-
-static VkVertexInputRate GetVertexInputRate(InputStepMode mode)
-{
-    switch (mode)
-    {
-        case InputStepMode::VERTEX :
-            return VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX;
-        case InputStepMode::INSTANCE:
-            return VkVertexInputRate::VK_VERTEX_INPUT_RATE_INSTANCE;
-    }
-}
-
-static std::uint32_t GetVertexFormatSize(VertexFormat format)
-{
-    switch (format)
-    {
-        case VertexFormat::UCHAR2 :
-            return 2;
-        case VertexFormat::UCHAR4 :
-            return 4;
-        case VertexFormat::CHAR2 :
-            return 2;
-        case VertexFormat::CHAR4 :
-            return 4;
-        case VertexFormat::UCHAR2NORM :
-            return 2;
-        case VertexFormat::UCHAR4NORM :
-            return 4;
-        case VertexFormat::CHAR2NORM :
-            return 2;
-        case VertexFormat::CHAR4NORM :
-            return 4;
-        case VertexFormat::USHORT2 :
-            return 4;
-        case VertexFormat::USHORT4 :
-            return 8;
-        case VertexFormat::SHORT2 :
-            return 4;
-        case VertexFormat::SHORT4 :
-            return 8;
-        case VertexFormat::USHORT2NORM :
-            return 4;
-        case VertexFormat::USHORT4NORM :
-            return 8;
-        case VertexFormat::SHORT2NORM :
-            return 4;
-        case VertexFormat::SHORT4NORM :
-            return 8;
-        case VertexFormat::HALF2 :
-            return 4;
-        case VertexFormat::HALF4 :
-            return 8;
-        case VertexFormat::FLOAT :
-            return 4;
-        case VertexFormat::FLOAT2 :
-            return 8;
-        case VertexFormat::FLOAT3 :
-            return 12;
-        case VertexFormat::FLOAT4 :
-            return 16;
-        case VertexFormat::UINT :
-            return 4;
-        case VertexFormat::UINT2 :
-            return 8;
-        case VertexFormat::UINT3 :
-            return 12;
-        case VertexFormat::UINT4 :
-            return 16;
-        case VertexFormat::INT :
-            return 4;
-        case VertexFormat::INT2 :
-            return 8;
-        case VertexFormat::INT3 :
-            return 12;
-        case VertexFormat::INT4 :
-            return 16;
-    }
-}
-
-static VkFormat GetVkFormat(VertexFormat format)
-{
-    switch (format)
-    {
-        case VertexFormat::UCHAR2 :
-            return VkFormat::VK_FORMAT_R8G8_UINT;
-        case VertexFormat::UCHAR4 :
-            return VkFormat::VK_FORMAT_R8G8B8A8_UINT;
-        case VertexFormat::CHAR2 :
-            return VkFormat::VK_FORMAT_R8G8_SINT;
-        case VertexFormat::CHAR4 :
-            return VkFormat::VK_FORMAT_R8G8B8A8_SINT;
-        case VertexFormat::UCHAR2NORM :
-            return VkFormat::VK_FORMAT_R8G8_UNORM;
-        case VertexFormat::UCHAR4NORM :
-            return VkFormat::VK_FORMAT_R8G8B8A8_UNORM;
-        case VertexFormat::CHAR2NORM :
-            return VkFormat::VK_FORMAT_R8G8_SNORM;
-        case VertexFormat::CHAR4NORM :
-            return VkFormat::VK_FORMAT_R8G8B8A8_SNORM;
-        case VertexFormat::USHORT2 :
-            return VkFormat::VK_FORMAT_R16G16_UINT;
-        case VertexFormat::USHORT4 :
-            return VkFormat::VK_FORMAT_R16G16B16A16_UINT;
-        case VertexFormat::SHORT2 :
-            return VkFormat::VK_FORMAT_R16G16_SINT;
-        case VertexFormat::SHORT4 :
-            return VkFormat::VK_FORMAT_R16G16B16A16_SINT;
-        case VertexFormat::USHORT2NORM :
-            return VkFormat::VK_FORMAT_R16G16_UNORM;
-        case VertexFormat::USHORT4NORM :
-            return VkFormat::VK_FORMAT_R16G16B16A16_UNORM;
-        case VertexFormat::SHORT2NORM :
-            return VkFormat::VK_FORMAT_R16G16_SNORM;
-        case VertexFormat::SHORT4NORM :
-            return VkFormat::VK_FORMAT_R16G16B16A16_SNORM;
-        case VertexFormat::HALF2 :
-            return VkFormat::VK_FORMAT_R16G16_SFLOAT;
-        case VertexFormat::HALF4 :
-            return VkFormat::VK_FORMAT_R16G16B16A16_SFLOAT;
-        case VertexFormat::FLOAT :
-            return VkFormat::VK_FORMAT_R32_SFLOAT;
-        case VertexFormat::FLOAT2 :
-            return VkFormat::VK_FORMAT_R32G32_SFLOAT;
-        case VertexFormat::FLOAT3 :
-            return VkFormat::VK_FORMAT_R32G32B32_SFLOAT;
-        case VertexFormat::FLOAT4 :
-            return VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT;
-        case VertexFormat::UINT :
-            return VkFormat::VK_FORMAT_R32_UINT;
-        case VertexFormat::UINT2 :
-            return VkFormat::VK_FORMAT_R32G32_UINT;
-        case VertexFormat::UINT3 :
-            return VkFormat::VK_FORMAT_R32G32B32_UINT;
-        case VertexFormat::UINT4 :
-            return VkFormat::VK_FORMAT_R32G32B32A32_UINT;
-        case VertexFormat::INT :
-            return VkFormat::VK_FORMAT_R32_SINT;
-        case VertexFormat::INT2 :
-            return VkFormat::VK_FORMAT_R32G32_SINT;
-        case VertexFormat::INT3 :
-            return VkFormat::VK_FORMAT_R32G32B32_SINT;
-        case VertexFormat::INT4 :
-            return VkFormat::VK_FORMAT_R32G32B32A32_SINT;
-    }
-}
-
-static VkBool32 GetVkBoolean(bool b)
-{
-    return b ? VK_TRUE : VK_FALSE;
-}
-
-static VkCompareOp GetCompareOp(CompareFunction compareFunction)
-{
-    switch (compareFunction)
-    {
-        case CompareFunction::NEVER :
-            return VkCompareOp::VK_COMPARE_OP_NEVER;
-        case CompareFunction::LESS :
-            return VkCompareOp::VK_COMPARE_OP_LESS;
-        case CompareFunction::EQUAL :
-            return VkCompareOp::VK_COMPARE_OP_EQUAL;
-        case CompareFunction::LESS_EQUAL :
-            return VkCompareOp::VK_COMPARE_OP_LESS_OR_EQUAL;
-        case CompareFunction::GREATER :
-            return VkCompareOp::VK_COMPARE_OP_GREATER;
-        case CompareFunction::NOT_EQUAL :
-            return VkCompareOp::VK_COMPARE_OP_NOT_EQUAL;
-        case CompareFunction::GREATER_EQUAL :
-            return VK_COMPARE_OP_GREATER_OR_EQUAL;
-        case CompareFunction::ALWAYS :
-            return VK_COMPARE_OP_ALWAYS;
-    }
-}
-
 VKRenderPipeline::VKRenderPipeline(VKDevice* device, const RenderPipelineDescriptor& descriptor)
 {
     vkPipelineLayout_ = RHI_CAST(const VKPipelineLayout*, descriptor.layout)->GetNative();
@@ -586,26 +203,52 @@ VKRenderPipeline::VKRenderPipeline(VKDevice* device, const RenderPipelineDescrip
 
     VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo;
     {
-        const DepthStencilStateDescriptor& dsDescriptor = descriptor.depthStencilState;
+        if (descriptor.depthStencilState.has_value())
+        {
+            const DepthStencilStateDescriptor& dsDescriptor = descriptor.depthStencilState.value();
 
-        depthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-        depthStencilStateCreateInfo.flags = 0;
-        depthStencilStateCreateInfo.depthTestEnable  = dsDescriptor.depthCompare != CompareFunction::ALWAYS ? VK_TRUE : VK_FALSE;
-        depthStencilStateCreateInfo.depthWriteEnable = GetVkBoolean(dsDescriptor.depthWriteEnabled);
-        depthStencilStateCreateInfo.depthCompareOp   = GetCompareOp(dsDescriptor.depthCompare);
+            depthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+            depthStencilStateCreateInfo.flags = 0;
+            depthStencilStateCreateInfo.depthTestEnable  = dsDescriptor.depthCompare != CompareFunction::ALWAYS ? VK_TRUE : VK_FALSE;
+            depthStencilStateCreateInfo.depthWriteEnable = GetVkBoolean(dsDescriptor.depthWriteEnabled);
+            depthStencilStateCreateInfo.depthCompareOp   = GetCompareOp(dsDescriptor.depthCompare);
 
-        depthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
-        depthStencilStateCreateInfo.minDepthBounds = 0.0f; // Optional
-        depthStencilStateCreateInfo.maxDepthBounds = 1.0f; // Optional
+            depthStencilStateCreateInfo.depthBoundsTestEnable = VK_FALSE;
+            depthStencilStateCreateInfo.minDepthBounds = 0.0f; // Optional
+            depthStencilStateCreateInfo.maxDepthBounds = 1.0f; // Optional
 
-        // TODO realxie
-        depthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
-        depthStencilStateCreateInfo.front = {}; // Optional
-        depthStencilStateCreateInfo.back = {}; // Optional
-    };
+            // TODO realxie
+            depthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
+            depthStencilStateCreateInfo.front = {}; // Optional
+            depthStencilStateCreateInfo.back = {}; // Optional
+        }
+        else
+        {
+            depthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+            depthStencilStateCreateInfo.flags = 0;
+            depthStencilStateCreateInfo.depthTestEnable  = VK_FALSE;
+            depthStencilStateCreateInfo.depthWriteEnable = VK_FALSE;
+            depthStencilStateCreateInfo.stencilTestEnable = VK_FALSE;
+        }
+    }
 
-    // TODO realxie
-    CreateRenderPass(device);
+    {
+        RenderPassCacheQuery query;
+        std::uint32_t attachmentCount = 0;
+        for (auto& colorState : descriptor.colorStates)
+        {
+            query.SetColor(attachmentCount, colorState.format, LoadOp::LOAD);
+            attachmentCount++;
+        }
+
+        if (descriptor.depthStencilState.has_value())
+        {
+            const auto& depthStencilState = descriptor.depthStencilState.value();
+            query.SetDepthStencil(depthStencilState.format, LoadOp::LOAD, LoadOp::LOAD);
+        }
+
+        renderPass_ = RHI_CAST(VKRenderPass*, device->GetOrCreateRenderPass(query));
+    }
 
     // The create info chains in a bunch of things created on the stack here or inside state
     // objects.
@@ -642,66 +285,7 @@ VKRenderPipeline::VKRenderPipeline(VKDevice* device, const RenderPipelineDescrip
 VKRenderPipeline::~VKRenderPipeline()
 {
     // TODO release vulkan resource
-
     RHI_SAFE_RELEASE(renderPass_);
-}
-
-void VKRenderPipeline::Bind(VkCommandBuffer cmdBuffer)
-{
-    vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkGraphicsPipeline_);
-}
-
-
-void VKRenderPipeline::CreateRenderPass(VKDevice* device)
-{
-    RenderPassCreateInfo renderPassCreateInfo {
-            .attachments = {
-                    RHI::AttachmentDescription {
-                            .format = RHI::Format::B8G8R8A8_UNORM,
-                            .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
-                            .loadOp = RHI::AttachmentLoadOp::CLEAR,
-                            .storeOp = RHI::AttachmentStoreOp::STORE,
-                            .stencilLoadOp = RHI::AttachmentLoadOp::CLEAR,
-                            .stencilStoreOp = RHI::AttachmentStoreOp::STORE,
-                            .initialLayout = RHI::ImageLayout::UNDEFINED,
-                            .finalLayout = RHI::ImageLayout::PRESENT_SRC_KHR
-                    },
-                    RHI::AttachmentDescription {
-                            .format = RHI::Format::D24_UNORM_S8_UINT,
-                            .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
-                            .loadOp = RHI::AttachmentLoadOp::CLEAR,
-                            .storeOp = RHI::AttachmentStoreOp::STORE,
-                            .stencilLoadOp = RHI::AttachmentLoadOp::CLEAR,
-                            .stencilStoreOp = RHI::AttachmentStoreOp::STORE,
-                            .initialLayout = RHI::ImageLayout::UNDEFINED,
-                            .finalLayout = RHI::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-                    },
-            },
-            .subpasses = {
-                    SubpassDescription {
-                            .colorAttachments = {
-                                    RHI::AttachmentReference {
-                                            .attachment = 0,
-                                            .layout = RHI::ImageLayout::COLOR_ATTACHMENT_OPTIMAL
-                                    },
-                            },
-                            .depthStencilAttachment = {
-                                    RHI::AttachmentReference {
-                                            .attachment = 1,
-                                            .layout = RHI::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                                    },
-                            },
-                            .inputAttachments = {},
-                            .pipelineBindPoint = RHI::PipelineBindPoint::GRAPHICS,
-                            .preserveAttachments = {},
-                            .resolveAttachments = {}
-                    },
-            },
-            .dependencies = {}
-    };
-
-    renderPass_ = (VKRenderPass*)device->CreateRenderPass(renderPassCreateInfo);
-    RHI_SAFE_RETAIN(renderPass_);
 }
 
 NS_RHI_END

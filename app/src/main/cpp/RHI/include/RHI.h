@@ -11,6 +11,7 @@
 #include "Buffer.h"
 #include "CommandBuffer.h"
 #include "CommandEncoder.h"
+#include "Constants.h"
 #include "Device.h"
 #include "Flags.h"
 #include "RenderPipleine.h"

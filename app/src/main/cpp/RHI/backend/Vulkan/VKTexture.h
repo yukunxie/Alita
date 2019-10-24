@@ -24,9 +24,11 @@ public:
 
     VkImage GetNative() const {return vkImage_;}
 
-    VkFormat GetFormat() const {return vkFormat_;}
+    VkFormat GetVkFormat() const {return vkFormat_;}
 
     Extent3D GetTextureSize() const {return textureSize_;}
+
+    virtual TextureFormat  GetFormat() const override {return textureFormat_;};
 
 private:
     void SetImageLayout(const VKDevice* device);
@@ -36,6 +38,7 @@ private:
     VkImage         vkImage_        = 0L;
     VkDeviceMemory  vkDeviceMemory_ = 0L;
     VkFormat        vkFormat_       = VkFormat::VK_FORMAT_R8G8B8A8_UNORM;
+    TextureFormat   textureFormat_;
 
     Extent3D        textureSize_ ;
 };

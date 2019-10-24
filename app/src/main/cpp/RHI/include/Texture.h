@@ -7,8 +7,7 @@
 
 #include "Macros.h"
 #include "RHIObjectBase.h"
-
-
+#include "Descriptors.h"
 
 NS_RHI_BEGIN
 
@@ -20,6 +19,8 @@ public:
     virtual ~Texture()
     {
     }
+
+    virtual TextureFormat  GetFormat() const = 0;
 };
 
 NS_RHI_END

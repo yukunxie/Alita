@@ -261,7 +261,7 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
 
         renderPipelineDescriptor.primitiveTopology = RHI::PrimitiveTopology::TRIANGLE_LIST;
 
-        renderPipelineDescriptor.depthStencilState = {
+        renderPipelineDescriptor.depthStencilState = RHI::DepthStencilStateDescriptor {
                 .depthWriteEnabled = true,
                 .depthCompare = RHI::CompareFunction::LESS,
                 .format = RHI::TextureFormat::DEPTH24PLUS_STENCIL8,
@@ -414,8 +414,9 @@ void RealRenderer::drawFrame()
             RHI::RenderPassColorAttachmentDescriptor {
                 .attachment = rhiSwapChain_->GetCurrentTexture(),
                 .resolveTarget = nullptr,
-                .loadOp = RHI::AttachmentLoadOp::CLEAR,
-                .storeOp= RHI::AttachmentStoreOp::STORE
+                .loadOp = RHI::LoadOp::CLEAR,
+                .loadValue = {1.0f, 0.0f, 0.0f, 1.0f},
+                .storeOp= RHI::StoreOp::STORE,
             }
     };
 
@@ -423,12 +424,12 @@ void RealRenderer::drawFrame()
     renderPassDescriptor.colorAttachments = std::move(colorAttachments);
     renderPassDescriptor.depthStencilAttachment = {
             .attachment = rhiDSTextureView_,
-            .depthLoadOp = RHI::AttachmentLoadOp::CLEAR,
+            .depthLoadOp = RHI::LoadOp::CLEAR,
             .depthLoadValue = 1.0f,
-            .depthStoreOp = RHI::AttachmentStoreOp::STORE,
-            .stencilLoadOp = RHI::AttachmentLoadOp::CLEAR,
+            .depthStoreOp = RHI::StoreOp::STORE,
+            .stencilLoadOp = RHI::LoadOp::CLEAR,
             .stencilLoadValue = 0,
-            .stencilStoreOp = RHI::AttachmentStoreOp::STORE,
+            .stencilStoreOp = RHI::StoreOp::STORE,
     };
 
     auto renderPassEncoder = rhiCommandEncoder_->BeginRenderPass(renderPassDescriptor);

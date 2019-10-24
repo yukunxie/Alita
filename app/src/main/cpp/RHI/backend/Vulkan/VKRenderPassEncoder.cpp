@@ -17,63 +17,63 @@
 NS_RHI_BEGIN
 
 VKRenderPassEncoder::VKRenderPassEncoder(VKDevice* device)
+    : device_(device)
 {
-    vkDevice_ = device->GetDevice();
-
-    RenderPassCreateInfo renderPassCreateInfo {
-            .attachments = {
-                    RHI::AttachmentDescription {
-                            .format = RHI::Format::B8G8R8A8_UNORM,
-                            .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
-                            .loadOp = RHI::AttachmentLoadOp::CLEAR,
-                            .storeOp = RHI::AttachmentStoreOp::STORE,
-                            .stencilLoadOp = RHI::AttachmentLoadOp::CLEAR,
-                            .stencilStoreOp = RHI::AttachmentStoreOp::STORE,
-                            .initialLayout = RHI::ImageLayout::UNDEFINED,
-                            .finalLayout = RHI::ImageLayout::PRESENT_SRC_KHR
-                    },
-                    RHI::AttachmentDescription {
-                            .format = RHI::Format::D24_UNORM_S8_UINT,
-                            .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
-                            .loadOp = RHI::AttachmentLoadOp::CLEAR,
-                            .storeOp = RHI::AttachmentStoreOp::STORE,
-                            .stencilLoadOp = RHI::AttachmentLoadOp::CLEAR,
-                            .stencilStoreOp = RHI::AttachmentStoreOp::STORE,
-                            .initialLayout = RHI::ImageLayout::UNDEFINED,
-                            .finalLayout = RHI::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-                    },
-            },
-            .subpasses = {
-                    SubpassDescription {
-                            .colorAttachments = {
-                                    RHI::AttachmentReference {
-                                            .attachment = 0,
-                                            .layout = RHI::ImageLayout::COLOR_ATTACHMENT_OPTIMAL
-                                    },
-                            },
-                            .depthStencilAttachment = {
-                                    RHI::AttachmentReference {
-                                            .attachment = 1,
-                                            .layout = RHI::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                                    },
-                            },
-                            .inputAttachments = {},
-                            .pipelineBindPoint = RHI::PipelineBindPoint::GRAPHICS,
-                            .preserveAttachments = {},
-                            .resolveAttachments = {}
-                    },
-            },
-            .dependencies = {}
-    };
-
-    renderPass_ = (VKRenderPass*)device->CreateRenderPass(renderPassCreateInfo);
-    RHI_SAFE_RETAIN(renderPass_);
+    vkDevice_ = device_->GetDevice();
+//
+//    RenderPassCreateInfo renderPassCreateInfo {
+//            .attachments = {
+//                    RHI::AttachmentDescription {
+//                            .format = RHI::Format::B8G8R8A8_UNORM,
+//                            .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
+//                            .loadOp = RHI::AttachmentLoadOp::CLEAR,
+//                            .storeOp = RHI::AttachmentStoreOp::STORE,
+//                            .stencilLoadOp = RHI::AttachmentLoadOp::CLEAR,
+//                            .stencilStoreOp = RHI::AttachmentStoreOp::STORE,
+//                            .initialLayout = RHI::ImageLayout::UNDEFINED,
+//                            .finalLayout = RHI::ImageLayout::PRESENT_SRC_KHR
+//                    },
+//                    RHI::AttachmentDescription {
+//                            .format = RHI::Format::D24_UNORM_S8_UINT,
+//                            .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
+//                            .loadOp = RHI::AttachmentLoadOp::CLEAR,
+//                            .storeOp = RHI::AttachmentStoreOp::STORE,
+//                            .stencilLoadOp = RHI::AttachmentLoadOp::CLEAR,
+//                            .stencilStoreOp = RHI::AttachmentStoreOp::STORE,
+//                            .initialLayout = RHI::ImageLayout::UNDEFINED,
+//                            .finalLayout = RHI::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+//                    },
+//            },
+//            .subpasses = {
+//                    SubpassDescription {
+//                            .colorAttachments = {
+//                                    RHI::AttachmentReference {
+//                                            .attachment = 0,
+//                                            .layout = RHI::ImageLayout::COLOR_ATTACHMENT_OPTIMAL
+//                                    },
+//                            },
+//                            .depthStencilAttachment = {
+//                                    RHI::AttachmentReference {
+//                                            .attachment = 1,
+//                                            .layout = RHI::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+//                                    },
+//                            },
+//                            .inputAttachments = {},
+//                            .pipelineBindPoint = RHI::PipelineBindPoint::GRAPHICS,
+//                            .preserveAttachments = {},
+//                            .resolveAttachments = {}
+//                    },
+//            },
+//            .dependencies = {}
+//    };
+//
+//    renderPass_ = (VKRenderPass*)device->CreateRenderPass(renderPassCreateInfo);
+//    RHI_SAFE_RETAIN(renderPass_);
 }
 
 VKRenderPassEncoder::~VKRenderPassEncoder()
 {
     RHI_SAFE_RELEASE(renderPass_);
-
     if (vkFramebuffer_)
     {
         vkDestroyFramebuffer(vkDevice_, vkFramebuffer_, nullptr);
@@ -83,6 +83,27 @@ VKRenderPassEncoder::~VKRenderPassEncoder()
 
 void VKRenderPassEncoder::BeginPass(VkCommandBuffer vkCommandBuffer, const RenderPassDescriptor& descriptor)
 {
+    RHI_SAFE_RELEASE(renderPass_);
+    RenderPassCacheQuery query;
+    {
+        std::uint32_t attachmentCount = 0;
+        for (auto& colorState : descriptor.colorAttachments)
+        {
+            query.SetColor(attachmentCount, colorState.attachment->GetFormat(), colorState.loadOp);
+            attachmentCount++;
+        }
+
+        if (descriptor.depthStencilAttachment.attachment)
+        {
+            auto dsFormat = descriptor.depthStencilAttachment.attachment->GetFormat();
+            auto depthLoadOp   = descriptor.depthStencilAttachment.depthLoadOp;
+            auto stencilLoadOp   = descriptor.depthStencilAttachment.stencilLoadOp;
+            query.SetDepthStencil(dsFormat, depthLoadOp, stencilLoadOp);
+        }
+
+        renderPass_ = RHI_CAST(VKRenderPass*, device_->GetOrCreateRenderPass(query));
+    }
+
     RHI_ASSERT(vkCommandBuffer != 0L);
     vkCommandBuffer_ = vkCommandBuffer;
 
@@ -125,15 +146,21 @@ void VKRenderPassEncoder::BeginPass(VkCommandBuffer vkCommandBuffer, const Rende
 
     CALL_VK(vkCreateFramebuffer(vkDevice_, &framebufferInfo, nullptr, &vkFramebuffer_));
 
-    std::array<VkClearValue, 2> clearVals = {
-            VkClearValue {
-                .color = {0.0f, 0.0f, 1.0f, 1.0f}
-            },
-            VkClearValue {
-                .depthStencil.depth = 1.0f,
-                .depthStencil.stencil = 0,
-            },
-    };
+    std::vector<VkClearValue> clearVals;
+    for (auto& colorState : descriptor.colorAttachments)
+    {
+        VkClearValue clearValue {
+            .color = {colorState.loadValue.r, colorState.loadValue.g, colorState.loadValue.b, colorState.loadValue.a}
+        };
+        clearVals.push_back(clearValue);
+    }
+    {
+        VkClearValue clearValue = {
+            .depthStencil.depth = descriptor.depthStencilAttachment.depthLoadValue,
+            .depthStencil.stencil = descriptor.depthStencilAttachment.stencilLoadValue,
+        };
+        clearVals.push_back(clearValue);
+    }
 
     VkRenderPassBeginInfo renderPassBeginInfo = {
             .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,

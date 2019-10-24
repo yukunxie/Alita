@@ -21,19 +21,14 @@ class VKRenderPass;
 class VKRenderPipeline : public RenderPipeline
 {
 public:
-//    VKRenderPipeline(VKDevice* device, const GraphicPipelineCreateInfo& graphicPipelineCreateInfo);
     VKRenderPipeline(VKDevice* device, const RenderPipelineDescriptor& descriptor);
     virtual ~VKRenderPipeline();
-
-    void Bind(VkCommandBuffer cmdBuffer);
 
     VkPipeline GetNative() const {return vkGraphicsPipeline_;}
 
     VkPipelineLayout GetPipelineLayout() const {return vkPipelineLayout_;}
 
 private:
-
-    void CreateRenderPass(VKDevice* device);
 
 private:
     VkPipeline                      vkGraphicsPipeline_     = 0;

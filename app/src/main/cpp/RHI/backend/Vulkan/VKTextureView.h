@@ -29,10 +29,15 @@ public:
 
     Extent3D GetTextureSize() const {return textureSize_;}
 
+    virtual TextureFormat  GetFormat() const override {return textureFormat_;}
+
 private:
     VkDevice        vkDevice_       = nullptr;
     VkImageView     vkImageView_    = 0L;
     Extent3D        textureSize_;
+
+    VKTexture*      texture_        = nullptr;
+    TextureFormat   textureFormat_;
 };
 
 NS_RHI_END

@@ -54,6 +54,7 @@ public:
     virtual void EndPass() override;
 
 private:
+    VKDevice*       device_             = nullptr;
     VkDevice        vkDevice_           = nullptr;
     VkCommandBuffer vkCommandBuffer_    = 0L;
 //    VkRenderPass    vkRenderPass_       = 0L;

@@ -7,12 +7,15 @@
 
 #include "Macros.h"
 #include "Flags.h"
-#include "TextureView.h"
-#include "PipelineLayout.h"
 
 #include <vector>
+#include <optional>
 
 NS_RHI_BEGIN
+
+class TextureView;
+class Texture;
+class PipelineLayout;
 
 enum class TextureFormat {
     // 8-bit formats
@@ -125,25 +128,41 @@ enum class StoreOp {
     CLEAR,
 };
 
+union Color {
+    struct {
+        float r;
+        float g;
+        float b;
+        float a;
+    };
+
+    struct {
+        float x;
+        float y;
+        float z;
+        float w;
+    };
+};
+
 struct RenderPassColorAttachmentDescriptor
 {
-    TextureView* attachment;
-    TextureView* resolveTarget;
-    // loadValue;
-    AttachmentLoadOp loadOp;
-    AttachmentStoreOp storeOp;
+    TextureView* attachment = nullptr;
+    TextureView* resolveTarget = nullptr;
+    Color loadValue;
+    LoadOp loadOp;
+    StoreOp storeOp;
 };
 
 struct RenderPassDepthStencilAttachmentDescriptor
 {
-    TextureView* attachment;
+    TextureView* attachment = nullptr;
 
-    AttachmentLoadOp depthLoadOp;
-    AttachmentStoreOp depthStoreOp;
+    LoadOp depthLoadOp;
+    StoreOp depthStoreOp;
     float depthLoadValue = 1.0f;
 
-    AttachmentLoadOp stencilLoadOp;
-    AttachmentStoreOp stencilStoreOp;
+    LoadOp stencilLoadOp;
+    StoreOp stencilStoreOp;
     std::uint32_t stencilLoadValue = 0;
 };
 
@@ -258,7 +277,7 @@ struct RenderPipelineDescriptor : public PipelineDescriptorBase {
     PrimitiveTopology primitiveTopology;
     RasterizationStateDescriptor rasterizationState;
     std::vector<ColorStateDescriptor> colorStates;
-    DepthStencilStateDescriptor depthStencilState;
+    std::optional<DepthStencilStateDescriptor> depthStencilState;
     VertexInputDescriptor vertexInput;
 
     std::uint32_t sampleCount = 1;

@@ -7,6 +7,7 @@
 
 #include "../../include/Macros.h"
 #include "../../include/Flags.h"
+#include "../../include/Descriptors.h"
 
 #include <vulkan/vulkan.h>
 
@@ -25,6 +26,17 @@ VkImageUsageFlags ToVkImageUsageFlags(ImageUsageFlags imageUsageFlags);
 VkImageType ToVkImageType(ImageType imageType);
 VkDescriptorType ToVkDescriptorType(DescriptorType type);
 VkShaderStageFlags ToVkShaderStageFlags(ShaderStageFlags flag);
+
+VkPrimitiveTopology GetPrimitiveTopology(PrimitiveTopology topology);
+VkVertexInputRate GetVertexInputRate(InputStepMode mode);
+std::uint32_t GetVertexFormatSize(VertexFormat format);
+VkFormat GetVkFormat(VertexFormat format);
+VkFormat GetVkFormat(TextureFormat format);
+TextureFormat GetTextureFormat(VkFormat format);
+VkBool32 GetVkBoolean(bool b);
+VkCompareOp GetCompareOp(CompareFunction compareFunction);
+VkAttachmentLoadOp GetLoadOp(LoadOp op);
+
 
 NS_RHI_END
 

@@ -20,6 +20,8 @@ public:
     virtual ~TextureView()
     {
     }
+
+    virtual TextureFormat  GetFormat() const = 0;
 };
 
 NS_RHI_END

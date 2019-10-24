@@ -7,7 +7,7 @@
 
 #include "Macros.h"
 #include "RHIObjectBase.h"
-#include "GraphicPipleine.h"
+#include "RenderPipleine.h"
 #include "Buffer.h"
 
 #include <stdint.h>
@@ -20,7 +20,7 @@ public:
     virtual ~RenderPassEncoder() = default;
 
 public:
-    virtual void SetGraphicPipeline(const GraphicPipeline* pipeline) = 0;
+    virtual void SetGraphicPipeline(const RenderPipeline* pipeline) = 0;
 
     virtual void SetIndexBuffer(const Buffer* buffer, std::uint32_t offset = 0) = 0;
 
@@ -38,7 +38,7 @@ public:
 
     virtual void SetViewport(float x, float y, float width, float height, float minDepth, float maxDepth) = 0;
 
-    virtual void SetScissorRect(std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) = 0;
+    virtual void SetScissorRect(std::int32_t x, std::int32_t y, std::uint32_t width, std::uint32_t height) = 0;
 
     virtual void SetStencilReference(std::uint32_t reference) = 0;
 

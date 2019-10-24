@@ -23,6 +23,8 @@ public:
     }
 };
 
+using ShaderModule = Shader;
+
 NS_RHI_END
 
 #endif //ALITA_SHADER_H

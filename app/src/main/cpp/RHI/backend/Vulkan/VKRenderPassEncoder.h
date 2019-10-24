@@ -27,7 +27,7 @@ public:
     void BeginPass(VkCommandBuffer vkCommandBuffer, const RenderPassDescriptor& descriptor);
 
 public:
-    virtual void SetGraphicPipeline(const GraphicPipeline* pipeline) override;
+    virtual void SetGraphicPipeline(const RenderPipeline* pipeline) override;
 
     virtual void SetIndexBuffer(const Buffer* buffer, std::uint32_t offset = 0) override;
 
@@ -45,7 +45,7 @@ public:
 
     virtual void SetViewport(float x, float y, float width, float height, float minDepth, float maxDepth) override;
 
-    virtual void SetScissorRect(std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height) override;
+    virtual void SetScissorRect(std::int32_t x, std::int32_t y, std::uint32_t width, std::uint32_t height) override;
 
     virtual void SetStencilReference(std::uint32_t reference) override;
 
@@ -59,7 +59,7 @@ private:
 //    VkRenderPass    vkRenderPass_       = 0L;
     VkFramebuffer   vkFramebuffer_      = 0L;
 
-    const GraphicPipeline* graphicPipeline_ = nullptr;
+    const RenderPipeline* graphicPipeline_ = nullptr;
 
     class VKRenderPass* renderPass_ = nullptr;
 };

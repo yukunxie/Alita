@@ -2,8 +2,8 @@
 // Created by realxie on 2019-10-04.
 //
 
-#ifndef ALITA_GRAPHICPIPLEINE_H
-#define ALITA_GRAPHICPIPLEINE_H
+#ifndef ALITA_RENDERPIPLEINE_H
+#define ALITA_RENDERPIPLEINE_H
 
 #include "Macros.h"
 #include "Flags.h"
@@ -25,14 +25,14 @@ typedef struct GraphicPipelineCreateInfo
 } GraphicPipelineCreateInfo;
 
 
-class GraphicPipeline : public  RHIObjectBase
+class RenderPipeline : public  RHIObjectBase
 {
 public:
-    virtual ~GraphicPipeline()
+    virtual ~RenderPipeline()
     {
     }
 };
 
 NS_RHI_END
 
-#endif //ALITA_GRAPHICPIPLEINE_H
+#endif //ALITA_RENDERPIPLEINE_H

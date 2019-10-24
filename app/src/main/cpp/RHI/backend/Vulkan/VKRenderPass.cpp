@@ -4,7 +4,7 @@
 
 #include "VKRenderPass.h"
 #include "VKTypes.h"
-#include "VKGraphicPipeline.h"
+#include "VKRenderPipeline.h"
 #include "VKBuffer.h"
 
 #include <vector>
@@ -34,6 +34,8 @@ VKRenderPass::VKRenderPass(VKDevice* device, const RenderPassCreateInfo& createI
     VkSubpassDependency dependency = {};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
     dependency.dstSubpass = 0;
+    dependency.srcStageMask = 0;
+    dependency.dstStageMask = 0;
 
     VkRenderPassCreateInfo renderPassInfo = {
             .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,

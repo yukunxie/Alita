@@ -14,17 +14,23 @@ add_library( # Sets the name of the library.
         STATIC
 
         ${HEADS}
-        ${SRCS}
+        ./VKRenderPipeline.cpp
+        ./VKDevice.cpp
+        ./VKCommandBuffer.cpp
+        ./VKTextureView.cpp
+        ./VKBuffer.cpp
+        ./VKShader.cpp
+        ./VKPipelineLayout.cpp
+        ./VKRenderQueue.cpp
+        ./VKQueue.cpp
+        ./VKBindingResources.cpp
+        ./VKBindGroupLayout.cpp
+        ./VKRenderPassEncoder.cpp
         ./VKTexture.cpp
         ./VKSampler.cpp
-        ./VKBindGroupLayout.cpp
-        ./VKPipelineLayout.cpp
-        ./VKBindingResources.cpp
         ./VKBindGroup.cpp
-        ./VKTextureView.cpp
-        ./VKCommandEncoder.cpp
-        ./VKCommandBuffer.cpp
-        ./VKRenderPassEncoder.cpp
-        ./VKQueue.cpp
+        ./VKRenderPass.cpp
         ./VKSwapChain.cpp
+        ./VKTypes.cpp
+        ./VKCommandEncoder.cpp
         )

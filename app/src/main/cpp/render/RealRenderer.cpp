@@ -139,7 +139,7 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
 
     rhiUniformBuffer_ = rhiDevice_->CreateBuffer(RHI::BufferUsageFlagBits::UNIFORM_BUFFER_BIT, RHI::SharingMode::EXCLUSIVE, sizeof(UniformBufferObject), &ubo);
 
-    // ------------ Start setup GraphicPipeline object ---------------
+    // ------------ Start setup RenderPipeline object ---------------
 
     // Step 1. create shaders
 
@@ -245,9 +245,79 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
             .vertexInputInfo = vertexInputInfo,
     };
 
-    rhiGraphicPipeline_ = rhiDevice_->CreateGraphicPipeline(graphicPipelineCreateInfo);
+    RHI::RenderPipelineDescriptor renderPipelineDescriptor;
+    {
+        renderPipelineDescriptor.layout = rhiPipelineLayout_;
 
-    // ------------ End setup GraphicPipeline object ---------------
+        renderPipelineDescriptor.vertexStage = {
+                .module = rhiVertShader_,
+                .entryPoint = "main"
+        };
+
+        renderPipelineDescriptor.fragmentStage = {
+                .module = rhiFragShader_,
+                .entryPoint = "main"
+        };
+
+        renderPipelineDescriptor.primitiveTopology = RHI::PrimitiveTopology::TRIANGLE_LIST;
+
+        renderPipelineDescriptor.depthStencilState = {
+                .depthWriteEnabled = true,
+                .depthCompare = RHI::CompareFunction::LESS,
+                .format = RHI::TextureFormat::DEPTH24PLUS_STENCIL8,
+                .stencilFront = {},
+                .stencilBack  = {},
+        };
+
+        renderPipelineDescriptor.vertexInput = {
+            .indexFormat = RHI::IndexFormat::UINT32,
+            .vertexBuffers = {
+                 RHI::VertexBufferDescriptor {
+                     .stride = sizeof(TVertex),
+                     .stepMode = RHI::InputStepMode::VERTEX,
+                     .attributeSet = {
+                             RHI::VertexAttributeDescriptor {
+                                 .shaderLocation = 0,
+                                 .format = RHI::VertexFormat::FLOAT3,
+                                 .offset = offsetof(TVertex, pos),
+                             },
+                             RHI::VertexAttributeDescriptor {
+                                     .shaderLocation = 1,
+                                     .format = RHI::VertexFormat::FLOAT3,
+                                     .offset = offsetof(TVertex, color),
+                             },
+                             RHI::VertexAttributeDescriptor {
+                                     .shaderLocation = 2,
+                                     .format = RHI::VertexFormat::FLOAT2,
+                                     .offset = offsetof(TVertex, texCoord),
+                             },
+                     },
+                 },
+            }
+        };
+        renderPipelineDescriptor.rasterizationState = {
+                .frontFace = RHI::FrontFace::COUNTER_CLOCKWISE,
+                .cullMode  = RHI::CullMode::BACK_BIT,
+        };
+
+        renderPipelineDescriptor.colorStates = {
+             RHI::ColorStateDescriptor {
+                 .format = RHI::TextureFormat::BGRA8UNORM,
+                 .alphaBlend = {},
+                 .colorBlend = {},
+                 .writeMask  = RHI::ColorWrite::ALL,
+             }
+        };
+
+        renderPipelineDescriptor.sampleCount = 1;
+        renderPipelineDescriptor.sampleMask  = 0xFFFFFFFF;
+        renderPipelineDescriptor.alphaToCoverageEnabled = false;
+    }
+
+//    rhiGraphicPipeline_ = rhiDevice_->CreateGraphicPipeline(graphicPipelineCreateInfo);
+    rhiGraphicPipeline_ = rhiDevice_->CreateRenderPipeline(renderPipelineDescriptor);
+
+    // ------------ End setup RenderPipeline object ---------------
 
     // setup image
 
@@ -369,6 +439,8 @@ void RealRenderer::drawFrame()
         renderPassEncoder->SetVertexBuffer(rhiVertexBuffer_, 0);
         renderPassEncoder->SetIndexBuffer(rhiIndexBuffer_, 0);
         renderPassEncoder->SetBindGroup(0, rhiBindGroup_);
+        renderPassEncoder->SetViewport(0, 0, 1080, 1810, 0, 1);
+        renderPassEncoder->SetScissorRect(0, 0, 1080, 1810);
         renderPassEncoder->DrawIndxed(36, 0);
     }
 

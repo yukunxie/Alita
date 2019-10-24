@@ -22,7 +22,7 @@ public:
     VKShader(VKDevice* device, const std::vector<std::uint8_t>& shaderSource);
     virtual ~VKShader();
 
-    VkShaderModule  GetNative() {return vkShaderModule_;}
+    VkShaderModule  GetNative() const {return vkShaderModule_;}
 
 private:
     VkShaderModule vkShaderModule_  = 0;

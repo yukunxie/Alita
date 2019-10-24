@@ -16,7 +16,7 @@
 NS_RHI_BEGIN
 
 class VKBuffer;
-class VKGraphicPipeline;
+class VKRenderPipeline;
 class VKShader;
 class VKQueue;
 
@@ -75,6 +75,8 @@ public:
 
     void ClearWaitingSemaphores() {waitingSemaphores_.clear();}
 
+    const VkFormat GetPresentColorFormat() const {return VkFormat::VK_FORMAT_B8G8R8A8_UNORM;}
+
 public:
     virtual Buffer* CreateBuffer(BufferUsageFlagBits usageFlagBits
             , SharingMode sharingMode
@@ -83,7 +85,7 @@ public:
 
     virtual void WriteBuffer(const Buffer* buffer, const void* data, std::uint32_t offset, std::uint32_t size) override;
 
-    virtual GraphicPipeline* CreateGraphicPipeline(const GraphicPipelineCreateInfo& graphicPipelineCreateInfo) override;
+    virtual RenderPipeline* CreateRenderPipeline(const RenderPipelineDescriptor& descriptor) override;
 
     virtual Shader* CreateShader(const std::vector<std::uint8_t>& shaderSource) override;
 

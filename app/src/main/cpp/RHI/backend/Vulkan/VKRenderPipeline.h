@@ -2,12 +2,12 @@
 // Created by realxie on 2019-10-04.
 //
 
-#ifndef ALITA_VKGRAPHICPIPELINE_H
-#define ALITA_VKGRAPHICPIPELINE_H
+#ifndef ALITA_VKRENDERPIPELINE_H
+#define ALITA_VKRENDERPIPELINE_H
 
 #include "VKDevice.h"
 #include "../../include/Macros.h"
-#include "../../include/GraphicPipleine.h"
+#include "../../include/RenderPipleine.h"
 #include "../../include/Flags.h"
 #include "drivers/vulkan/vulkan_wrapper.h"
 
@@ -18,11 +18,12 @@ NS_RHI_BEGIN
 
 class VKRenderPass;
 
-class VKGraphicPipeline : public GraphicPipeline
+class VKRenderPipeline : public RenderPipeline
 {
 public:
-    VKGraphicPipeline(VKDevice* device, const GraphicPipelineCreateInfo& graphicPipelineCreateInfo);
-    virtual ~VKGraphicPipeline();
+//    VKRenderPipeline(VKDevice* device, const GraphicPipelineCreateInfo& graphicPipelineCreateInfo);
+    VKRenderPipeline(VKDevice* device, const RenderPipelineDescriptor& descriptor);
+    virtual ~VKRenderPipeline();
 
     void Bind(VkCommandBuffer cmdBuffer);
 
@@ -45,4 +46,4 @@ private:
 NS_RHI_END
 
 
-#endif //ALITA_VKGRAPHICPIPELINE_H
+#endif //ALITA_VKRENDERPIPELINE_H

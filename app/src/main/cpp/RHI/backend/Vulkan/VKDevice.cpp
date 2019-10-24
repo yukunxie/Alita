@@ -5,7 +5,7 @@
 #include "VKDevice.h"
 #include "VulkanMarcos.h"
 #include "VKBuffer.h"
-#include "VKGraphicPipeline.h"
+#include "VKRenderPipeline.h"
 #include "VKShader.h"
 #include "VKRenderPass.h"
 #include "VKTexture.h"
@@ -370,33 +370,6 @@ void VKDevice::CreateSwapchain()
     // create swapchain.
     CALL_VK(vkCreateSwapchainKHR(vkDevice_, &createInfo, nullptr, &vkSwapchain_));
 
-//    // setup swapChainImages
-//    uint32_t imageCount = 0;
-//    vkGetSwapchainImagesKHR(vkDevice_, vkSwapchain_, &imageCount, nullptr);
-//    swapChainImages_.resize(imageCount);
-//    vkGetSwapchainImagesKHR(vkDevice_, vkSwapchain_, &imageCount, swapChainImages_.data());
-//
-//    // setup swapChainImageViews_
-//    swapChainImageViews_.resize(swapChainImages_.size());
-//    for (size_t i = 0; i < swapChainImages_.size(); i++) {
-//        VkImageViewCreateInfo createInfo = {};
-//        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-//        createInfo.image = swapChainImages_[i];
-//        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-//        createInfo.format = vkSwapchainImageFormat_;
-//        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-//        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-//        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-//        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-//
-//        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-//        createInfo.subresourceRange.baseMipLevel = 0;
-//        createInfo.subresourceRange.levelCount = 1;
-//        createInfo.subresourceRange.baseArrayLayer = 0;
-//        createInfo.subresourceRange.layerCount = 1;
-//
-//        CALL_VK(vkCreateImageView(vkDevice_, &createInfo, nullptr, &swapChainImageViews_[i]));
-//    }
 }
 
 
@@ -436,10 +409,10 @@ QueueFamilyIndices VKDevice::FindQueueFamilies()
 VkSurfaceFormatKHR VKDevice::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
 {
     if (availableFormats.size() == 1 && availableFormats[0].format == VK_FORMAT_UNDEFINED) {
-        return {VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
+        return {GetPresentColorFormat(), VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
     }
     for (const auto &availableFormat : availableFormats) {
-        if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&
+        if (availableFormat.format == GetPresentColorFormat() &&
             availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
             return availableFormat;
         }
@@ -571,9 +544,9 @@ void VKDevice::CreateDescriptorPool()
     CALL_VK(vkCreateDescriptorPool(vkDevice_, &poolInfo, nullptr, &vkDescriptorPool_));
 }
 
-GraphicPipeline* VKDevice::CreateGraphicPipeline(const GraphicPipelineCreateInfo& graphicPipelineCreateInfo)
+RenderPipeline* VKDevice::CreateRenderPipeline(const RenderPipelineDescriptor& descriptor)
 {
-    GraphicPipeline* pipeline = new VKGraphicPipeline(this, graphicPipelineCreateInfo);
+    RenderPipeline* pipeline = new VKRenderPipeline(this, descriptor);
     RHI_SAFE_RETAIN(pipeline);
     return pipeline;
 }

@@ -17,6 +17,7 @@ class ShaderHND;
 class BufferHND;
 
 typedef std::uint32_t Flags;
+typedef std::uint32_t BufferSize;
 
 typedef Flags PipelineVertexInputStateCreateFlags;
 typedef Flags PipelineInputAssemblyStateCreateFlags;
@@ -46,6 +47,7 @@ typedef Flags FramebufferCreateFlags;
 typedef Flags RenderPassCreateFlags;
 typedef Flags AttachmentDescriptionFlags;
 typedef Flags SubpassDescriptionFlags;
+typedef Flags ColorWriteFlags;
 
 #define DEFINE_NON_DISPATCHABLE_HANDLE(object) typedef uint64_t Native##object;
 DEFINE_NON_DISPATCHABLE_HANDLE(Semaphore)
@@ -729,6 +731,19 @@ typedef enum class FrontFace {
     MAX_ENUM = 0x7FFFFFFF
 } FrontFace;
 
+typedef enum CullMode {
+    NONE = 0,
+    FRONT_BIT = 0x00000001,
+    BACK_BIT = 0x00000002,
+    FRONT_AND_BACK = 0x00000003,
+    FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+} CullMode;
+
+typedef Flags CullModeFlags;
+typedef Flags PipelineMultisampleStateCreateFlags;
+typedef Flags PipelineDepthStencilStateCreateFlags;
+typedef Flags PipelineColorBlendStateCreateFlags;
+
 typedef enum class SampleCountFlagBits {
     SAMPLE_COUNT_1_BIT = 0x00000001,
     SAMPLE_COUNT_2_BIT = 0x00000002,
@@ -958,7 +973,7 @@ typedef enum class PipelineBindPoint {
     MAX_ENUM = 0x7FFFFFFF
 } PipelineBindPoint;
 
-typedef enum PipelineStageFlagBits {
+typedef enum class PipelineStageFlagBits {
     TOP_OF_PIPE_BIT = 0x00000001,
     DRAW_INDIRECT_BIT = 0x00000002,
     VERTEX_INPUT_BIT = 0x00000004,

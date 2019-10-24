@@ -4,7 +4,7 @@
 
 #include "VKRenderPassEncoder.h"
 #include "VKTypes.h"
-#include "VKGraphicPipeline.h"
+#include "VKRenderPipeline.h"
 #include "VKBuffer.h"
 #include "VKTextureView.h"
 #include "VKBindGroup.h"
@@ -152,9 +152,9 @@ void VKRenderPassEncoder::BeginPass(VkCommandBuffer vkCommandBuffer, const Rende
 
 }
 
-void VKRenderPassEncoder::SetGraphicPipeline(const GraphicPipeline* graphicPipeline)
+void VKRenderPassEncoder::SetGraphicPipeline(const RenderPipeline* graphicPipeline)
 {
-    VkPipeline vkPipeline = RHI_CAST(const VKGraphicPipeline*, graphicPipeline)->GetNative();
+    VkPipeline vkPipeline = RHI_CAST(const VKRenderPipeline*, graphicPipeline)->GetNative();
     vkCmdBindPipeline(vkCommandBuffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
 
     graphicPipeline_ = graphicPipeline;
@@ -198,23 +198,25 @@ void VKRenderPassEncoder::DrawIndexed(std::uint32_t indexCount, std::uint32_t in
 
 void VKRenderPassEncoder::SetViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
 {
-
+    VkViewport viewport = {x, y, width, height, minDepth, maxDepth};
+    vkCmdSetViewport(vkCommandBuffer_, 0, 1, &viewport);
 }
 
-void VKRenderPassEncoder::SetScissorRect(std::uint32_t x, std::uint32_t y, std::uint32_t width, std::uint32_t height)
+void VKRenderPassEncoder::SetScissorRect(std::int32_t x, std::int32_t y, std::uint32_t width, std::uint32_t height)
 {
-
+    VkRect2D scissor = {{x, y}, {width, height}};
+    vkCmdSetScissor(vkCommandBuffer_, 0, 1, &scissor);
 }
 
 void VKRenderPassEncoder::SetStencilReference(std::uint32_t reference)
 {
-
+//    vkCmdSetStencilReference(vkCommandBuffer_, )
 }
 
 void VKRenderPassEncoder::SetBindGroup(std::uint32_t index, const BindGroup* bindGroup, const std::vector<std::uint32_t>& dynamicOffsets)
 {
     RHI_ASSERT(graphicPipeline_);
-    auto vkGraphicPipeline = RHI_CAST(const VKGraphicPipeline*, graphicPipeline_);
+    auto vkGraphicPipeline = RHI_CAST(const VKRenderPipeline*, graphicPipeline_);
     RHI_CAST(const VKBindGroup*, bindGroup)->BindToCommandBuffer(index, vkCommandBuffer_, vkGraphicPipeline->GetPipelineLayout());
 }
 

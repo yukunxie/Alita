@@ -12,7 +12,7 @@
 #include "CommandBuffer.h"
 #include "CommandEncoder.h"
 #include "Flags.h"
-#include "GraphicPipleine.h"
+#include "RenderPipleine.h"
 #include "Macros.h"
 #include "PipelineLayout.h"
 #include "Queue.h"
@@ -42,7 +42,7 @@ public:
 
     virtual void WriteBuffer(const Buffer* buffer, const void* data, std::uint32_t offset, std::uint32_t size) = 0;
 
-    virtual GraphicPipeline* CreateGraphicPipeline(const GraphicPipelineCreateInfo& graphicPipelineCreateInfo) = 0;
+    virtual RenderPipeline* CreateRenderPipeline(const RenderPipelineDescriptor& descriptor) = 0;
 
     virtual Shader* CreateShader(const std::vector<std::uint8_t>& shaderSource) = 0;
 

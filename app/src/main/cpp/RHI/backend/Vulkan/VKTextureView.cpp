@@ -18,7 +18,7 @@ VKTextureView::VKTextureView(VKDevice* device, VKTexture* vkTexture)
     textureFormat_ = vkTexture->GetFormat();
 
     VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    if (vkTexture->GetVkFormat() == VkFormat::VK_FORMAT_D24_UNORM_S8_UINT)
+    if (vkTexture->GetNativeFormat() == VkFormat::VK_FORMAT_D24_UNORM_S8_UINT)
     {
         aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
     }
@@ -27,7 +27,7 @@ VKTextureView::VKTextureView(VKDevice* device, VKTexture* vkTexture)
             .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
             .image = vkTexture->GetNative(),
             .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            .format = vkTexture->GetVkFormat(),
+            .format = vkTexture->GetNativeFormat(),
             .components = {
                     .r = VK_COMPONENT_SWIZZLE_R,
                     .g = VK_COMPONENT_SWIZZLE_G,

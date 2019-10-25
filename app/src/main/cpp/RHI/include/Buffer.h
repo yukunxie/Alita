@@ -26,6 +26,7 @@ public:
     virtual void* MapWriteAsync()= 0;
     virtual void Unmap() = 0;
     virtual void Destroy() = 0;
+    virtual void SetSubData(std::uint32_t offset, std::uint32_t byteSize, const void* data) = 0;
 };
 
 NS_RHI_END

@@ -10,6 +10,7 @@
 #include "CommandBuffer.h"
 #include "RenderPassEncoder.h"
 #include "Descriptors.h"
+#include "Buffer.h"
 
 NS_RHI_BEGIN
 
@@ -24,6 +25,37 @@ public:
     virtual RenderPassEncoder* BeginRenderPass(const RenderPassDescriptor& descriptor) = 0;
 
     virtual CommandBuffer* Finish() = 0;
+
+    virtual void CopyBufferToBuffer(
+            const Buffer* source,
+            BufferSize sourceOffset,
+            Buffer* destination,
+            BufferSize destinationOffset,
+            BufferSize size) = 0;
+
+    virtual void CopyBufferToTexture(
+            const BufferCopyView& source,
+            TextureCopyView& destination,
+            const Extent3D& copySize) = 0;
+
+//    void copyTextureToBuffer(
+//            GPUTextureCopyView source,
+//            GPUBufferCopyView destination,
+//            GPUExtent3D copySize);
+//
+//    void copyTextureToTexture(
+//            GPUTextureCopyView source,
+//            GPUTextureCopyView destination,
+//            GPUExtent3D copySize);
+//
+//    void copyImageBitmapToTexture(
+//            GPUImageBitmapCopyView source,
+//            GPUTextureCopyView destination,
+//            GPUExtent3D copySize);
+//
+//    void pushDebugGroup(DOMString groupLabel);
+//    void popDebugGroup();
+//    void insertDebugMarker(DOMString markerLabel);
 };
 
 NS_RHI_END

@@ -8,6 +8,7 @@
 #include "../../include/RHI.h"
 #include "../../include/xxhash64.h"
 #include "drivers/vulkan/vulkan_wrapper.h"
+#include "VKTypes.h"
 
 #include <vulkan/vulkan.h>
 #include <android/native_window.h>
@@ -182,7 +183,7 @@ public:
 
     virtual Shader* CreateShader(const std::vector<std::uint8_t>& shaderSource) override;
 
-    virtual Texture* CreateTexture(const ImageCreateInfo& imageCreateInfo) override;
+    virtual Texture* CreateTexture(const TextureDescriptor& descriptor) override ;
 
     virtual Sampler* CreateSampler() override ;
 

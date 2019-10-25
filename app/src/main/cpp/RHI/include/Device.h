@@ -43,7 +43,7 @@ public:
 
     virtual Shader* CreateShader(const std::vector<std::uint8_t>& shaderSource) = 0;
 
-    virtual Texture* CreateTexture(const ImageCreateInfo& imageCreateInfo) = 0;
+    virtual Texture* CreateTexture(const TextureDescriptor& descriptor) = 0;
 
     virtual Sampler* CreateSampler() = 0;
 

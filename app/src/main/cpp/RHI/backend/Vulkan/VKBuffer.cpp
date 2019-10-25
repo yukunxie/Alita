@@ -15,6 +15,8 @@ VKBuffer::VKBuffer(VKDevice* device, const BufferDescriptor& descriptor)
 
     VkBufferCreateInfo bufferInfo = {
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = 0,
             .size = descriptor.size,
             .usage = GetVkBufferUsageFlags(descriptor.usage),
             .sharingMode = VkSharingMode::VK_SHARING_MODE_EXCLUSIVE,
@@ -89,12 +91,22 @@ void* VKBuffer::MapWriteAsync()
 
 void VKBuffer::Unmap()
 {
+    RHI_ASSERT(pData_);
     vkUnmapMemory(vkDevice_, vkBufferMemory_);
     pData_ = nullptr;
 }
 
 void VKBuffer::Destroy()
 {
+}
+
+void VKBuffer::SetSubData(std::uint32_t offset, std::uint32_t byteSize, const void* data)
+{
+    RHI_ASSERT(byteSize > 0);
+    auto pAddress = (std::uint8_t*)MapWriteAsync(offset, byteSize);
+    RHI_ASSERT(pAddress);
+    memcpy(pAddress, data, byteSize);
+    Unmap();
 }
 
 NS_RHI_END

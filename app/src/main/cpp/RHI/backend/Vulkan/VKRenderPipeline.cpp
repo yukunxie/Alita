@@ -136,6 +136,7 @@ VKRenderPipeline::VKRenderPipeline(VKDevice* device, const RenderPipelineDescrip
     VkPipelineColorBlendStateCreateInfo colorBlending;
     {
         colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+        colorBlending.pNext = nullptr;
         colorBlending.flags = 0;
         colorBlending.logicOpEnable = VK_FALSE;
         colorBlending.logicOp = VK_LOGIC_OP_COPY; // Optional
@@ -194,7 +195,8 @@ VKRenderPipeline::VKRenderPipeline(VKDevice* device, const RenderPipelineDescrip
     VkPipelineVertexInputStateCreateInfo vertexInputCreateDescription;
     {
         vertexInputCreateDescription.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputCreateDescription.flags  = 0;
+        vertexInputCreateDescription.pNext = nullptr;
+        vertexInputCreateDescription.flags = 0;
         vertexInputCreateDescription.vertexBindingDescriptionCount = (std::uint32_t)bindingDescriptions.size();
         vertexInputCreateDescription.pVertexBindingDescriptions = bindingDescriptions.data();
         vertexInputCreateDescription.vertexAttributeDescriptionCount = (std::uint32_t)attributeDescriptions.size();
@@ -208,6 +210,7 @@ VKRenderPipeline::VKRenderPipeline(VKDevice* device, const RenderPipelineDescrip
             const DepthStencilStateDescriptor& dsDescriptor = descriptor.depthStencilState.value();
 
             depthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+            depthStencilStateCreateInfo.pNext = nullptr;
             depthStencilStateCreateInfo.flags = 0;
             depthStencilStateCreateInfo.depthTestEnable  = dsDescriptor.depthCompare != CompareFunction::ALWAYS ? VK_TRUE : VK_FALSE;
             depthStencilStateCreateInfo.depthWriteEnable = GetVkBoolean(dsDescriptor.depthWriteEnabled);

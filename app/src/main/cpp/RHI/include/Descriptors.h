@@ -16,6 +16,7 @@ NS_RHI_BEGIN
 class TextureView;
 class Texture;
 class PipelineLayout;
+class Buffer;
 
 enum class TextureFormat {
     // 8-bit formats
@@ -292,15 +293,14 @@ enum class TextureDimension {
     TEXTURE_3D
 };
 
-enum class TextureUsage {
-    COPY_SRC          = 0x01,
-    COPY_DST          = 0x02,
-    SAMPLED           = 0x04,
-    STORAGE           = 0x08,
-    OUTPUT_ATTACHMENT = 0x10,
-};
-
 typedef std::uint32_t TextureUsageFlags;
+struct TextureUsage {
+    static const TextureUsageFlags COPY_SRC          = 0x01;
+    static const TextureUsageFlags COPY_DST          = 0x02;
+    static const TextureUsageFlags SAMPLED           = 0x04;
+    static const TextureUsageFlags STORAGE           = 0x08;
+    static const TextureUsageFlags OUTPUT_ATTACHMENT = 0x10;
+};
 
 struct TextureDescriptor : public ObjectDescriptorBase {
     Extent3D size;
@@ -312,23 +312,59 @@ struct TextureDescriptor : public ObjectDescriptorBase {
     TextureUsageFlags usage;
 };
 
-enum BufferUsage {
-    MAP_READ  = 0x0001,
-    MAP_WRITE = 0x0002,
-    COPY_SRC  = 0x0004,
-    COPY_DST  = 0x0008,
-    INDEX     = 0x0010,
-    VERTEX    = 0x0020,
-    UNIFORM   = 0x0040,
-    STORAGE   = 0x0080,
-    INDIRECT  = 0x0100,
-};
-
 typedef std::uint32_t BufferUsageFlags;
+
+struct BufferUsage {
+    static const BufferUsageFlags MAP_READ  = 0x0001;
+    static const BufferUsageFlags MAP_WRITE = 0x0002;
+    static const BufferUsageFlags COPY_SRC  = 0x0004;
+    static const BufferUsageFlags COPY_DST  = 0x0008;
+    static const BufferUsageFlags INDEX     = 0x0010;
+    static const BufferUsageFlags VERTEX    = 0x0020;
+    static const BufferUsageFlags UNIFORM   = 0x0040;
+    static const BufferUsageFlags STORAGE   = 0x0080;
+    static const BufferUsageFlags INDIRECT  = 0x0100;
+};
 
 struct BufferDescriptor : ObjectDescriptorBase {
     BufferSize size;
     BufferUsageFlags usage;
+};
+
+struct Origin2DDict {
+    std::uint32_t x = 0;
+    std::uint32_t y = 0;
+};
+typedef Origin2DDict Origin2D;
+
+struct Origin3DDict{
+    std::int32_t x = 0;
+    std::int32_t y = 0;
+    std::int32_t z = 0;
+};
+typedef Origin3DDict Origin3D;
+
+//struct Extent3DDict
+//{
+//    std::uint32_t width;
+//    std::uint32_t height;
+//    std::uint32_t depth;
+//};
+//typedef Extent3DDict Extent3D;
+
+struct BufferCopyView {
+    Buffer* buffer = nullptr;
+    BufferSize offset = 0;
+    // Notice, rowPitch must be exact divided by 256
+    std::uint32_t rowPitch;
+    std::uint32_t imageHeight;
+};
+
+struct TextureCopyView {
+    Texture* texture = nullptr;
+    std::uint32_t mipLevel = 0;
+    std::uint32_t arrayLayer = 0;
+    Origin3D origin = {};
 };
 
 NS_RHI_END

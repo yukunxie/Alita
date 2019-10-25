@@ -18,13 +18,15 @@ NS_RHI_BEGIN
 
 class VKTexture : public Texture
 {
-public:
-    VKTexture(VKDevice* device, const ImageCreateInfo& imageCreateInfo);
+protected:
+    VKTexture() = default;
     virtual ~VKTexture();
+    bool Init(VKDevice* device, const TextureDescriptor& descriptor);
 
+public:
     VkImage GetNative() const {return vkImage_;}
 
-    VkFormat GetVkFormat() const {return vkFormat_;}
+    VkFormat GetNativeFormat() const {return vkFormat_;}
 
     Extent3D GetTextureSize() const {return textureSize_;}
 
@@ -44,6 +46,8 @@ private:
     TextureFormat   textureFormat_;
 
     Extent3D        textureSize_ ;
+
+    friend  class VKDevice;
 };
 
 NS_RHI_END

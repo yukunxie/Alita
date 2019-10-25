@@ -34,6 +34,7 @@ public:
     virtual void* MapWriteAsync() override ;
     virtual void Unmap() override;
     virtual void Destroy() override;
+    virtual void SetSubData(std::uint32_t offset, std::uint32_t byteSize, const void* data) override ;
 
 protected:
     virtual ~VKBuffer();

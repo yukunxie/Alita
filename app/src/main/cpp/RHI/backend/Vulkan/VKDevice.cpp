@@ -575,11 +575,16 @@ Shader* VKDevice::CreateShader(const std::vector<std::uint8_t>& shaderSource)
     return shader;
 }
 
-Texture* VKDevice::CreateTexture(const ImageCreateInfo& imageCreateInfo)
+Texture* VKDevice::CreateTexture(const TextureDescriptor& descriptor)
 {
-    Texture* texture = new VKTexture(this, imageCreateInfo);
+    auto* texture = new VKTexture();
     RHI_SAFE_RETAIN(texture);
-    return texture;
+    if (texture->Init(this, descriptor))
+    {
+        return texture;
+    }
+    RHI_SAFE_RELEASE(texture);
+    return nullptr;
 }
 
 Sampler* VKDevice::CreateSampler()

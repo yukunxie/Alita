@@ -311,6 +311,65 @@ VkFormat GetVkFormat(TextureFormat format)
     }
 }
 
+std::uint32_t GetTextureFormatPixelSize(TextureFormat format)
+{
+    switch (format)
+    {
+
+        case TextureFormat::R8UNORM :
+        case TextureFormat::R8SNORM :
+        case TextureFormat::R8UINT :
+        case TextureFormat::R8SINT :
+            return 1 ;
+
+        case TextureFormat::R16UINT :
+        case TextureFormat::R16SINT :
+        case TextureFormat::R16FLOAT :
+        case TextureFormat::RG8UNORM :
+        case TextureFormat::RG8SNORM :
+        case TextureFormat::RG8UINT :
+        case TextureFormat::RG8SINT :
+            return 2 ;
+
+        case TextureFormat::R32UINT :
+        case TextureFormat::R32SINT :
+        case TextureFormat::R32FLOAT :
+        case TextureFormat::RG16UINT :
+        case TextureFormat::RG16SINT :
+        case TextureFormat::RG16FLOAT :
+        case TextureFormat::RGBA8UNORM :
+        case TextureFormat::RGBA8UNORM_SRGB :
+        case TextureFormat::RGBA8SNORM :
+        case TextureFormat::RGBA8UINT :
+        case TextureFormat::RGBA8SINT :
+        case TextureFormat::BGRA8UNORM :
+        case TextureFormat::BGRA8UNORM_SRGB :
+        case TextureFormat::RGB10A2UNORM :
+        case TextureFormat::RG11B10FLOAT :
+            return 4;
+
+        case TextureFormat::RG32UINT :
+        case TextureFormat::RG32SINT :
+        case TextureFormat::RG32FLOAT :
+        case TextureFormat::RGBA16UINT :
+        case TextureFormat::RGBA16SINT :
+        case TextureFormat::RGBA16FLOAT :
+            return 8;
+
+        case TextureFormat::RGBA32UINT :
+        case TextureFormat::RGBA32SINT :
+        case TextureFormat::RGBA32FLOAT :
+            return 16;
+
+        case TextureFormat::DEPTH32FLOAT :
+        case TextureFormat::DEPTH24PLUS_STENCIL8 :
+            return 4;
+        case TextureFormat::DEPTH24PLUS :
+            RHI_ASSERT(false);
+            return 3;
+    }
+}
+
 TextureFormat GetTextureFormat(VkFormat format)
 {
     switch (format)
@@ -463,6 +522,76 @@ VkBufferUsageFlags GetVkBufferUsageFlags(BufferUsageFlags flags)
 
     return vkFlags;
 
+}
+
+VkImageType GetVkImageType(TextureDimension dim)
+{
+    switch (dim)
+    {
+        case TextureDimension::TEXTURE_1D:
+            return VkImageType::VK_IMAGE_TYPE_1D;
+
+        case TextureDimension::TEXTURE_2D:
+            return VkImageType::VK_IMAGE_TYPE_2D;
+
+        case TextureDimension::TEXTURE_3D:
+            return VkImageType::VK_IMAGE_TYPE_3D;
+    }
+}
+
+VkImageUsageFlags GetVkImageUsageFlags(TextureUsageFlags flags, TextureFormat format)
+{
+    VkImageUsageFlags vkImageUsageFlags = 0x0;
+
+    if (flags & (std::uint32_t)TextureUsage::COPY_SRC)
+        vkImageUsageFlags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+    if (flags & (std::uint32_t)TextureUsage::COPY_DST)
+        vkImageUsageFlags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+    if (flags & (std::uint32_t)TextureUsage::SAMPLED)
+        vkImageUsageFlags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT;
+
+    if (flags & (std::uint32_t)TextureUsage::STORAGE)
+        vkImageUsageFlags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_STORAGE_BIT;
+
+    if (flags & (std::uint32_t)TextureUsage::OUTPUT_ATTACHMENT)
+    {
+        if (TextureFormat::DEPTH24PLUS_STENCIL8 == format)
+            vkImageUsageFlags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        else
+            vkImageUsageFlags |= VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    }
+
+    return vkImageUsageFlags;
+}
+
+VkSampleCountFlagBits GetVkSampleCountFlagBits(std::uint32_t sampleCount)
+{
+    switch (sampleCount)
+    {
+        case 1:
+            return VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
+
+        case 2:
+            return VkSampleCountFlagBits::VK_SAMPLE_COUNT_2_BIT;
+
+        case 4:
+            return VkSampleCountFlagBits::VK_SAMPLE_COUNT_4_BIT;
+
+        case 8:
+            return VkSampleCountFlagBits::VK_SAMPLE_COUNT_8_BIT;
+
+        case 16:
+            return VkSampleCountFlagBits::VK_SAMPLE_COUNT_16_BIT;
+
+        case 64:
+            return VkSampleCountFlagBits::VK_SAMPLE_COUNT_64_BIT;
+
+        default:
+            LOGE("Invalid sample count: %u, must be power of two.", sampleCount);
+            return VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
+    }
 }
 
 

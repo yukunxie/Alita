@@ -7,15 +7,6 @@
 
 #include "VKDevice.h"
 
-#include "../../include/Macros.h"
-#include "../../include/CommandEncoder.h"
-#include "../../include/Flags.h"
-#include "drivers/vulkan/vulkan_wrapper.h"
-
-
-
-#include <vulkan/vulkan.h>
-
 NS_RHI_BEGIN
 
 class VKCommandBuffer;
@@ -31,6 +22,18 @@ public:
     virtual RenderPassEncoder* BeginRenderPass(const RenderPassDescriptor& descriptor) override;
 
     virtual CommandBuffer* Finish() override ;
+
+    virtual void CopyBufferToBuffer(
+            const Buffer* source,
+            BufferSize sourceOffset,
+            Buffer* destination,
+            BufferSize destinationOffset,
+            BufferSize size) override ;
+
+    virtual void CopyBufferToTexture(
+            const BufferCopyView& source,
+            TextureCopyView& destination,
+            const Extent3D& copySize) override ;
 
 private:
     VKDevice*               device_             = nullptr;

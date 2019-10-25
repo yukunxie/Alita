@@ -9,63 +9,134 @@
 
 NS_RHI_BEGIN
 
-VKTexture::VKTexture(VKDevice* device, const ImageCreateInfo& imageCreateInfo)
-    : device_(device)
+//VKTexture::VKTexture(VKDevice* device, const ImageCreateInfo& imageCreateInfo)
+//    : device_(device)
+//{
+//    vkDevice_ = device->GetDevice();
+//    std::uint32_t queueFamilyIndex = device->GetGraphicQueueFamilyIndex();
+//
+//    vkFormat_ = ToVkFormat(imageCreateInfo.format);
+//
+//    textureFormat_ = GetTextureFormat(vkFormat_);
+//
+//    // Check for linear supportability
+//    VkFormatProperties props;
+//    bool needBlit = true;
+//    vkGetPhysicalDeviceFormatProperties(device->GetPhysicalDevice(), ToVkFormat(imageCreateInfo.format), &props);
+//    assert((props.linearTilingFeatures | props.optimalTilingFeatures) &
+//           VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+//
+//    if (props.linearTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) {
+//        // linear format supporting the required texture
+//        needBlit = false;
+//    }
+//
+//    textureSize_ = imageCreateInfo.extent;
+//
+//    VkImageCreateInfo imageInfo = {
+//            .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+//            .pNext = nullptr,
+//            .format = ToVkFormat(imageCreateInfo.format),
+//            .imageType = ToVkImageType(imageCreateInfo.imageType),
+//            .extent = {
+//                    .width = imageCreateInfo.extent.width,
+//                    .height = imageCreateInfo.extent.height,
+//                    .depth = imageCreateInfo.extent.depth,
+//            },
+//            .mipLevels = imageCreateInfo.mipLevels,
+//            .arrayLayers = imageCreateInfo.arrayLayers,
+//            .tiling = ToVkImageTiling(imageCreateInfo.tiling),
+//            .initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED,
+//            .sharingMode =  ToVkSharingMode(imageCreateInfo.sharingMode),
+//            .usage =(needBlit ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : VK_IMAGE_USAGE_SAMPLED_BIT),
+//            .samples = ToVkSampleCountFlagBits(imageCreateInfo.samples),
+//            .queueFamilyIndexCount = 1,
+//            .pQueueFamilyIndices = &queueFamilyIndex,
+//            .flags = 0,
+//    };
+//
+//    VkMemoryPropertyFlags memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+//    if (vkFormat_ == VkFormat::VK_FORMAT_D24_UNORM_S8_UINT)
+//    {
+//        imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+//        memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+//    }
+//
+//    CALL_VK(vkCreateImage(vkDevice_, &imageInfo, nullptr, &vkImage_));
+//
+//    VkMemoryRequirements memRequirements;
+//    vkGetImageMemoryRequirements(vkDevice_, vkImage_, &memRequirements);
+//
+//    VkMemoryAllocateInfo allocInfo {
+//            .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+//            .allocationSize = memRequirements.size,
+//            .memoryTypeIndex = device->FindMemoryType(memRequirements.memoryTypeBits, memoryPropertyFlags),
+//    };
+//
+//    CALL_VK(vkAllocateMemory(vkDevice_, &allocInfo, nullptr, &vkDeviceMemory_));
+//    CALL_VK(vkBindImageMemory(vkDevice_, vkImage_, vkDeviceMemory_, 0));
+//
+////    RHI_ASSERT(imageCreateInfo.format == Format::R8G8B8A8_UNORM);
+//
+//    if (imageCreateInfo.imageData)
+//    {
+//        const VkImageSubresource subres = {
+//                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .mipLevel = 0, .arrayLayer = 0,
+//        };
+//        VkSubresourceLayout layout;
+//        vkGetImageSubresourceLayout(vkDevice_, vkImage_, &subres,
+//                                    &layout);
+//
+//        VkDeviceSize imageSize = imageCreateInfo.extent.width * imageCreateInfo.extent.height * 4;
+//
+//        void* data;
+//        vkMapMemory(vkDevice_, vkDeviceMemory_, 0, imageSize, 0, &data);
+//        memcpy(data, imageCreateInfo.imageData, static_cast<size_t>(imageSize));
+//        vkUnmapMemory(vkDevice_, vkDeviceMemory_);
+//    }
+//
+//    SetImageLayout(device);
+//}
+
+bool VKTexture::Init(VKDevice* device, const TextureDescriptor& descriptor)
 {
+    device_ = device;
     vkDevice_ = device->GetDevice();
+    vkFormat_ = GetVkFormat(descriptor.format);
+    textureFormat_ = descriptor.format;
+
     std::uint32_t queueFamilyIndex = device->GetGraphicQueueFamilyIndex();
 
-    vkFormat_ = ToVkFormat(imageCreateInfo.format);
-
-    textureFormat_ = GetTextureFormat(vkFormat_);
-
-    // Check for linear supportability
-    VkFormatProperties props;
-    bool needBlit = true;
-    vkGetPhysicalDeviceFormatProperties(device->GetPhysicalDevice(), ToVkFormat(imageCreateInfo.format), &props);
-    assert((props.linearTilingFeatures | props.optimalTilingFeatures) &
-           VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
-
-    if (props.linearTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) {
-        // linear format supporting the required texture
-        needBlit = false;
-    }
-
-    textureSize_ = imageCreateInfo.extent;
+    textureSize_ = descriptor.size;
 
     VkImageCreateInfo imageInfo = {
             .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+            .flags = 0,
             .pNext = nullptr,
-            .format = ToVkFormat(imageCreateInfo.format),
-            .imageType = ToVkImageType(imageCreateInfo.imageType),
-            .extent = {
-                    .width = imageCreateInfo.extent.width,
-                    .height = imageCreateInfo.extent.height,
-                    .depth = imageCreateInfo.extent.depth,
-            },
-            .mipLevels = imageCreateInfo.mipLevels,
-            .arrayLayers = imageCreateInfo.arrayLayers,
-            .tiling = ToVkImageTiling(imageCreateInfo.tiling),
+            .format = vkFormat_,
+            .imageType = GetVkImageType(descriptor.dimension),
+            .extent = {textureSize_.width, textureSize_.height, textureSize_.depth},
+            .mipLevels = descriptor.mipLevelCount,
+            .arrayLayers = descriptor.arrayLayerCount,
+            .tiling = VK_IMAGE_TILING_OPTIMAL,
             .initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED,
-            .sharingMode =  ToVkSharingMode(imageCreateInfo.sharingMode),
-            .usage =(needBlit ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : VK_IMAGE_USAGE_SAMPLED_BIT),
-            .samples = ToVkSampleCountFlagBits(imageCreateInfo.samples),
+            .sharingMode =  VK_SHARING_MODE_EXCLUSIVE,
+            .usage = GetVkImageUsageFlags(descriptor.usage, descriptor.format),
+            .samples = GetVkSampleCountFlagBits(descriptor.sampleCount),
             .queueFamilyIndexCount = 1,
             .pQueueFamilyIndices = &queueFamilyIndex,
-            .flags = 0,
     };
-
-    VkMemoryPropertyFlags memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-    if (vkFormat_ == VkFormat::VK_FORMAT_D24_UNORM_S8_UINT)
-    {
-        imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-        memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-    }
 
     CALL_VK(vkCreateImage(vkDevice_, &imageInfo, nullptr, &vkImage_));
 
     VkMemoryRequirements memRequirements;
     vkGetImageMemoryRequirements(vkDevice_, vkImage_, &memRequirements);
+
+    VkMemoryPropertyFlags memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+//    if (vkFormat_ == VkFormat::VK_FORMAT_D24_UNORM_S8_UINT)
+//    {
+//        memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+//    }
 
     VkMemoryAllocateInfo allocInfo {
             .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
@@ -76,32 +147,22 @@ VKTexture::VKTexture(VKDevice* device, const ImageCreateInfo& imageCreateInfo)
     CALL_VK(vkAllocateMemory(vkDevice_, &allocInfo, nullptr, &vkDeviceMemory_));
     CALL_VK(vkBindImageMemory(vkDevice_, vkImage_, vkDeviceMemory_, 0));
 
-//    RHI_ASSERT(imageCreateInfo.format == Format::R8G8B8A8_UNORM);
-
-    if (imageCreateInfo.imageData)
-    {
-        const VkImageSubresource subres = {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .mipLevel = 0, .arrayLayer = 0,
-        };
-        VkSubresourceLayout layout;
-        vkGetImageSubresourceLayout(vkDevice_, vkImage_, &subres,
-                                    &layout);
-
-        VkDeviceSize imageSize = imageCreateInfo.extent.width * imageCreateInfo.extent.height * 4;
-
-        void* data;
-        vkMapMemory(vkDevice_, vkDeviceMemory_, 0, imageSize, 0, &data);
-        memcpy(data, imageCreateInfo.imageData, static_cast<size_t>(imageSize));
-        vkUnmapMemory(vkDevice_, vkDeviceMemory_);
-    }
-
     SetImageLayout(device);
+
+    return true;
 }
 
 VKTexture::~VKTexture()
 {
-    vkFreeMemory(vkDevice_, vkDeviceMemory_, nullptr);
-    vkDestroyImage(vkDevice_, vkImage_, nullptr);
+    if (vkDeviceMemory_)
+    {
+        vkFreeMemory(vkDevice_, vkDeviceMemory_, nullptr);
+    }
+
+    if (vkImage_)
+    {
+        vkDestroyImage(vkDevice_, vkImage_, nullptr);
+    }
 }
 
 

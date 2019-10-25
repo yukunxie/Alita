@@ -335,6 +335,8 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
 
     rhiGraphicPipeline_ = rhiDevice_->CreateRenderPipeline(renderPipelineDescriptor);
 
+    rhiQueue_ = rhiDevice_->CreateQueue();
+
     // ------------ End setup RenderPipeline object ---------------
 
     // setup image
@@ -363,7 +365,57 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
         .imageData = pixels,
     };
 
-    rhiTexture_ = rhiDevice_->CreateTexture(imageCreateInfo);
+//    rhiTexture_ = rhiDevice_->CreateTexture(imageCreateInfo);
+    {
+        RHI::TextureDescriptor descriptor;
+        {
+            descriptor.sampleCount = 1;
+            descriptor.format = RHI::TextureFormat::RGBA8UNORM;
+            descriptor.usage = RHI::TextureUsage::SAMPLED | RHI::TextureUsage::COPY_DST;
+            descriptor.size  = {(std::uint32_t)texWidth, (std::uint32_t)texHeight, 1};
+            descriptor.arrayLayerCount = 1;
+            descriptor.mipLevelCount = 1;
+            descriptor.dimension = RHI::TextureDimension::TEXTURE_2D;
+        };
+        auto texture = rhiDevice_->CreateTexture(descriptor);
+
+        RHI::BufferDescriptor bufferDescriptor;
+        {
+            bufferDescriptor.size = (std::uint32_t)texWidth * 4;
+            bufferDescriptor.usage = RHI::BufferUsage::COPY_DST | RHI::BufferUsage::COPY_SRC;
+        }
+
+        auto buffer = rhiDevice_->CreateBuffer(bufferDescriptor);
+        std::uint8_t* pData = (std::uint8_t*)buffer->MapWriteAsync();
+        memcpy(pData, pixels, texWidth * texHeight * 4);
+        buffer->Unmap();
+
+        RHI::BufferCopyView bufferCopyView;
+        {
+            bufferCopyView.buffer      = buffer;
+            bufferCopyView.offset      = 0;
+            bufferCopyView.imageHeight = 0;
+            bufferCopyView.rowPitch    = texWidth * 4;
+        }
+
+        RHI::TextureCopyView textureCopyView;
+        {
+            textureCopyView.texture = texture;
+            textureCopyView.origin = {0, 0, 0};
+            textureCopyView.arrayLayer = 1;
+            textureCopyView.mipLevel = 0;
+        }
+
+        auto commandEncoder = rhiDevice_->CreateCommandEncoder();
+        RHI::Extent3D extent3D = {(std::uint32_t)texWidth, (std::uint32_t)texHeight, 1};
+        commandEncoder->CopyBufferToTexture(bufferCopyView, textureCopyView, extent3D);
+
+        rhiQueue_->Submit(commandEncoder->Finish());
+        RHI_SAFE_RELEASE(commandEncoder);
+
+        rhiTexture_ = texture;
+    }
+
     rhiTextureView_ = rhiTexture_->CreateView();
 
     stbi_image_free(pixels);
@@ -372,23 +424,17 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     {
         VkExtent2D extent2D = rhiDevice_->GetSwapChainExtent2D();
 
-        RHI::ImageCreateInfo imageCreateInfo {
-                .imageType = RHI::ImageType::IMAGE_TYPE_2D,
-                .format    = RHI::Format::D24_UNORM_S8_UINT,
-                .extent = {
-                        .width = (std::uint32_t)extent2D.width,
-                        .height= (std::uint32_t)extent2D.height,
-                        .depth = 1
-                },
-                .mipLevels = 1,
-                .arrayLayers = 1,
-                .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
-                .tiling = RHI::ImageTiling::OPTIMAL,
-                .sharingMode = RHI::SharingMode::EXCLUSIVE,
-                .imageData = nullptr,
+        RHI::TextureDescriptor descriptor;
+        {
+            descriptor.sampleCount = 1;
+            descriptor.format = RHI::TextureFormat::DEPTH24PLUS_STENCIL8;
+            descriptor.usage = RHI::TextureUsage::OUTPUT_ATTACHMENT;
+            descriptor.size  = {(std::uint32_t)extent2D.width, (std::uint32_t)extent2D.height, 1};
+            descriptor.arrayLayerCount = 1;
+            descriptor.mipLevelCount = 1;
+            descriptor.dimension = RHI::TextureDimension::TEXTURE_2D;
         };
-
-        rhiDSTexture_ = rhiDevice_->CreateTexture(imageCreateInfo);
+        rhiDSTexture_ = rhiDevice_->CreateTexture(descriptor);
         rhiDSTextureView_ = rhiDSTexture_->CreateView();
     }
 
@@ -401,7 +447,6 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     rhiBindGroup_ = rhiDevice_->CreateBindGroup(rhiBindGroupLayout_, {rhiBindingBuffer_, rhiBindingCombined_});
     rhiDevice_->WriteBindGroup(rhiBindGroup_);
 
-    rhiQueue_ = rhiDevice_->CreateQueue();
     rhiCommandEncoder_ = rhiDevice_->CreateCommandEncoder();
 
     rhiSwapChain_ = rhiDevice_->CreateSwapChain();

@@ -24,8 +24,7 @@ include_directories(
 
 
 add_subdirectory(src/main/cpp/RHI/backend/Vulkan)
-
-file(GLOB native_srcs "src/main/cpp/aux/*.cpp")
+add_subdirectory(src/main/cpp/)
 
 add_library( # Sets the name of the library.
         native-lib
@@ -34,13 +33,7 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-#        src/main/cpp/main.cpp
         src/main/cpp/jni/native-lib.cpp
-        src/main/cpp/render/RealRenderer.cpp
-#        src/main/cpp/aux/AFileSystem.cpp
-        src/main/cpp/drivers/vulkan/vulkan_wrapper.cpp
-
-        ${native_srcs}
         )
 
 #set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
@@ -64,7 +57,6 @@ find_library( # Sets the name of the path variable.
 
 target_link_libraries( # Specifies the target library.
         native-lib
-        vulkan-lib-static
-#        app-glue
+        engine-lib-static
         log
         android)

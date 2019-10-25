@@ -286,6 +286,51 @@ struct RenderPipelineDescriptor : public PipelineDescriptorBase {
     // TODO: other properties
 };
 
+enum class TextureDimension {
+    TEXTURE_1D,
+    TEXTURE_2D,
+    TEXTURE_3D
+};
+
+enum class TextureUsage {
+    COPY_SRC          = 0x01,
+    COPY_DST          = 0x02,
+    SAMPLED           = 0x04,
+    STORAGE           = 0x08,
+    OUTPUT_ATTACHMENT = 0x10,
+};
+
+typedef std::uint32_t TextureUsageFlags;
+
+struct TextureDescriptor : public ObjectDescriptorBase {
+    Extent3D size;
+    std::uint32_t arrayLayerCount = 1;
+    std::uint32_t mipLevelCount = 1;
+    std::uint32_t sampleCount = 1;
+    TextureDimension dimension = TextureDimension::TEXTURE_2D;
+    TextureFormat format;
+    TextureUsageFlags usage;
+};
+
+enum BufferUsage {
+    MAP_READ  = 0x0001,
+    MAP_WRITE = 0x0002,
+    COPY_SRC  = 0x0004,
+    COPY_DST  = 0x0008,
+    INDEX     = 0x0010,
+    VERTEX    = 0x0020,
+    UNIFORM   = 0x0040,
+    STORAGE   = 0x0080,
+    INDIRECT  = 0x0100,
+};
+
+typedef std::uint32_t BufferUsageFlags;
+
+struct BufferDescriptor : ObjectDescriptorBase {
+    BufferSize size;
+    BufferUsageFlags usage;
+};
+
 NS_RHI_END
 
 #endif //ALITA_DESCRIPTORS_H

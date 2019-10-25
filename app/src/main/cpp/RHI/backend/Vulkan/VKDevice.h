@@ -174,10 +174,7 @@ public:
     RenderPass* GetOrCreateRenderPass(const RenderPassCacheQuery& query);
 
 public:
-    virtual Buffer* CreateBuffer(BufferUsageFlagBits usageFlagBits
-            , SharingMode sharingMode
-            , std::uint32_t sizeOfBytes
-            , const void* data) override;
+    virtual Buffer* CreateBuffer(const BufferDescriptor& descriptor) override;
 
     virtual void WriteBuffer(const Buffer* buffer, const void* data, std::uint32_t offset, std::uint32_t size) override;
 
@@ -188,8 +185,6 @@ public:
     virtual Texture* CreateTexture(const ImageCreateInfo& imageCreateInfo) override;
 
     virtual Sampler* CreateSampler() override ;
-
-    virtual TextureView* CreateTextureView(const Texture* texture) override ;
 
     virtual BindGroupLayout* CreateBindGroupLayout(const DescriptorSetLayoutCreateInfo& layoutCreateInfo) override ;
 

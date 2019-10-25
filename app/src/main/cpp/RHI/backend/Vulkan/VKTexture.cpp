@@ -4,11 +4,13 @@
 
 #include "VKTexture.h"
 #include "VKTypes.h"
+#include "VKTextureView.h"
 
 
 NS_RHI_BEGIN
 
 VKTexture::VKTexture(VKDevice* device, const ImageCreateInfo& imageCreateInfo)
+    : device_(device)
 {
     vkDevice_ = device->GetDevice();
     std::uint32_t queueFamilyIndex = device->GetGraphicQueueFamilyIndex();
@@ -98,7 +100,8 @@ VKTexture::VKTexture(VKDevice* device, const ImageCreateInfo& imageCreateInfo)
 
 VKTexture::~VKTexture()
 {
-    // TODO release memory
+    vkFreeMemory(vkDevice_, vkDeviceMemory_, nullptr);
+    vkDestroyImage(vkDevice_, vkImage_, nullptr);
 }
 
 
@@ -173,6 +176,13 @@ void VKTexture::SetImageLayout(const VKDevice* device)
     vkDestroyFence(vkDevice_, fence, nullptr);
     vkFreeCommandBuffers(vkDevice_, cmdPool, 1, &gfxCmd);
     vkDestroyCommandPool(vkDevice_, cmdPool, nullptr);
+}
+
+TextureView* VKTexture::CreateView()
+{
+    TextureView* textureView = new VKTextureView(device_, this);
+    RHI_SAFE_RETAIN(textureView);
+    return textureView;
 }
 
 NS_RHI_END

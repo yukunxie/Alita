@@ -21,7 +21,7 @@ NS_RHI_BEGIN
 class VKTextureView final: public TextureView
 {
 public:
-    VKTextureView(VKDevice* device, const VKTexture* vkTexture);
+    VKTextureView(VKDevice* device, VKTexture* vkTexture);
     VKTextureView(VKDevice* device, const VkImageViewCreateInfo& imageViewCreateInfo, const Extent3D& textureSize);
     virtual ~VKTextureView();
 
@@ -34,10 +34,13 @@ public:
 private:
     VkDevice        vkDevice_       = nullptr;
     VkImageView     vkImageView_    = 0L;
-    Extent3D        textureSize_;
-
     VKTexture*      texture_        = nullptr;
+
+    Extent3D        textureSize_;
     TextureFormat   textureFormat_;
+
+
+
 };
 
 NS_RHI_END

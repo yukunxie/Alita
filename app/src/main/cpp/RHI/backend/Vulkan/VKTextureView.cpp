@@ -7,12 +7,12 @@
 
 NS_RHI_BEGIN
 
-VKTextureView::VKTextureView(VKDevice* device, const VKTexture* vkTexture)
+VKTextureView::VKTextureView(VKDevice* device, VKTexture* vkTexture)
 {
     vkDevice_ = device->GetDevice();
 
-//    texture_ = vkTexture;
-//    RHI_SAFE_RETAIN(texture_);
+    texture_ = vkTexture;
+    RHI_SAFE_RETAIN(texture_);
 
     textureSize_ = vkTexture->GetTextureSize();
     textureFormat_ = vkTexture->GetFormat();

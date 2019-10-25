@@ -18,6 +18,14 @@ class Buffer : public RHIObjectBase
 {
 protected:
     virtual ~Buffer(){}
+
+public:
+    virtual const void* MapReadAsync(std::uint32_t offset, std::uint32_t size) = 0;
+    virtual void* MapWriteAsync(std::uint32_t offset, std::uint32_t size)= 0;
+    virtual const void* MapReadAsync() = 0;
+    virtual void* MapWriteAsync()= 0;
+    virtual void Unmap() = 0;
+    virtual void Destroy() = 0;
 };
 
 NS_RHI_END

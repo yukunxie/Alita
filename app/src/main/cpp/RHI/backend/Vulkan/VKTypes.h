@@ -36,6 +36,7 @@ TextureFormat GetTextureFormat(VkFormat format);
 VkBool32 GetVkBoolean(bool b);
 VkCompareOp GetCompareOp(CompareFunction compareFunction);
 VkAttachmentLoadOp GetLoadOp(LoadOp op);
+VkBufferUsageFlags GetVkBufferUsageFlags(BufferUsageFlags flags);
 
 
 NS_RHI_END

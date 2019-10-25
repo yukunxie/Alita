@@ -30,10 +30,13 @@ public:
 
     virtual TextureFormat  GetFormat() const override {return textureFormat_;};
 
+    virtual TextureView*   CreateView() override ;
+
 private:
     void SetImageLayout(const VKDevice* device);
 
 private:
+    VKDevice*       device_         = nullptr;
     VkDevice        vkDevice_       = nullptr;
     VkImage         vkImage_        = 0L;
     VkDeviceMemory  vkDeviceMemory_ = 0L;

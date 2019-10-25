@@ -35,10 +35,7 @@ NS_RHI_BEGIN
 class Device
 {
 public:
-    virtual Buffer* CreateBuffer(BufferUsageFlagBits usageFlagBits
-            , SharingMode sharingMode
-            , std::uint32_t sizeOfBytes
-            , const void* data) = 0;
+    virtual Buffer* CreateBuffer(const BufferDescriptor& descriptor) = 0;
 
     virtual void WriteBuffer(const Buffer* buffer, const void* data, std::uint32_t offset, std::uint32_t size) = 0;
 
@@ -49,8 +46,6 @@ public:
     virtual Texture* CreateTexture(const ImageCreateInfo& imageCreateInfo) = 0;
 
     virtual Sampler* CreateSampler() = 0;
-
-    virtual TextureView* CreateTextureView(const Texture* texture) = 0;
 
     virtual BindGroupLayout* CreateBindGroupLayout(const DescriptorSetLayoutCreateInfo& layoutCreateInfo) = 0;
 

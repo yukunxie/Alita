@@ -3,30 +3,28 @@
 //
 
 #include "VKBuffer.h"
+#include "VKTypes.h"
 
 NS_RHI_BEGIN
 
-VKBuffer::VKBuffer(VKDevice* device, BufferUsageFlagBits usageFlagBits, SharingMode sharingMode, std::uint32_t sizeOfBytes, const void* data)
+VKBuffer::VKBuffer(VKDevice* device, const BufferDescriptor& descriptor)
 {
     vkDevice_ = device->GetDevice();
 
-    // TODO define a class member
-    uint32_t queueFamilyIndex_ = 0;
+    uint32_t queueFamilyIndex_ = device->GetQueueFamilyIndices().graphicsFamily;
 
     VkBufferCreateInfo bufferInfo = {
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .size = sizeOfBytes,
-            .usage = (VkBufferUsageFlagBits)usageFlagBits,
-            .sharingMode = (VkSharingMode)sharingMode,
+            .size = descriptor.size,
+            .usage = GetVkBufferUsageFlags(descriptor.usage),
+            .sharingMode = VkSharingMode::VK_SHARING_MODE_EXCLUSIVE,
             .pQueueFamilyIndices = &queueFamilyIndex_,
             .queueFamilyIndexCount = 1,
     };
 
-    if (vkCreateBuffer(vkDevice_, &bufferInfo, nullptr, &vkBuffer_) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create vertex buffer!");
-    }
+    CALL_VK(vkCreateBuffer(vkDevice_, &bufferInfo, nullptr, &vkBuffer_));
 
-    // Allocate heap memory for vertex buffer
+    // Allocate buffer memory
 
     VkMemoryRequirements memRequirements;
     vkGetBufferMemoryRequirements(vkDevice_, vkBuffer_, &memRequirements);
@@ -39,11 +37,6 @@ VKBuffer::VKBuffer(VKDevice* device, BufferUsageFlagBits usageFlagBits, SharingM
     };
 
     CALL_VK(vkAllocateMemory(vkDevice_, &allocInfo, nullptr, &vkBufferMemory_));
-
-    void* accessPointer;
-    CALL_VK(vkMapMemory(vkDevice_, vkBufferMemory_, 0, bufferInfo.size, 0, &accessPointer));
-    memcpy(accessPointer, data, (size_t) bufferInfo.size);
-    vkUnmapMemory(vkDevice_, vkBufferMemory_);
     CALL_VK(vkBindBufferMemory(vkDevice_, vkBuffer_, vkBufferMemory_, 0));
 }
 
@@ -58,6 +51,50 @@ void VKBuffer::UpdateBuffer(const void* data, std::uint32_t offset, std::uint32_
     CALL_VK(vkMapMemory(vkDevice_, vkBufferMemory_, offset, size, 0, &accessPointer));
     memcpy(accessPointer, data, (size_t) size);
     vkUnmapMemory(vkDevice_, vkBufferMemory_);
+}
+
+const void* VKBuffer::MapReadAsync(std::uint32_t offset, std::uint32_t size)
+{
+    RHI_ASSERT(pData_ == nullptr);
+    /**
+     * flag must be zero now
+     * VkMemoryMapFlags is a bitmask type for setting a mask, but is currently reserved for future use.
+     */
+    VkMemoryMapFlags flag = 0;
+    CALL_VK(vkMapMemory(vkDevice_, vkBufferMemory_, offset, size > 0? size : VK_WHOLE_SIZE, flag, &pData_));
+    return pData_;
+}
+
+void* VKBuffer::MapWriteAsync(std::uint32_t offset, std::uint32_t size)
+{
+    RHI_ASSERT(pData_ == nullptr);
+    /**
+     * flag must be zero now
+     * VkMemoryMapFlags is a bitmask type for setting a mask, but is currently reserved for future use.
+     */
+    VkMemoryMapFlags flag = 0;
+    CALL_VK(vkMapMemory(vkDevice_, vkBufferMemory_, offset, size > 0? size : VK_WHOLE_SIZE, flag, &pData_));
+    return pData_;
+}
+
+const void* VKBuffer::MapReadAsync()
+{
+    return MapReadAsync(0, 0);
+}
+
+void* VKBuffer::MapWriteAsync()
+{
+    return MapWriteAsync(0, 0);
+}
+
+void VKBuffer::Unmap()
+{
+    vkUnmapMemory(vkDevice_, vkBufferMemory_);
+    pData_ = nullptr;
+}
+
+void VKBuffer::Destroy()
+{
 }
 
 NS_RHI_END

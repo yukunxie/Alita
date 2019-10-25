@@ -439,6 +439,32 @@ VkAttachmentLoadOp GetLoadOp(LoadOp op)
     }
 }
 
+VkBufferUsageFlags GetVkBufferUsageFlags(BufferUsageFlags flags)
+{
+    VkBufferUsageFlags vkFlags = 0x0;
+
+    if (BufferUsage::COPY_SRC & flags)
+        vkFlags |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+    if (BufferUsage::COPY_DST & flags)
+        vkFlags |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+    if (BufferUsage::INDEX & flags)
+        vkFlags |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+
+    if (BufferUsage::UNIFORM & flags)
+        vkFlags |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+    if (BufferUsage::STORAGE & flags)
+        vkFlags |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+
+    if (BufferUsage::STORAGE & flags)
+        vkFlags |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+
+    return vkFlags;
+
+}
+
 
 NS_RHI_END
 

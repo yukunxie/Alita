@@ -118,7 +118,19 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
             {{-1.0f,  1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
     };
 
-    rhiVertexBuffer_ = rhiDevice_->CreateBuffer(RHI::BufferUsageFlagBits::VERTEX_BUFFER_BIT, RHI::SharingMode::EXCLUSIVE, sizeof(vertices[0]) * vertices.size(), vertices.data());
+    // Create VertexBuffer
+    {
+        RHI::BufferSize vertexBufferSize = static_cast<std::uint32_t>(sizeof(vertices[0]) * vertices.size());
+        RHI::BufferDescriptor vertexBufferDescriptor = {
+                .usage = RHI::BufferUsage::VERTEX,
+                .size  = vertexBufferSize,
+        };
+        rhiVertexBuffer_ = rhiDevice_->CreateBuffer(vertexBufferDescriptor);
+
+        std::uint8_t* pVertexData = (std::uint8_t*)rhiVertexBuffer_->MapWriteAsync();
+        memcpy(pVertexData, vertices.data(), vertexBufferSize);
+        rhiVertexBuffer_->Unmap();
+    }
 
     const std::vector<uint16_t> indices = {
             0,  1,  2,      0,  2,  3,    // front
@@ -128,7 +140,20 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
             16, 17, 18,     16, 18, 19,   // right
             20, 21, 22,     20, 22, 23,   // left
     };
-    rhiIndexBuffer_ = rhiDevice_->CreateBuffer(RHI::BufferUsageFlagBits::INDEX_BUFFER_BIT, RHI::SharingMode::EXCLUSIVE, sizeof(indices[0]) * indices.size(), indices.data());
+
+    // Create index buffer
+    {
+        RHI::BufferSize indexBufferSize = static_cast<std::uint32_t>(sizeof(indices[0]) * indices.size());
+        RHI::BufferDescriptor indexBufferDescriptor = {
+                .usage = RHI::BufferUsage::INDEX,
+                .size  = indexBufferSize,
+        };
+        rhiIndexBuffer_ = rhiDevice_->CreateBuffer(indexBufferDescriptor);
+
+        std::uint8_t* pIndexData = (std::uint8_t*)rhiIndexBuffer_->MapWriteAsync();
+        memcpy(pIndexData, indices.data(), indexBufferSize);
+        rhiIndexBuffer_->Unmap();
+    }
 
     UniformBufferObject ubo = {};
     float time = 0.0f;
@@ -137,7 +162,19 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     ubo.proj = glm::perspective(glm::radians(45.0f), rhiDevice_->GetViewport().width / (float) rhiDevice_->GetViewport().height, 0.1f, 10.0f);
     ubo.proj[1][1] *= -1;
 
-    rhiUniformBuffer_ = rhiDevice_->CreateBuffer(RHI::BufferUsageFlagBits::UNIFORM_BUFFER_BIT, RHI::SharingMode::EXCLUSIVE, sizeof(UniformBufferObject), &ubo);
+    // Create uniform buffer object
+    {
+        RHI::BufferSize bufferSize = static_cast<std::uint32_t>(sizeof(UniformBufferObject));
+        RHI::BufferDescriptor bufferDescriptor = {
+                .usage = RHI::BufferUsage::UNIFORM,
+                .size  = bufferSize,
+        };
+        rhiUniformBuffer_ = rhiDevice_->CreateBuffer(bufferDescriptor);
+
+        std::uint8_t* pData = (std::uint8_t*)rhiUniformBuffer_->MapWriteAsync();
+        memcpy(pData, &ubo, bufferSize);
+        rhiUniformBuffer_->Unmap();
+    }
 
     // ------------ Start setup RenderPipeline object ---------------
 
@@ -147,24 +184,6 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     const TData& fragData = AFileSystem::getInstance()->readData("shaders/shader.frag.spv");
     rhiVertShader_ = rhiDevice_->CreateShader(vertData);
     rhiFragShader_ = rhiDevice_->CreateShader(fragData);
-
-    std::vector<RHI::PipelineShaderStageCreateInfo> shaderStageInfos {
-            RHI::PipelineShaderStageCreateInfo {
-                .stage = RHI::ShaderStageFlagBits::VERTEX_BIT,
-                .shader = rhiVertShader_,
-                .entryName = "main",
-                .pSpecializationInfo = nullptr,
-            },
-
-            RHI::PipelineShaderStageCreateInfo {
-                .stage = RHI::ShaderStageFlagBits::FRAGMENT_BIT,
-                .shader = rhiFragShader_,
-                .entryName = "main",
-                .pSpecializationInfo = nullptr,
-            }
-    };
-
-    //
 
     RHI::DescriptorSetLayoutCreateInfo layoutCreateInfo{
         .bindings = {
@@ -188,62 +207,62 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
 
     // Step 2. setup vertex attribute info
 
-    RHI::PipelineVertexInputStateCreateInfo vertexInputInfo = {
-            .vertexBindingDescriptions = {
-                    RHI::VertexInputBindingDescription {
-                            .binding = 0,
-                            .stride  = sizeof(TVertex),
-                            .inputRate = RHI::VertexInputRate::VERTEX
-                    },
-            },
-            .vertexAttributeDescriptions = {
-                    RHI::VertexInputAttributeDescription {
-                            .binding = 0,
-                            .location = 0,
-                            .format = RHI::Format::R32G32B32_SFLOAT,
-                            .offset = offsetof(TVertex, pos)
-                    },
-                    RHI::VertexInputAttributeDescription {
-                            .binding = 0,
-                            .location = 1,
-                            .format = RHI::Format::R32G32B32_SFLOAT,
-                            .offset = offsetof(TVertex, color)
-                    },
-                    RHI::VertexInputAttributeDescription {
-                            .binding = 0,
-                            .location = 2,
-                            .format = RHI::Format::R32G32_SFLOAT,
-                            .offset = offsetof(TVertex, texCoord)
-                    },
-            }
-    };
+//    RHI::PipelineVertexInputStateCreateInfo vertexInputInfo = {
+//            .vertexBindingDescriptions = {
+//                    RHI::VertexInputBindingDescription {
+//                            .binding = 0,
+//                            .stride  = sizeof(TVertex),
+//                            .inputRate = RHI::VertexInputRate::VERTEX
+//                    },
+//            },
+//            .vertexAttributeDescriptions = {
+//                    RHI::VertexInputAttributeDescription {
+//                            .binding = 0,
+//                            .location = 0,
+//                            .format = RHI::Format::R32G32B32_SFLOAT,
+//                            .offset = offsetof(TVertex, pos)
+//                    },
+//                    RHI::VertexInputAttributeDescription {
+//                            .binding = 0,
+//                            .location = 1,
+//                            .format = RHI::Format::R32G32B32_SFLOAT,
+//                            .offset = offsetof(TVertex, color)
+//                    },
+//                    RHI::VertexInputAttributeDescription {
+//                            .binding = 0,
+//                            .location = 2,
+//                            .format = RHI::Format::R32G32_SFLOAT,
+//                            .offset = offsetof(TVertex, texCoord)
+//                    },
+//            }
+//    };
 
     // Step 3. setup viewport and scissor
 
-    RHI::Viewport viewport = rhiDevice_->GetViewport();
-    std::vector<RHI::Viewport> viewports = {
-            viewport,
-    };
+//    RHI::Viewport viewport = rhiDevice_->GetViewport();
+//    std::vector<RHI::Viewport> viewports = {
+//            viewport,
+//    };
+//
+//    std::vector<RHI::Scissor>  scissors = {
+//            RHI::Scissor{
+//                .x = 0, .y = 0, .width = (std::uint32_t)viewport.width, .height = (std::uint32_t)viewport.height
+//            },
+//    };
 
-    std::vector<RHI::Scissor>  scissors = {
-            RHI::Scissor{
-                .x = 0, .y = 0, .width = (std::uint32_t)viewport.width, .height = (std::uint32_t)viewport.height
-            },
-    };
+//    RHI::PipelineViewportStateCreateInfo viewportState = {
+//            .viewports = std::move(viewports),
+//            .scissors  = std::move(scissors),
+//    };
 
-    RHI::PipelineViewportStateCreateInfo viewportState = {
-            .viewports = std::move(viewports),
-            .scissors  = std::move(scissors),
-    };
-
-    // final, create graphic pipeline state.create
-
-    RHI::GraphicPipelineCreateInfo graphicPipelineCreateInfo {
-            .pPipelineLayout = rhiPipelineLayout_,
-            .viewportState = viewportState,
-            .shaderStageInfos = shaderStageInfos,
-            .vertexInputInfo = vertexInputInfo,
-    };
+//    // final, create graphic pipeline state.create
+//
+//    RHI::GraphicPipelineCreateInfo graphicPipelineCreateInfo {
+//            .pPipelineLayout = rhiPipelineLayout_,
+//            .viewportState = viewportState,
+//            .shaderStageInfos = shaderStageInfos,
+//            .vertexInputInfo = vertexInputInfo,
+//    };
 
     RHI::RenderPipelineDescriptor renderPipelineDescriptor;
     {
@@ -314,7 +333,6 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
         renderPipelineDescriptor.alphaToCoverageEnabled = false;
     }
 
-//    rhiGraphicPipeline_ = rhiDevice_->CreateGraphicPipeline(graphicPipelineCreateInfo);
     rhiGraphicPipeline_ = rhiDevice_->CreateRenderPipeline(renderPipelineDescriptor);
 
     // ------------ End setup RenderPipeline object ---------------
@@ -346,7 +364,7 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     };
 
     rhiTexture_ = rhiDevice_->CreateTexture(imageCreateInfo);
-    rhiTextureView_ = rhiDevice_->CreateTextureView(rhiTexture_);
+    rhiTextureView_ = rhiTexture_->CreateView();
 
     stbi_image_free(pixels);
 
@@ -371,7 +389,7 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
         };
 
         rhiDSTexture_ = rhiDevice_->CreateTexture(imageCreateInfo);
-        rhiDSTextureView_ = rhiDevice_->CreateTextureView(rhiDSTexture_);
+        rhiDSTextureView_ = rhiDSTexture_->CreateView();
     }
 
     rhiSampler_ = rhiDevice_->CreateSampler();
@@ -415,7 +433,7 @@ void RealRenderer::drawFrame()
                 .attachment = rhiSwapChain_->GetCurrentTexture(),
                 .resolveTarget = nullptr,
                 .loadOp = RHI::LoadOp::CLEAR,
-                .loadValue = {1.0f, 0.0f, 0.0f, 1.0f},
+                .loadValue = {0.0f, 0.0f, 0.0f, 1.0f},
                 .storeOp= RHI::StoreOp::STORE,
             }
     };

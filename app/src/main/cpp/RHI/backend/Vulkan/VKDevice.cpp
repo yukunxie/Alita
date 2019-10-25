@@ -109,9 +109,9 @@ RenderPass* VKDevice::GetOrCreateRenderPass(const RenderPassCacheQuery& query)
     return renderPass;
 }
 
-Buffer* VKDevice::CreateBuffer(BufferUsageFlagBits usageFlagBits, SharingMode sharingMode, std::uint32_t sizeOfBytes, const void* data)
+Buffer* VKDevice::CreateBuffer(const BufferDescriptor& descriptor)
 {
-    Buffer* buffer = new VKBuffer(this, usageFlagBits, sharingMode, sizeOfBytes, data);
+    Buffer* buffer = new VKBuffer(this, descriptor);
     RHI_SAFE_RETAIN(buffer);
     return buffer;
 }
@@ -587,13 +587,6 @@ Sampler* VKDevice::CreateSampler()
     Sampler* sampler = new VKSampler(this);
     RHI_SAFE_RETAIN(sampler);
     return sampler;
-}
-
-TextureView* VKDevice::CreateTextureView(const Texture* texture)
-{
-    TextureView* textureView = new VKTextureView(this, (VKTexture*)texture);
-    RHI_SAFE_RETAIN(textureView);
-    return textureView;
 }
 
 BindGroupLayout* VKDevice::CreateBindGroupLayout(const DescriptorSetLayoutCreateInfo& layoutCreateInfo)

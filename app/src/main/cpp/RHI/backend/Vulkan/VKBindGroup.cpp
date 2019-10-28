@@ -10,78 +10,100 @@
 
 NS_RHI_BEGIN
 
-VKBindGroup::VKBindGroup(VKDevice* device, const VKBindGroupLayout* bindGroupLayout, const std::vector<BindingResource*>& bindResources)
+bool VKBindGroup::Init(VKDevice* device, const BindGroupDescriptor &descriptor)
 {
     vkDevice_ = device->GetDevice();
-    VkDescriptorSetLayout setLayout = bindGroupLayout->GetNative();
-    VkDescriptorSetAllocateInfo allocInfo  {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-            .descriptorSetCount = 1,
-            .pSetLayouts = &setLayout,
-            .descriptorPool = device->GetDescriptorPool()
+    vkDescriptorPool_ = device->GetDescriptorPool();
+    
+    VkDescriptorSetLayout setLayout = RHI_CAST(const VKBindGroupLayout*,
+                                               descriptor.layout)->GetNative();
+    VkDescriptorSetAllocateInfo allocInfo{
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+        .descriptorSetCount = 1,
+        .pSetLayouts = &setLayout,
+        .descriptorPool = vkDescriptorPool_
     };
-
+    
     CALL_VK(vkAllocateDescriptorSets(device->GetDevice(), &allocInfo, &vkDescriptorSet_));
-
-    for (const auto res : bindResources)
+    
+    for (const auto res : descriptor.bindings)
     {
         bindingResources_.push_back(res);
     }
+    return true;
 }
+
+VKBindGroup* VKBindGroup::Create(VKDevice* device, const BindGroupDescriptor &descriptor)
+{
+    auto ret = new VKBindGroup();
+    if (ret && ret->Init(device, descriptor))
+    {
+        RHI_SAFE_RETAIN(ret);
+        return ret;
+    }
+    
+    if (ret) delete ret;
+    return nullptr;
+}
+
 
 VKBindGroup::~VKBindGroup()
 {
-    // TODO release vulkan resource
+    if (vkDescriptorSet_)
+    {
+        vkFreeDescriptorSets(vkDevice_, vkDescriptorPool_, 1, &vkDescriptorSet_);
+    }
 }
 
 void VKBindGroup::WriteToGPU() const
 {
-    for (const BindingResource* resource : bindingResources_)
+    for (const BindGroupBinding &binding : bindingResources_)
     {
+        auto resource = binding.resource;
         if (resource->GetResourceType() == BindingResourceType::BUFFER)
         {
-            auto* buffer = (const VKBindingBuffer*)resource;
+            auto* buffer = RHI_CAST(const VKBindingBuffer*, resource);
             VkDescriptorBufferInfo bufferInfo{
-                    .buffer = buffer->buffer_->GetNative(),
-                    .offset = buffer->offset_,
-                    .range  = buffer->size_,
+                .buffer = buffer->buffer_->GetNative(),
+                .offset = buffer->offset_,
+                .range  = buffer->size_,
             };
-
+            
             VkWriteDescriptorSet descriptorWrite{
-                    .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                    .dstSet = vkDescriptorSet_,
-                    .dstBinding = buffer->GetBindingPoint(),
-                    .dstArrayElement = 0,
-                    .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                    .descriptorCount = 1,
-                    .pBufferInfo = &bufferInfo,
-                    .pImageInfo = nullptr, // optional
-                    .pTexelBufferView = nullptr, // optional
-
+                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                .dstSet = vkDescriptorSet_,
+                .dstBinding = binding.binding,
+                .dstArrayElement = 0,
+                .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                .descriptorCount = 1,
+                .pBufferInfo = &bufferInfo,
+                .pImageInfo = nullptr, // optional
+                .pTexelBufferView = nullptr, // optional
+                
             };
             vkUpdateDescriptorSets(vkDevice_, 1, &descriptorWrite, 0, nullptr);
         }
         else if (resource->GetResourceType() == BindingResourceType::COMBINED_SAMPLER_TEXTUREVIEW)
         {
-            auto* vkRes = (const VKBindingCombined*)resource;
-
+            auto* vkRes = RHI_CAST(const VKBindingCombined*, resource);
+            
             VkDescriptorImageInfo imageInfo = {
-                    .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                    .imageView = vkRes->textureView_->GetNative(),
-                    .sampler = vkRes->sampler_->GetNative(),
+                .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                .imageView = vkRes->textureView_->GetNative(),
+                .sampler = vkRes->sampler_->GetNative(),
             };
-
+            
             VkWriteDescriptorSet descriptorWrite{
-                    .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                    .dstSet = vkDescriptorSet_,
-                    .dstBinding = vkRes->GetBindingPoint(),
-                    .dstArrayElement = 0,
-                    .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                    .descriptorCount = 1,
-                    .pBufferInfo = nullptr,
-                    .pImageInfo = &imageInfo, // optional
-                    .pTexelBufferView = nullptr, // optional
-
+                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                .dstSet = vkDescriptorSet_,
+                .dstBinding = binding.binding,
+                .dstArrayElement = 0,
+                .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                .descriptorCount = 1,
+                .pBufferInfo = nullptr,
+                .pImageInfo = &imageInfo, // optional
+                .pTexelBufferView = nullptr, // optional
+                
             };
             vkUpdateDescriptorSets(vkDevice_, 1, &descriptorWrite, 0, nullptr);
         }
@@ -92,9 +114,11 @@ void VKBindGroup::WriteToGPU() const
     }
 }
 
-void VKBindGroup::BindToCommandBuffer(std::uint32_t index, VkCommandBuffer vkCommandBuffer, VkPipelineLayout vkPipelineLayout) const
+void VKBindGroup::BindToCommandBuffer(std::uint32_t index, VkCommandBuffer vkCommandBuffer,
+                                      VkPipelineLayout vkPipelineLayout) const
 {
-    vkCmdBindDescriptorSets(vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipelineLayout, index, 1, &vkDescriptorSet_, 0, nullptr);
+    vkCmdBindDescriptorSets(vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipelineLayout,
+                            index, 1, &vkDescriptorSet_, 0, nullptr);
 }
 
 NS_RHI_END

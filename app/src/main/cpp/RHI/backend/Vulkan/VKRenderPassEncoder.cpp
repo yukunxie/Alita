@@ -243,6 +243,7 @@ void VKRenderPassEncoder::SetStencilReference(std::uint32_t reference)
 void VKRenderPassEncoder::SetBindGroup(std::uint32_t index, const BindGroup* bindGroup, const std::vector<std::uint32_t>& dynamicOffsets)
 {
     RHI_ASSERT(graphicPipeline_);
+    RHI_CAST(const VKBindGroup*, bindGroup)->WriteToGPU();
     auto vkGraphicPipeline = RHI_CAST(const VKRenderPipeline*, graphicPipeline_);
     RHI_CAST(const VKBindGroup*, bindGroup)->BindToCommandBuffer(index, vkCommandBuffer_, vkGraphicPipeline->GetPipelineLayout());
 }

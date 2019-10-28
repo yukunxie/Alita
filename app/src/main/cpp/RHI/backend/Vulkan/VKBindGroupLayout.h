@@ -19,8 +19,14 @@ NS_RHI_BEGIN
 
 class VKBindGroupLayout : public BindGroupLayout
 {
+protected:
+    VKBindGroupLayout() = default;
+    bool Init(VKDevice* device, const BindGroupLayoutDescriptor& descriptor);
+    
 public:
-    VKBindGroupLayout(VKDevice* device, const DescriptorSetLayoutCreateInfo& layoutCreateInfo);
+    static VKBindGroupLayout* Create(VKDevice* device, const BindGroupLayoutDescriptor& descriptor);
+    
+public:
     virtual ~VKBindGroupLayout();
 
     VkDescriptorSetLayout GetNative() const {return vkBindGroupLayout_;}

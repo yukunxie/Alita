@@ -16,10 +16,14 @@
 
 NS_RHI_BEGIN
 
-class VKSampler : public Sampler
+class VKSampler final : public Sampler
 {
+protected:
+    VKSampler() = default;
+
 public:
-    VKSampler(VKDevice* device);
+    bool Init(VKDevice* device, const SamplerDescriptor& descriptor);
+
     virtual ~VKSampler();
 
     VkSampler  GetNative() const {return vkSampler_;}
@@ -27,6 +31,8 @@ public:
 private:
     VkDevice  vkDevice_   = nullptr;
     VkSampler vkSampler_  = 0;
+
+    friend class VKDevice;
 };
 
 NS_RHI_END

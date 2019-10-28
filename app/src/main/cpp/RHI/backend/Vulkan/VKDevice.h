@@ -143,7 +143,7 @@ public:
 
     VkPhysicalDevice GetPhysicalDevice() const {return vkPhysicalDevice_;}
 
-    VkQueue GetQueue() const {return vkQueue_;}
+//    VkQueue GetQueue() const {return vkQueue_;}
 
     VkSwapchainKHR GetVkSwapChain() const {return vkSwapchain_;}
 
@@ -185,31 +185,27 @@ public:
 
     virtual Texture* CreateTexture(const TextureDescriptor& descriptor) override ;
 
-    virtual Sampler* CreateSampler() override ;
+    virtual Sampler* CreateSampler(const SamplerDescriptor& descriptor = {}) override ;
+    
+    virtual BindGroupLayout* CreateBindGroupLayout(const BindGroupLayoutDescriptor& descriptor ) override ;
+    
+    virtual BindGroup* CreateBindGroup(const BindGroupDescriptor& descriptor) override;
 
-    virtual BindGroupLayout* CreateBindGroupLayout(const DescriptorSetLayoutCreateInfo& layoutCreateInfo) override ;
-
-    virtual BindGroup* CreateBindGroup(const BindGroupLayout* bindGroupLayout, const std::vector<BindingResource*>& bindResources) override ;
-
-    virtual PipelineLayout* CreatePipelineLayout(const std::vector<BindGroupLayout*>& bindGroupLayouts) override ;
+    virtual PipelineLayout* CreatePipelineLayout(const PipelineLayoutDescriptor& descriptor) override ;
 
     virtual BindingResource* CreateBindingResourceBuffer(std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size) override ;
 
     virtual BindingResource* CreateBindingResourceCombined(std::uint32_t bindingPoint, const TextureView* textureView, const Sampler* sampler) override ;
 
-    virtual Queue* CreateQueue() override;
-
-    virtual CommandEncoder* CreateCommandEncoder() override;
+    virtual CommandEncoder* CreateCommandEncoder(const CommandEncoderDescriptor& descriptor = {}) override;
 
     virtual SwapChain* CreateSwapChain() override;
+    
+    virtual Viewport GetViewport() const override {return viewport_;}
 
-    virtual void WriteBindGroup(const BindGroup* bindGroup) override ;
+    virtual Scissor  GetScissor() const override  {return scissor_;}
 
-    virtual Viewport GetViewport() override {return viewport_;}
-
-    virtual Scissor  GetScissor() override  {return scissor_;}
-
-    virtual Queue* GetQueue() override;
+    virtual Queue* GetQueue() const override;
 
 private:
     void CreateInstance();
@@ -220,6 +216,7 @@ private:
     void CreateVKQueue();
     void CreateCommandPool();
     void CreateDescriptorPool();
+    Queue* CreateQueue();
 
 private:
     QueueFamilyIndices FindQueueFamilies();
@@ -233,7 +230,7 @@ private:
     ANativeWindow*                  nativeWindow_           = nullptr;
     VkInstance                      vkInstance_             = nullptr;
     VkDevice                        vkDevice_               = nullptr;
-    VkQueue                         vkQueue_                = nullptr;
+//    VkQueue                         vkQueue_                = nullptr;
     VkPhysicalDevice                vkPhysicalDevice_       = nullptr;
     VkCommandPool                   vkCommandPool_;
     VkDescriptorPool                vkDescriptorPool_;
@@ -248,11 +245,9 @@ private:
 
     Viewport                        viewport_;
     Scissor                         scissor_;
-
-    // VK*
-    VKQueue*                                queue_      = nullptr;
-    std::vector<VkSemaphore>                waitingSemaphores_;
-
+    
+    Queue*                          renderQueuer_           = nullptr;
+    std::vector<VkSemaphore>        waitingSemaphores_;
     RenderPassCache renderPassCache_;
 };
 

@@ -22,8 +22,13 @@ NS_RHI_BEGIN
 
 class VKBindGroup : public BindGroup
 {
+protected:
+    VKBindGroup() = default;
+    bool Init(VKDevice* device, const BindGroupDescriptor& descriptor);
+    
 public:
-    VKBindGroup(VKDevice* device, const VKBindGroupLayout* bindGroupLayout, const std::vector<BindingResource*>& bindResources);
+    static VKBindGroup* Create(VKDevice* device, const BindGroupDescriptor& descriptor);
+    
     ~VKBindGroup();
 
     VkDescriptorSet GetNative() const {return vkDescriptorSet_;}
@@ -34,9 +39,10 @@ public:
 
 private:
     VkDevice                    vkDevice_           = nullptr;
+    VkDescriptorPool            vkDescriptorPool_   = 0L;
     VkDescriptorSet             vkDescriptorSet_    = 0L;
 
-    std::vector<const BindingResource*> bindingResources_;
+    std::vector<BindGroupBinding> bindingResources_;
 };
 
 NS_RHI_END

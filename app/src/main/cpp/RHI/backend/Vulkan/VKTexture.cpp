@@ -5,6 +5,7 @@
 #include "VKTexture.h"
 #include "VKTypes.h"
 #include "VKTextureView.h"
+#include "VKQueue.h"
 
 
 NS_RHI_BEGIN
@@ -231,7 +232,8 @@ void VKTexture::SetImageLayout(const VKDevice* device)
             .signalSemaphoreCount = 0,
             .pSignalSemaphores = nullptr,
     };
-    CALL_VK(vkQueueSubmit(device->GetQueue(), 1, &submitInfo, fence));
+    const VKQueue* queue = RHI_CAST(const VKQueue*, device->GetQueue());
+    CALL_VK(vkQueueSubmit(queue->GetNative(), 1, &submitInfo, fence));
     CALL_VK(vkWaitForFences(vkDevice_, 1, &fence, VK_TRUE, 100000000));
 
     vkDestroyFence(vkDevice_, fence, nullptr);

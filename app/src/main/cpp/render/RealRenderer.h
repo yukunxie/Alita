@@ -51,10 +51,9 @@ private:
     RHI::Texture*         rhiDSTexture_         = nullptr;
     RHI::TextureView*     rhiDSTextureView_     = nullptr;
     RHI::Sampler*         rhiSampler_           = nullptr;
-    RHI::RenderPipeline* rhiGraphicPipeline_   = nullptr;
+    RHI::RenderPipeline*  rhiGraphicPipeline_   = nullptr;
     RHI::Shader*          rhiVertShader_        = nullptr;
     RHI::Shader*          rhiFragShader_        = nullptr;
-    RHI::Queue*           rhiQueue_             = nullptr;
     RHI::CommandEncoder*  rhiCommandEncoder_    = nullptr;
     RHI::SwapChain*       rhiSwapChain_         = nullptr;
 };

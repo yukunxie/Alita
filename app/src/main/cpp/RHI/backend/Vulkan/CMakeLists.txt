@@ -4,8 +4,8 @@ include_directories(
         ./
 )
 
-file(GLOB SRCS "./*.cpp")
-file(GLOB HEADS "./*.h")
+file(GLOB_RECURSE SRCS "./*.cpp")
+file(GLOB_RECURSE HEADS "./*.h")
 
 add_library( # Sets the name of the library.
         vulkan-lib-static
@@ -14,23 +14,24 @@ add_library( # Sets the name of the library.
         STATIC
 
         ${HEADS}
-        ./VKRenderPipeline.cpp
-        ./VKDevice.cpp
-        ./VKCommandBuffer.cpp
-        ./VKTextureView.cpp
-        ./VKBuffer.cpp
-        ./VKShader.cpp
-        ./VKPipelineLayout.cpp
-        ./VKRenderQueue.cpp
-        ./VKQueue.cpp
-        ./VKBindingResources.cpp
-        ./VKBindGroupLayout.cpp
-        ./VKRenderPassEncoder.cpp
-        ./VKTexture.cpp
-        ./VKSampler.cpp
-        ./VKBindGroup.cpp
-        ./VKRenderPass.cpp
-        ./VKSwapChain.cpp
-        ./VKTypes.cpp
-        ./VKCommandEncoder.cpp
+        ${SRCS}
+#        ./VKRenderPipeline.cpp
+#        ./VKDevice.cpp
+#        ./VKCommandBuffer.cpp
+#        ./VKTextureView.cpp
+#        ./VKBuffer.cpp
+#        ./VKShader.cpp
+#        ./VKPipelineLayout.cpp
+#        ./VKRenderQueue.cpp
+#        ./VKQueue.cpp
+#        ./VKBindingResources.cpp
+#        ./VKBindGroupLayout.cpp
+#        ./VKRenderPassEncoder.cpp
+#        ./VKTexture.cpp
+#        ./VKSampler.cpp
+#        ./VKBindGroup.cpp
+#        ./VKRenderPass.cpp
+#        ./VKSwapChain.cpp
+#        ./VKTypes.cpp
+#        ./VKCommandEncoder.cpp
         )

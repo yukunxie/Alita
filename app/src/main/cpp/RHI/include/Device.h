@@ -45,31 +45,27 @@ public:
 
     virtual Texture* CreateTexture(const TextureDescriptor& descriptor) = 0;
 
-    virtual Sampler* CreateSampler() = 0;
+    virtual Sampler* CreateSampler(const SamplerDescriptor& descriptor = {}) = 0;
+    
+    virtual BindGroupLayout* CreateBindGroupLayout(const BindGroupLayoutDescriptor& descriptor) = 0;
+    
+    virtual BindGroup* CreateBindGroup(const BindGroupDescriptor& descriptor) = 0;
 
-    virtual BindGroupLayout* CreateBindGroupLayout(const DescriptorSetLayoutCreateInfo& layoutCreateInfo) = 0;
-
-    virtual BindGroup* CreateBindGroup(const BindGroupLayout* bindGroupLayout, const std::vector<BindingResource*>& bindResources) = 0;
-
-    virtual PipelineLayout* CreatePipelineLayout(const std::vector<BindGroupLayout*>& bindGroupLayouts) = 0;
+    virtual PipelineLayout* CreatePipelineLayout(const PipelineLayoutDescriptor& descriptor) = 0;
 
     virtual BindingResource* CreateBindingResourceBuffer(std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size) = 0;
 
     virtual BindingResource* CreateBindingResourceCombined(std::uint32_t bindingPoint, const TextureView* textureView, const Sampler* sampler) = 0;
-
-    virtual Queue* CreateQueue() = 0;
-
-    virtual CommandEncoder* CreateCommandEncoder() = 0;
+    
+    virtual CommandEncoder* CreateCommandEncoder(const CommandEncoderDescriptor& descriptor = {}) = 0;
 
     virtual SwapChain* CreateSwapChain() = 0;
+    
+    virtual Viewport GetViewport() const = 0;
 
-    virtual void WriteBindGroup(const BindGroup* bindGroup) = 0;
+    virtual Scissor  GetScissor()  const = 0;
 
-    virtual Viewport GetViewport() = 0;
-
-    virtual Scissor  GetScissor()  = 0;
-
-    virtual Queue*   GetQueue() = 0;
+    virtual Queue*   GetQueue() const = 0;
 public:
     ~Device(){}
 };

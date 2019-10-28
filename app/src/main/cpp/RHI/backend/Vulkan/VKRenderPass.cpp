@@ -35,15 +35,15 @@ VKRenderPass::VKRenderPass(VKDevice* device, const RenderPassCacheQuery& query)
         auto& attachmentDesc = attachmentDescs[attachmentCount];
 
         attachmentRef.attachment = attachmentCount;
-        attachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        attachmentRef.layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         attachmentDesc.flags = 0;
         attachmentDesc.format = GetVkFormat(query.colorFormats[i]);
         attachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
         attachmentDesc.loadOp = GetLoadOp(query.colorLoadOp[i]);
         attachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        attachmentDesc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        attachmentDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        attachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachmentDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         attachmentCount++;
     }

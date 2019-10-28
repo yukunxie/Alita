@@ -19,8 +19,12 @@ NS_RHI_BEGIN
 
 class VKPipelineLayout : public PipelineLayout
 {
+protected:
+    VKPipelineLayout() = default;
+    bool Init(VKDevice* device, const PipelineLayoutDescriptor& descriptor);
+    
 public:
-    VKPipelineLayout(VKDevice* device, const std::vector<BindGroupLayout*>& bindGroupLayouts);
+    static VKPipelineLayout* Create(VKDevice* device, const PipelineLayoutDescriptor& descriptor);
     ~VKPipelineLayout();
 
     VkPipelineLayout GetNative() const {return vkPipelineLayout_;}

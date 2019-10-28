@@ -24,8 +24,8 @@ VkSharingMode ToVkSharingMode(SharingMode sharingMode);
 VkImageTiling ToVkImageTiling(ImageTiling imageTiling);
 VkImageUsageFlags ToVkImageUsageFlags(ImageUsageFlags imageUsageFlags);
 VkImageType ToVkImageType(ImageType imageType);
-VkDescriptorType ToVkDescriptorType(DescriptorType type);
-VkShaderStageFlags ToVkShaderStageFlags(ShaderStageFlags flag);
+VkDescriptorType GetVkDescriptorType(BindingType type);
+VkShaderStageFlags GetVkShaderStageFlags(ShaderStageFlags flag);
 
 VkPrimitiveTopology GetPrimitiveTopology(PrimitiveTopology topology);
 VkVertexInputRate GetVertexInputRate(InputStepMode mode);
@@ -41,6 +41,9 @@ VkBufferUsageFlags GetVkBufferUsageFlags(BufferUsageFlags flags);
 VkImageType GetVkImageType(TextureDimension dim);
 VkImageUsageFlags GetVkImageUsageFlags(TextureUsageFlags flags, TextureFormat format = TextureFormat::RGBA8UNORM);
 VkSampleCountFlagBits GetVkSampleCountFlagBits(std::uint32_t sampleCount);
+VkFilter GetVkFilter(FilterMode mode);
+VkSamplerMipmapMode GetVkSamplerMipmapMode(FilterMode mode);
+VkSamplerAddressMode GetVkSamplerAddressMode(AddressMode mode);
 
 NS_RHI_END
 

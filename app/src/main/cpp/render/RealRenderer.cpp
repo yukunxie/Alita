@@ -17,6 +17,7 @@
 #include "../types/TData.h"
 
 #include "../RHI/include/RHI.h"
+#include "../RHI/backend/Vulkan/ShaderHelper.h"
 
 #include "../external/stb/stb_image.h"
 
@@ -188,19 +189,41 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     // ------------ Start setup RenderPipeline object ---------------
     
     // Step 1. create shaders
+//    {
+//        TData vertData = AFileSystem::getInstance()->readData("shaders/shader.vert.spv");
+//        RHI::ShaderModuleDescriptor descriptor;
+//        descriptor.binaryCode = std::move(vertData);
+//        descriptor.codeType   = RHI::ShaderCodeType::BINARY;
+//        rhiVertShader_ = rhiDevice_->CreateShaderModule(descriptor);
+//    }
+//
+//    {
+//        TData fragData = AFileSystem::getInstance()->readData("shaders/shader.frag.spv");
+//        RHI::ShaderModuleDescriptor descriptor;
+//        descriptor.binaryCode = std::move(fragData);
+//        descriptor.codeType   = RHI::ShaderCodeType::BINARY;
+//        rhiFragShader_ = rhiDevice_->CreateShaderModule(descriptor);
+//    }
+    
     {
-        TData vertData = AFileSystem::getInstance()->readData("shaders/shader.vert.spv");
+        TData vertData = AFileSystem::getInstance()->readData("shaders/shader.vert");
+        std::vector<std::uint32_t> spirV = RHI::CompileGLSLToSPIRV((const char*)vertData.data(), RHI::ShaderType::VERTEX);
+        std::vector<std::uint8_t>  tmpData(spirV.size() * sizeof(std::uint32_t), 0);
+        memcpy(tmpData.data(), spirV.data(), tmpData.size());
         RHI::ShaderModuleDescriptor descriptor;
-        descriptor.binaryCode = std::move(vertData);
-        descriptor.codeType   = RHI::ShaderCodeType::BINARY;
+        descriptor.binaryCode = std::move(tmpData);
+        descriptor.codeType = RHI::ShaderCodeType::BINARY;
         rhiVertShader_ = rhiDevice_->CreateShaderModule(descriptor);
     }
     
     {
-        TData fragData = AFileSystem::getInstance()->readData("shaders/shader.frag.spv");
+        TData fragData = AFileSystem::getInstance()->readData("shaders/shader.frag");
+        std::vector<std::uint32_t> spirV = RHI::CompileGLSLToSPIRV((const char*)fragData.data(), RHI::ShaderType::FRAGMENT);
+        std::vector<std::uint8_t>  tmpData(spirV.size() * sizeof(std::uint32_t), 0);
+        memcpy(tmpData.data(), spirV.data(), tmpData.size());
         RHI::ShaderModuleDescriptor descriptor;
-        descriptor.binaryCode = std::move(fragData);
-        descriptor.codeType   = RHI::ShaderCodeType::BINARY;
+        descriptor.binaryCode = std::move(tmpData);
+        descriptor.codeType = RHI::ShaderCodeType::BINARY;
         rhiFragShader_ = rhiDevice_->CreateShaderModule(descriptor);
     }
     

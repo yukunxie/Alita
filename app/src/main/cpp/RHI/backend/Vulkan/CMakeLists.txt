@@ -4,8 +4,12 @@ include_directories(
         ./
 )
 
-file(GLOB_RECURSE SRCS "./*.cpp")
-file(GLOB_RECURSE HEADS "./*.h")
+add_subdirectory(glslang)
+add_subdirectory(SPIRV)
+add_subdirectory(OGLCompilersDLL)
+
+file(GLOB SRCS "./*.cpp")
+file(GLOB HEADS "./*.h")
 
 add_library( # Sets the name of the library.
         vulkan-lib-static
@@ -15,23 +19,11 @@ add_library( # Sets the name of the library.
 
         ${HEADS}
         ${SRCS}
-#        ./VKRenderPipeline.cpp
-#        ./VKDevice.cpp
-#        ./VKCommandBuffer.cpp
-#        ./VKTextureView.cpp
-#        ./VKBuffer.cpp
-#        ./VKShader.cpp
-#        ./VKPipelineLayout.cpp
-#        ./VKRenderQueue.cpp
-#        ./VKQueue.cpp
-#        ./VKBindingResources.cpp
-#        ./VKBindGroupLayout.cpp
-#        ./VKRenderPassEncoder.cpp
-#        ./VKTexture.cpp
-#        ./VKSampler.cpp
-#        ./VKBindGroup.cpp
-#        ./VKRenderPass.cpp
-#        ./VKSwapChain.cpp
-#        ./VKTypes.cpp
-#        ./VKCommandEncoder.cpp
+        )
+
+target_link_libraries( # Specifies the target library.
+        vulkan-lib-static
+        glslang
+        SPIRV
+        OGLCompiler
         )

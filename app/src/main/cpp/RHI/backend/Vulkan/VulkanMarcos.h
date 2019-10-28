@@ -6,7 +6,7 @@
 #define ALITA_VULKANMARCOS_H
 
 #include <android/log.h>
-#include "../include/Macros.h"
+#include "../../include/Macros.h"
 
 
 #ifndef CALL_VK

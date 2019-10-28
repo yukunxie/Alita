@@ -7,13 +7,6 @@
 
 #include "VKDevice.h"
 
-#include "../../include/Macros.h"
-#include "../../include/Queue.h"
-#include "../../include/Flags.h"
-#include "drivers/vulkan/vulkan_wrapper.h"
-
-#include <vulkan/vulkan.h>
-
 NS_RHI_BEGIN
 
 class VKQueue : public Queue

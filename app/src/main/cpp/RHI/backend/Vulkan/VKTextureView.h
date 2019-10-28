@@ -8,14 +8,6 @@
 #include "VKDevice.h"
 #include "VKTexture.h"
 
-#include "../../include/Macros.h"
-#include "../../include/TextureView.h"
-#include "../../include/Flags.h"
-#include "drivers/vulkan/vulkan_wrapper.h"
-
-#include <vulkan/vulkan.h>
-#include <vector>
-
 NS_RHI_BEGIN
 
 class VKTextureView final: public TextureView

@@ -607,11 +607,9 @@ RenderPipeline* VKDevice::CreateRenderPipeline(const RenderPipelineDescriptor &d
     return pipeline;
 }
 
-Shader* VKDevice::CreateShader(const std::vector<std::uint8_t> &shaderSource)
+Shader* VKDevice::CreateShaderModule(const ShaderModuleDescriptor &descriptor)
 {
-    Shader* shader = new VKShader(this, shaderSource);
-    RHI_SAFE_RETAIN(shader);
-    return shader;
+    return VKShader::Create(this, descriptor);
 }
 
 Texture* VKDevice::CreateTexture(const TextureDescriptor &descriptor)

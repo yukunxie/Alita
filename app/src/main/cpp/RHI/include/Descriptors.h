@@ -514,6 +514,18 @@ struct CommandEncoderDescriptor : ObjectDescriptorBase {
 // TODO: reusability flag?
 };
 
+enum class ShaderCodeType
+{
+    BINARY,
+    TEXT,
+};
+
+struct ShaderModuleDescriptor : ObjectDescriptorBase {
+    ShaderCodeType  codeType;
+    std::vector<std::uint8_t> binaryCode;
+    std::string textCode;
+};
+
 NS_RHI_END
 
 #endif //ALITA_DESCRIPTORS_H

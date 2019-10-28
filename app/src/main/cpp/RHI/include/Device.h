@@ -41,7 +41,9 @@ public:
 
     virtual RenderPipeline* CreateRenderPipeline(const RenderPipelineDescriptor& descriptor) = 0;
 
-    virtual Shader* CreateShader(const std::vector<std::uint8_t>& shaderSource) = 0;
+//    virtual Shader* CreateShader(const std::vector<std::uint8_t>& shaderSource) = 0;
+    
+    virtual Shader* CreateShaderModule(const ShaderModuleDescriptor &descriptor) = 0;
 
     virtual Texture* CreateTexture(const TextureDescriptor& descriptor) = 0;
 

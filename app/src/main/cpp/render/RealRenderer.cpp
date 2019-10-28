@@ -15,6 +15,7 @@
 #include "../external/glm/vec3.hpp"
 #include "../external/glm/gtx/closest_point.inl"
 #include "../aux/AFileSystem.h"
+#include "../types/TData.h"
 
 #include "../RHI/include/RHI.h"
 
@@ -188,11 +189,21 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     // ------------ Start setup RenderPipeline object ---------------
     
     // Step 1. create shaders
+    {
+        TData vertData = AFileSystem::getInstance()->readData("shaders/shader.vert.spv");
+        RHI::ShaderModuleDescriptor descriptor;
+        descriptor.binaryCode = std::move(vertData);
+        descriptor.codeType   = RHI::ShaderCodeType::BINARY;
+        rhiVertShader_ = rhiDevice_->CreateShaderModule(descriptor);
+    }
     
-    const TData &vertData = AFileSystem::getInstance()->readData("shaders/shader.vert.spv");
-    const TData &fragData = AFileSystem::getInstance()->readData("shaders/shader.frag.spv");
-    rhiVertShader_ = rhiDevice_->CreateShader(vertData);
-    rhiFragShader_ = rhiDevice_->CreateShader(fragData);
+    {
+        TData fragData = AFileSystem::getInstance()->readData("shaders/shader.frag.spv");
+        RHI::ShaderModuleDescriptor descriptor;
+        descriptor.binaryCode = std::move(fragData);
+        descriptor.codeType   = RHI::ShaderCodeType::BINARY;
+        rhiFragShader_ = rhiDevice_->CreateShaderModule(descriptor);
+    }
     
     {
         RHI::BindGroupLayoutDescriptor descriptor;

@@ -7,21 +7,44 @@
 
 NS_RHI_BEGIN
 
-VKShader::VKShader(VKDevice* device, const std::vector<std::uint8_t>& shaderSource)
+bool VKShader::Init(VKDevice* device, const ShaderModuleDescriptor& descriptor)
 {
-    VkShaderModuleCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = shaderSource.size();
-    createInfo.pCode = reinterpret_cast<const std::uint32_t *>(shaderSource.data());
-
-    if (vkCreateShaderModule(device->GetDevice(), &createInfo, nullptr, &vkShaderModule_) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create shader module!");
+    vkDevice_ = device->GetDevice();
+    
+    if (descriptor.codeType == ShaderCodeType::BINARY)
+    {
+        VkShaderModuleCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        createInfo.codeSize = descriptor.binaryCode.size();
+        createInfo.pCode = reinterpret_cast<const std::uint32_t *>(descriptor.binaryCode.data());
+    
+        CALL_VK(vkCreateShaderModule(vkDevice_, &createInfo, nullptr, &vkShaderModule_));
+        return true;
     }
+    else
+    {
+        return false;
+    }
+}
+
+VKShader* VKShader::Create(VKDevice* device, const ShaderModuleDescriptor& descriptor)
+{
+    auto ret = new VKShader();
+    if (ret && ret->Init(device, descriptor))
+    {
+        RHI_SAFE_RETAIN(ret);
+        return ret;
+    }
+    if (ret) delete ret;
+    return nullptr;
 }
 
 VKShader::~VKShader()
 {
-    // TODO destory shader resource
+    if (vkShaderModule_)
+    {
+        vkDestroyShaderModule(vkDevice_, vkShaderModule_, nullptr);
+    }
 }
 
 

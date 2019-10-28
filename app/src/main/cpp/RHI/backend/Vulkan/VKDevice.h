@@ -8,6 +8,8 @@
 #include "../../include/RHI.h"
 #include "../../include/xxhash64.h"
 #include "drivers/vulkan/vulkan_wrapper.h"
+
+#include "VulkanMarcos.h"
 #include "VKTypes.h"
 
 #include <vulkan/vulkan.h>
@@ -180,9 +182,9 @@ public:
     virtual void WriteBuffer(const Buffer* buffer, const void* data, std::uint32_t offset, std::uint32_t size) override;
 
     virtual RenderPipeline* CreateRenderPipeline(const RenderPipelineDescriptor& descriptor) override;
-
-    virtual Shader* CreateShader(const std::vector<std::uint8_t>& shaderSource) override;
-
+    
+    virtual Shader* CreateShaderModule(const ShaderModuleDescriptor &descriptor) override ;
+    
     virtual Texture* CreateTexture(const TextureDescriptor& descriptor) override ;
 
     virtual Sampler* CreateSampler(const SamplerDescriptor& descriptor = {}) override ;

@@ -14,7 +14,6 @@ file(GLOB_RECURSE HEADERS
         "Base/*.h"
         "World/*.h"
         "render/*.h"
-        "drivers/*.h"
         "types/*.h"
         )
 
@@ -24,7 +23,6 @@ file(GLOB_RECURSE SRCS
         "types/*.cpp"
         "World/*.cpp"
         "render/*.cpp"
-        "drivers/*.cpp"
         )
 
 add_library( # Sets the name of the library.

@@ -10,7 +10,6 @@
 //#include <android_native_app_glue.h>
 #include "types/Types.h"
 #include "aux/Aux.h"
-#include "../drivers/vulkan/vulkan_wrapper.h"
 #include "RHI/backend/Vulkan/VKDevice.h"
 
 #include "RHI/include/RHI.h"

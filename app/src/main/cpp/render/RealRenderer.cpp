@@ -10,7 +10,6 @@
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
 
-#include "../drivers/vulkan/vulkan_wrapper.h"
 #include "../aux/AFileSystem.h"
 #include "../external/glm/vec3.hpp"
 #include "../external/glm/gtx/closest_point.inl"

@@ -79,6 +79,9 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(
 
 VKDevice::VKDevice(ANativeWindow* window)
 {
+    // load Vulkan interface from so.
+    InitVulkan();
+    
     nativeWindow_ = window;
     
     CreateInstance();

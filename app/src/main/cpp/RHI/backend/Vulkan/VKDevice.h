@@ -7,8 +7,8 @@
 
 #include "../../include/RHI.h"
 #include "../../include/xxhash64.h"
-#include "drivers/vulkan/vulkan_wrapper.h"
 
+#include "vulkan_wrapper.h"
 #include "VulkanMarcos.h"
 #include "VKTypes.h"
 

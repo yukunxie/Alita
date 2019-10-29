@@ -13,7 +13,8 @@ NS_RHI_BEGIN
 class PipelineLayout : public RHIObjectBase
 {
 public:
-    virtual ~PipelineLayout(){}
+    virtual ~PipelineLayout()
+    {}
 };
 
 NS_RHI_END

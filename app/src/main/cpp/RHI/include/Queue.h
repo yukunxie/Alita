@@ -18,9 +18,9 @@ public:
 
 public:
     virtual void Submit(CommandBuffer* commandBuffer) = 0;
-
-//    GPUFence createFence(optional GPUFenceDescriptor descriptor = {});
-//    void signal(GPUFence fence, unsigned long long signalValue
+    
+    //    GPUFence createFence(optional GPUFenceDescriptor descriptor = {});
+    //    void signal(GPUFence fence, unsigned long long signalValue
 };
 
 NS_RHI_END

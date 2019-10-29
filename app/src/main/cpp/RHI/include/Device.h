@@ -35,41 +35,39 @@ NS_RHI_BEGIN
 class Device
 {
 public:
-    virtual Buffer* CreateBuffer(const BufferDescriptor& descriptor) = 0;
-
-    virtual void WriteBuffer(const Buffer* buffer, const void* data, std::uint32_t offset, std::uint32_t size) = 0;
-
-    virtual RenderPipeline* CreateRenderPipeline(const RenderPipelineDescriptor& descriptor) = 0;
-
-//    virtual Shader* CreateShader(const std::vector<std::uint8_t>& shaderSource) = 0;
+    virtual Buffer* CreateBuffer(const BufferDescriptor &descriptor) = 0;
+    
+    virtual void WriteBuffer(const Buffer* buffer, const void* data, std::uint32_t offset,
+                             std::uint32_t size) = 0;
+    
+    virtual RenderPipeline* CreateRenderPipeline(const RenderPipelineDescriptor &descriptor) = 0;
     
     virtual Shader* CreateShaderModule(const ShaderModuleDescriptor &descriptor) = 0;
-
-    virtual Texture* CreateTexture(const TextureDescriptor& descriptor) = 0;
-
-    virtual Sampler* CreateSampler(const SamplerDescriptor& descriptor = {}) = 0;
     
-    virtual BindGroupLayout* CreateBindGroupLayout(const BindGroupLayoutDescriptor& descriptor) = 0;
+    virtual Texture* CreateTexture(const TextureDescriptor &descriptor) = 0;
     
-    virtual BindGroup* CreateBindGroup(const BindGroupDescriptor& descriptor) = 0;
-
-    virtual PipelineLayout* CreatePipelineLayout(const PipelineLayoutDescriptor& descriptor) = 0;
-
-    virtual BindingResource* CreateBindingResourceBuffer(std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size) = 0;
-
-    virtual BindingResource* CreateBindingResourceCombined(std::uint32_t bindingPoint, const TextureView* textureView, const Sampler* sampler) = 0;
+    virtual Sampler* CreateSampler(const SamplerDescriptor &descriptor = {}) = 0;
     
-    virtual CommandEncoder* CreateCommandEncoder(const CommandEncoderDescriptor& descriptor = {}) = 0;
-
+    virtual BindGroupLayout* CreateBindGroupLayout(const BindGroupLayoutDescriptor &descriptor) = 0;
+    
+    virtual BindGroup* CreateBindGroup(const BindGroupDescriptor &descriptor) = 0;
+    
+    virtual PipelineLayout* CreatePipelineLayout(const PipelineLayoutDescriptor &descriptor) = 0;
+    
+    virtual CommandEncoder*
+    CreateCommandEncoder(const CommandEncoderDescriptor &descriptor = {}) = 0;
+    
     virtual SwapChain* CreateSwapChain() = 0;
     
     virtual Viewport GetViewport() const = 0;
+    
+    virtual Scissor GetScissor() const = 0;
+    
+    virtual Queue* GetQueue() const = 0;
 
-    virtual Scissor  GetScissor()  const = 0;
-
-    virtual Queue*   GetQueue() const = 0;
 public:
-    ~Device(){}
+    ~Device()
+    {}
 };
 
 NS_RHI_END

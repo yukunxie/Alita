@@ -10,35 +10,37 @@
 NS_RHI_BEGIN
 
 class VKCommandBuffer;
+
 class VKRenderPassEncoder;
 
 class VKCommandEncoder : public CommandEncoder
 {
 public:
     VKCommandEncoder(VKDevice* device);
+    
     ~VKCommandEncoder();
 
 public:
-    virtual RenderPassEncoder* BeginRenderPass(const RenderPassDescriptor& descriptor) override;
-
-    virtual CommandBuffer* Finish() override ;
-
+    virtual RenderPassEncoder* BeginRenderPass(const RenderPassDescriptor &descriptor) override;
+    
+    virtual CommandBuffer* Finish(const CommandBufferDescriptor &descriptor = {}) override;
+    
     virtual void CopyBufferToBuffer(
-            const Buffer* source,
-            BufferSize sourceOffset,
-            Buffer* destination,
-            BufferSize destinationOffset,
-            BufferSize size) override ;
-
+        const Buffer* source,
+        BufferSize sourceOffset,
+        Buffer* destination,
+        BufferSize destinationOffset,
+        BufferSize size) override;
+    
     virtual void CopyBufferToTexture(
-            const BufferCopyView& source,
-            TextureCopyView& destination,
-            const Extent3D& copySize) override ;
+        const BufferCopyView &source,
+        TextureCopyView &destination,
+        const Extent3D &copySize) override;
 
 private:
-    VKDevice*               device_             = nullptr;
-    VKCommandBuffer*        commandBuffer_      = nullptr;
-    VKRenderPassEncoder*    renderPassEncoder_  = nullptr;
+    VKDevice* device_ = nullptr;
+    VKCommandBuffer* commandBuffer_ = nullptr;
+    VKRenderPassEncoder* renderPassEncoder_ = nullptr;
 };
 
 NS_RHI_END

@@ -6,17 +6,20 @@
 #define ALITA_SAMPLER_H
 
 #include "Macros.h"
-#include "RHIObjectBase.h"
-
+#include "BindingResource.h"
 
 
 NS_RHI_BEGIN
 
 class Sampler;
 
-class Sampler : public  RHIObjectBase
+class Sampler : public BindingResource
 {
 public:
+    Sampler() : BindingResource(BindingResourceType::SAMPLER)
+    {}
+
+protected:
     virtual ~Sampler()
     {
     }

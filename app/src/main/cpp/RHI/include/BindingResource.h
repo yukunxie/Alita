@@ -10,8 +10,6 @@
 
 NS_RHI_BEGIN
 
-class BindingResource;
-
 enum class BindingResourceType
 {
     UNDEFINED,
@@ -21,26 +19,42 @@ enum class BindingResourceType
     COMBINED_SAMPLER_TEXTUREVIEW,
 };
 
-class BindingResource : public  RHIObjectBase
+class Sampler;
+
+class TextureView;
+
+class BindingResource : public RHIObjectBase
 {
 public:
-    BindingResource(BindingResourceType bindingResourceType, std::uint32_t bindingPoint = 0)
+    BindingResource(BindingResourceType bindingResourceType)
         : bindingResourceType_(bindingResourceType)
-        , bindingPoint_(bindingPoint)
     {
     }
-
+    
     virtual ~BindingResource()
     {
     }
-
-    BindingResourceType GetResourceType() const {return bindingResourceType_;}
-
-    std::uint32_t GetBindingPoint() const {return bindingPoint_;}
+    
+    BindingResourceType GetResourceType() const
+    { return bindingResourceType_; }
 
 protected:
     BindingResourceType bindingResourceType_;
-    std::uint32_t       bindingPoint_;
+};
+
+struct CombinedSamplerImageViewBinding : public BindingResource
+{
+    CombinedSamplerImageViewBinding()
+        : BindingResource(BindingResourceType::COMBINED_SAMPLER_TEXTUREVIEW)
+    {}
+    
+    CombinedSamplerImageViewBinding(const Sampler* sampler, const TextureView* imageView)
+        : BindingResource(BindingResourceType::COMBINED_SAMPLER_TEXTUREVIEW), sampler(sampler),
+          imageView(imageView)
+    {}
+    
+    const Sampler* sampler = nullptr;
+    const TextureView* imageView = nullptr;
 };
 
 NS_RHI_END

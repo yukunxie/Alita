@@ -14,49 +14,49 @@ NS_RHI_BEGIN
 
 class VKBindGroup;
 
-class VKBindingBuffer final : public BindingResource
-{
-public:
-    VKBindingBuffer(std::uint32_t bindingPoint, const VKBuffer* buffer, std::uint32_t offset, std::uint32_t size);
-    virtual ~VKBindingBuffer();
-
-protected:
-    const VKBuffer*     buffer_             = nullptr;
-    std::uint32_t       offset_             = 0;
-    std::uint32_t       size_               = 0;
-
-    friend class VKBindGroup;
-};
-
-class VKBindingSampler final: public BindingResource
-{
-public:
-    VKBindingSampler();
-    virtual ~VKBindingSampler();
-};
-
-class VKBindingTextureView final: public BindingResource
-{
-public:
-    VKBindingTextureView();
-    virtual ~VKBindingTextureView();
-
-    friend class VKBindGroup;
-};
-
-// combined sampler and texture view
-class VKBindingCombined final: public BindingResource
-{
-public:
-    VKBindingCombined(std::uint32_t bindingPoint, const VKTextureView* textureView, const VKSampler* sampler);
-    virtual ~VKBindingCombined();
-
-protected:
-    const VKTextureView*    textureView_  = nullptr;
-    const VKSampler*        sampler_      = nullptr;
-
-    friend class VKBindGroup;
-};
+//class VKBindingBuffer final : public BindingResource
+//{
+//public:
+//    VKBindingBuffer(std::uint32_t bindingPoint, const VKBuffer* buffer, std::uint32_t offset, std::uint32_t size);
+//    virtual ~VKBindingBuffer();
+//
+//protected:
+//    const VKBuffer*     buffer_             = nullptr;
+//    std::uint32_t       offset_             = 0;
+//    std::uint32_t       size_               = 0;
+//
+//    friend class VKBindGroup;
+//};
+//
+//class VKBindingSampler final: public BindingResource
+//{
+//public:
+//    VKBindingSampler();
+//    virtual ~VKBindingSampler();
+//};
+//
+//class VKBindingTextureView final: public BindingResource
+//{
+//public:
+//    VKBindingTextureView();
+//    virtual ~VKBindingTextureView();
+//
+//    friend class VKBindGroup;
+//};
+//
+//// combined sampler and texture view
+//class VKBindingCombined final: public BindingResource
+//{
+//public:
+//    VKBindingCombined(std::uint32_t bindingPoint, const VKTextureView* textureView, const VKSampler* sampler);
+//    virtual ~VKBindingCombined();
+//
+//protected:
+//    const VKTextureView*    textureView_  = nullptr;
+//    const VKSampler*        sampler_      = nullptr;
+//
+//    friend class VKBindGroup;
+//};
 
 NS_RHI_END
 

@@ -16,13 +16,15 @@ class RHINoncopyable
 {
 public:
     RHINoncopyable() = default;
-
-    RHINoncopyable(RHINoncopyable&&) = default;
-    RHINoncopyable& operator =(RHINoncopyable&&) = default;
+    
+    RHINoncopyable(RHINoncopyable &&) = default;
+    
+    RHINoncopyable &operator=(RHINoncopyable &&) = default;
 
 private:
-    RHINoncopyable(const RHINoncopyable&) = delete;
-    RHINoncopyable& operator=(const RHINoncopyable&) = delete;
+    RHINoncopyable(const RHINoncopyable &) = delete;
+    
+    RHINoncopyable &operator=(const RHINoncopyable &) = delete;
 };
 
 class RHIObjectBase : public RHINoncopyable
@@ -33,12 +35,12 @@ protected:
 
 public:
     RHIObjectBase() = default;
-
+    
     void Retain()
     {
         ++__referenceCount_;
     }
-
+    
     void Release()
     {
         --__referenceCount_;
@@ -48,12 +50,12 @@ public:
             delete this;
         }
     }
-
+    
     std::int32_t GetReferenceCount() const
     {
         return __referenceCount_;
     }
-
+    
     virtual void OnDeleteEvent()
     {
         // to override this function to process some logic before delete

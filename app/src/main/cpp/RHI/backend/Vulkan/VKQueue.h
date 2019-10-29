@@ -13,18 +13,20 @@ class VKQueue : public Queue
 {
 public:
     VKQueue(VKDevice* device);
+    
     virtual ~VKQueue();
-
-    VkQueue GetNative() const {return vkQueue_;}
+    
+    VkQueue GetNative() const
+    { return vkQueue_; }
 
 public:
     virtual void Submit(CommandBuffer* commandBuffer) override;
 
 private:
-    VKDevice* device_   = nullptr;
-    VkDevice  vkDevice_ = nullptr;
-    VkQueue   vkQueue_  = 0L;
-    VkFence   vkFence_  = 0L;
+    VKDevice* device_ = nullptr;
+    VkDevice vkDevice_ = nullptr;
+    VkQueue vkQueue_ = 0L;
+    VkFence vkFence_ = 0L;
 };
 
 NS_RHI_END

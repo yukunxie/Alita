@@ -658,27 +658,6 @@ VKDevice::CreatePipelineLayout(const PipelineLayoutDescriptor& descriptor)
     return VKPipelineLayout::Create(this, descriptor);
 }
 
-BindingResource*
-VKDevice::CreateBindingResourceBuffer(std::uint32_t bindingPoint, const Buffer* buffer,
-                                      std::uint32_t offset, std::uint32_t size)
-{
-    BindingResource* bindingResource = new VKBindingBuffer(bindingPoint, (VKBuffer*) buffer,
-                                                           offset, size);
-    RHI_SAFE_RETAIN(bindingResource);
-    return bindingResource;
-}
-
-BindingResource*
-VKDevice::CreateBindingResourceCombined(std::uint32_t bindingPoint, const TextureView* textureView,
-                                        const Sampler* sampler)
-{
-    BindingResource* bindingResource = new VKBindingCombined(bindingPoint,
-                                                             (VKTextureView*) textureView,
-                                                             (VKSampler*) sampler);
-    RHI_SAFE_RETAIN(bindingResource);
-    return bindingResource;
-}
-
 Queue* VKDevice::CreateQueue()
 {
     VKQueue* renderQueue = new VKQueue(this);

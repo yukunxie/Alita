@@ -14,22 +14,23 @@ class VKPipelineLayout : public PipelineLayout
 {
 protected:
     VKPipelineLayout() = default;
-    bool Init(VKDevice* device, const PipelineLayoutDescriptor& descriptor);
     
-public:
-    static VKPipelineLayout* Create(VKDevice* device, const PipelineLayoutDescriptor& descriptor);
-    ~VKPipelineLayout();
+    bool Init(VKDevice* device, const PipelineLayoutDescriptor &descriptor);
 
-    VkPipelineLayout GetNative() const {return vkPipelineLayout_;}
+public:
+    static VKPipelineLayout* Create(VKDevice* device, const PipelineLayoutDescriptor &descriptor);
+    
+    ~VKPipelineLayout();
+    
+    VkPipelineLayout GetNative() const
+    { return vkPipelineLayout_; }
 
 private:
-    VkDevice            vkDevice_           = nullptr;
-    VkPipelineLayout    vkPipelineLayout_   = 0;
+    VkDevice vkDevice_ = nullptr;
+    VkPipelineLayout vkPipelineLayout_ = 0;
 };
 
 NS_RHI_END
-
-
 
 
 #endif //ALITA_VKPIPELINELAYOUT_H

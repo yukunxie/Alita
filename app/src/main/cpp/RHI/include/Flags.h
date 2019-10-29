@@ -14,6 +14,7 @@
 NS_RHI_BEGIN
 
 class ShaderHND;
+
 class BufferHND;
 
 typedef std::uint32_t Flags;
@@ -76,7 +77,8 @@ typedef uint32_t Bool32;
 typedef uint64_t DeviceSize;
 typedef uint32_t SampleMask;
 
-typedef enum class BufferUsageFlagBits {
+typedef enum class BufferUsageFlagBits
+{
     TRANSFER_SRC_BIT = 0x00000001,
     TRANSFER_DST_BIT = 0x00000002,
     UNIFORM_TEXEL_BUFFER_BIT = 0x00000004,
@@ -91,7 +93,8 @@ typedef enum class BufferUsageFlagBits {
 } BufferUsageFlagBits;
 
 
-typedef enum class SharingMode {
+typedef enum class SharingMode
+{
     EXCLUSIVE = 0,
     CONCURRENT = 1,
     BEGIN_RANGE = EXCLUSIVE,
@@ -100,7 +103,8 @@ typedef enum class SharingMode {
     MAX_ENUM = 0x7FFFFFFF
 } SharingMode;
 
-typedef enum class Format {
+typedef enum class Format
+{
     UNDEFINED = 0,
     R4G4_UNORM_PACK8 = 1,
     R4G4B4A4_UNORM_PACK16 = 2,
@@ -368,7 +372,8 @@ typedef enum class Format {
     MAX_ENUM = 0x7FFFFFFF
 } Format;
 
-typedef enum class StructureType {
+typedef enum class StructureType
+{
     APPLICATION_INFO = 0,
     INSTANCE_CREATE_INFO = 1,
     DEVICE_QUEUE_CREATE_INFO = 2,
@@ -684,7 +689,8 @@ typedef enum class StructureType {
     MAX_ENUM = 0x7FFFFFFF
 } StructureType;
 
-typedef enum class VertexInputRate {
+typedef enum class VertexInputRate
+{
     VERTEX = 0,
     INSTANCE = 1,
     BEGIN_RANGE = VERTEX,
@@ -693,7 +699,8 @@ typedef enum class VertexInputRate {
     MAX_ENUM = 0x7FFFFFFF
 } VertexInputRate;
 
-typedef enum class PrimitiveTopology {
+typedef enum class PrimitiveTopology
+{
     POINT_LIST = 0,
     LINE_LIST = 1,
     LINE_STRIP = 2,
@@ -711,7 +718,8 @@ typedef enum class PrimitiveTopology {
     MAX_ENUM = 0x7FFFFFFF
 } PrimitiveTopology;
 
-typedef enum class PolygonMode {
+typedef enum class PolygonMode
+{
     FILL = 0,
     LINE = 1,
     POINT = 2,
@@ -722,7 +730,8 @@ typedef enum class PolygonMode {
     MAX_ENUM = 0x7FFFFFFF
 } PolygonMode;
 
-typedef enum class FrontFace {
+typedef enum class FrontFace
+{
     COUNTER_CLOCKWISE = 0,
     CLOCKWISE = 1,
     BEGIN_RANGE = COUNTER_CLOCKWISE,
@@ -731,7 +740,8 @@ typedef enum class FrontFace {
     MAX_ENUM = 0x7FFFFFFF
 } FrontFace;
 
-typedef enum CullMode {
+typedef enum CullMode
+{
     NONE = 0,
     FRONT_BIT = 0x00000001,
     BACK_BIT = 0x00000002,
@@ -744,7 +754,8 @@ typedef Flags PipelineMultisampleStateCreateFlags;
 typedef Flags PipelineDepthStencilStateCreateFlags;
 typedef Flags PipelineColorBlendStateCreateFlags;
 
-typedef enum class SampleCountFlagBits {
+typedef enum class SampleCountFlagBits
+{
     SAMPLE_COUNT_1_BIT = 0x00000001,
     SAMPLE_COUNT_2_BIT = 0x00000002,
     SAMPLE_COUNT_4_BIT = 0x00000004,
@@ -755,7 +766,8 @@ typedef enum class SampleCountFlagBits {
     SAMPLE_COUNT_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 } SampleCountFlagBits;
 
-typedef enum class CompareOp {
+typedef enum class CompareOp
+{
     NEVER = 0,
     LESS = 1,
     EQUAL = 2,
@@ -770,7 +782,8 @@ typedef enum class CompareOp {
     MAX_ENUM = 0x7FFFFFFF
 } CompareOp;
 
-typedef enum class StencilOp {
+typedef enum class StencilOp
+{
     KEEP = 0,
     ZERO = 1,
     REPLACE = 2,
@@ -785,7 +798,8 @@ typedef enum class StencilOp {
     MAX_ENUM = 0x7FFFFFFF
 } StencilOp;
 
-typedef enum class LogicOp {
+typedef enum class LogicOp
+{
     CLEAR = 0,
     AND = 1,
     AND_REVERSE = 2,
@@ -808,7 +822,8 @@ typedef enum class LogicOp {
     MAX_ENUM = 0x7FFFFFFF
 } LogicOp;
 
-typedef enum class BlendFactor {
+typedef enum class BlendFactor
+{
     ZERO = 0,
     ONE = 1,
     SRC_COLOR = 2,
@@ -834,7 +849,8 @@ typedef enum class BlendFactor {
     MAX_ENUM = 0x7FFFFFFF
 } BlendFactor;
 
-typedef enum class BlendOp {
+typedef enum class BlendOp
+{
     ADD = 0,
     SUBTRACT = 1,
     REVERSE_SUBTRACT = 2,
@@ -892,7 +908,8 @@ typedef enum class BlendOp {
     MAX_ENUM = 0x7FFFFFFF
 } BlendOp;
 
-typedef enum class DynamicState {
+typedef enum class DynamicState
+{
     VIEWPORT = 0,
     SCISSOR = 1,
     LINE_WIDTH = 2,
@@ -911,7 +928,8 @@ typedef enum class DynamicState {
     MAX_ENUM = 0x7FFFFFFF
 } DynamicState;
 
-typedef enum class PipelineCreateFlagBits {
+typedef enum class PipelineCreateFlagBits
+{
     DISABLE_OPTIMIZATION_BIT = 0x00000001,
     ALLOW_DERIVATIVES_BIT = 0x00000002,
     DERIVATIVE_BIT = 0x00000004,
@@ -922,7 +940,8 @@ typedef enum class PipelineCreateFlagBits {
     FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 } PipelineCreateFlagBits;
 
-typedef enum class ShaderStageFlagBits {
+typedef enum class ShaderStageFlagBits
+{
     VERTEX_BIT = 0x00000001,
     TESSELLATION_CONTROL_BIT = 0x00000002,
     TESSELLATION_EVALUATION_BIT = 0x00000004,
@@ -934,18 +953,21 @@ typedef enum class ShaderStageFlagBits {
     FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 } ShaderStageFlagBits;
 
-typedef enum class DescriptorPoolCreateFlagBits {
+typedef enum class DescriptorPoolCreateFlagBits
+{
     FREE_DESCRIPTOR_SET_BIT = 0x00000001,
     UPDATE_AFTER_BIND_BIT_EXT = 0x00000002,
     FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 } DescriptorPoolCreateFlagBits;
 
-typedef enum class AttachmentDescriptionFlagBits {
+typedef enum class AttachmentDescriptionFlagBits
+{
     MAY_ALIAS_BIT = 0x00000001,
     FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 } AttachmentDescriptionFlagBits;
 
-typedef enum class AttachmentLoadOp {
+typedef enum class AttachmentLoadOp
+{
     LOAD = 0,
     CLEAR = 1,
     DONT_CARE = 2,
@@ -955,7 +977,8 @@ typedef enum class AttachmentLoadOp {
     MAX_ENUM = 0x7FFFFFFF
 } AttachmentLoadOp;
 
-typedef enum class AttachmentStoreOp {
+typedef enum class AttachmentStoreOp
+{
     STORE = 0,
     DONT_CARE = 1,
     BEGIN_RANGE = STORE,
@@ -964,7 +987,8 @@ typedef enum class AttachmentStoreOp {
     MAX_ENUM = 0x7FFFFFFF
 } AttachmentStoreOp;
 
-typedef enum class PipelineBindPoint {
+typedef enum class PipelineBindPoint
+{
     GRAPHICS = 0,
     COMPUTE = 1,
     BEGIN_RANGE = GRAPHICS,
@@ -973,7 +997,8 @@ typedef enum class PipelineBindPoint {
     MAX_ENUM = 0x7FFFFFFF
 } PipelineBindPoint;
 
-typedef enum class PipelineStageFlagBits {
+typedef enum class PipelineStageFlagBits
+{
     TOP_OF_PIPE_BIT = 0x00000001,
     DRAW_INDIRECT_BIT = 0x00000002,
     VERTEX_INPUT_BIT = 0x00000004,
@@ -998,7 +1023,8 @@ typedef enum class PipelineStageFlagBits {
 typedef Flags PipelineStageFlags;
 typedef Flags MemoryMapFlags;
 
-typedef enum class AccessFlagBits {
+typedef enum class AccessFlagBits
+{
     INDIRECT_COMMAND_READ_BIT = 0x00000001,
     INDEX_READ_BIT = 0x00000002,
     VERTEX_ATTRIBUTE_READ_BIT = 0x00000004,
@@ -1024,7 +1050,8 @@ typedef enum class AccessFlagBits {
 } AccessFlagBits;
 typedef Flags AccessFlags;
 
-typedef enum class DependencyFlagBits {
+typedef enum class DependencyFlagBits
+{
     BY_REGION_BIT = 0x00000001,
     DEVICE_GROUP_BIT = 0x00000004,
     VIEW_LOCAL_BIT = 0x00000002,
@@ -1034,7 +1061,8 @@ typedef enum class DependencyFlagBits {
 } DependencyFlagBits;
 typedef Flags DependencyFlags;
 
-typedef enum class ImageLayout {
+typedef enum class ImageLayout
+{
     UNDEFINED = 0,
     GENERAL = 1,
     COLOR_ATTACHMENT_OPTIMAL = 2,
@@ -1056,7 +1084,8 @@ typedef enum class ImageLayout {
     MAX_ENUM = 0x7FFFFFFF
 } ImageLayout;
 
-typedef enum ImageViewType {
+typedef enum ImageViewType
+{
     IMAGE_TYPE_1D = 0,
     IMAGE_TYPE_2D = 1,
     IMAGE_TYPE_3D = 2,
@@ -1070,7 +1099,8 @@ typedef enum ImageViewType {
     IMAGE_TYPE_MAX_ENUM = 0x7FFFFFFF
 } ImageViewType;
 
-typedef enum ComponentSwizzle {
+typedef enum ComponentSwizzle
+{
     IMAGE_TYPEIDENTITY = 0,
     IMAGE_TYPEZERO = 1,
     IMAGE_TYPEONE = 2,
@@ -1084,13 +1114,15 @@ typedef enum ComponentSwizzle {
     IMAGE_TYPEMAX_ENUM = 0x7FFFFFFF
 } ComponentSwizzle;
 
-typedef enum class SubpassDescriptionFlagBits {
+typedef enum class SubpassDescriptionFlagBits
+{
     PER_VIEW_ATTRIBUTES_BIT_NVX = 0x00000001,
     PER_VIEW_POSITION_X_ONLY_BIT_NVX = 0x00000002,
     FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 } SubpassDescriptionFlagBits;
 
-typedef enum class ImageUsageFlagBits {
+typedef enum class ImageUsageFlagBits
+{
     TRANSFER_SRC_BIT = 0x00000001,
     TRANSFER_DST_BIT = 0x00000002,
     SAMPLED_BIT = 0x00000004,
@@ -1103,7 +1135,8 @@ typedef enum class ImageUsageFlagBits {
 } ImageUsageFlagBits;
 typedef Flags ImageUsageFlags;
 
-typedef enum class ImageCreateFlagBits {
+typedef enum class ImageCreateFlagBits
+{
     SPARSE_BINDING_BIT = 0x00000001,
     SPARSE_RESIDENCY_BIT = 0x00000002,
     SPARSE_ALIASED_BIT = 0x00000004,
@@ -1127,7 +1160,8 @@ typedef enum class ImageCreateFlagBits {
 } ImageCreateFlagBits;
 typedef Flags ImageCreateFlags;
 
-typedef enum class ImageType {
+typedef enum class ImageType
+{
     IMAGE_TYPE_1D = 0,
     IMAGE_TYPE_2D = 1,
     IMAGE_TYPE_3D = 2,
@@ -1137,7 +1171,8 @@ typedef enum class ImageType {
     IMAGE_TYPE_MAX_ENUM = 0x7FFFFFFF
 } ImageType;
 
-typedef enum class ImageTiling {
+typedef enum class ImageTiling
+{
     OPTIMAL = 0,
     LINEAR = 1,
     BEGIN_RANGE = OPTIMAL,
@@ -1146,7 +1181,8 @@ typedef enum class ImageTiling {
     MAX_ENUM = 0x7FFFFFFF
 } ImageTiling;
 
-typedef enum class DescriptorType {
+typedef enum class DescriptorType
+{
     SAMPLER = 0,
     COMBINED_IMAGE_SAMPLER = 1,
     SAMPLED_IMAGE = 2,
@@ -1170,8 +1206,8 @@ typedef struct Viewport
     std::int32_t y;
     std::int32_t width;
     std::int32_t height;
-    float        minDepth;
-    float        maxDepth;
+    float minDepth;
+    float maxDepth;
 } Viewport;
 
 typedef struct Scissor
@@ -1180,232 +1216,258 @@ typedef struct Scissor
     std::uint32_t y;
     std::uint32_t width;
     std::uint32_t height;
-}Scissor;
+} Scissor;
 
-typedef struct VertexInputAttributeDescription {
-    uint32_t    location;
-    uint32_t    binding;
-    Format      format;
-    uint32_t    offset;
+typedef struct VertexInputAttributeDescription
+{
+    uint32_t location;
+    uint32_t binding;
+    Format format;
+    uint32_t offset;
 } VertexInputAttributeDescription;
 
-typedef struct VertexInputBindingDescription {
-    uint32_t            binding;
-    uint32_t            stride;
-    VertexInputRate     inputRate;
+typedef struct VertexInputBindingDescription
+{
+    uint32_t binding;
+    uint32_t stride;
+    VertexInputRate inputRate;
 } VertexInputBindingDescription;
 
-typedef struct PipelineVertexInputStateCreateInfo {
-    PipelineVertexInputStateCreateFlags             flags;
-    std::vector<VertexInputBindingDescription>      vertexBindingDescriptions;
-    std::vector<VertexInputAttributeDescription>    vertexAttributeDescriptions;
+typedef struct PipelineVertexInputStateCreateInfo
+{
+    PipelineVertexInputStateCreateFlags flags;
+    std::vector<VertexInputBindingDescription> vertexBindingDescriptions;
+    std::vector<VertexInputAttributeDescription> vertexAttributeDescriptions;
 } PipelineVertexInputStateCreateInfo;
 
-typedef struct PipelineInputAssemblyStateCreateInfo {
-    PipelineInputAssemblyStateCreateFlags    flags;
-    PrimitiveTopology                        topology;
-    Bool32                                   primitiveRestartEnable;
+typedef struct PipelineInputAssemblyStateCreateInfo
+{
+    PipelineInputAssemblyStateCreateFlags flags;
+    PrimitiveTopology topology;
+    Bool32 primitiveRestartEnable;
 } PipelineInputAssemblyStateCreateInfo;
 
-typedef struct PipelineRasterizationStateCreateInfo {
-    PipelineRasterizationStateCreateFlags   flags;
-    Bool32                                  depthClampEnable;
-    Bool32                                  rasterizerDiscardEnable;
-    PolygonMode                             polygonMode;
-    CullModeFlags                           cullMode;
-    FrontFace                               frontFace;
-    Bool32                                  depthBiasEnable;
-    float                                   depthBiasConstantFactor;
-    float                                   depthBiasClamp;
-    float                                   depthBiasSlopeFactor;
-    float                                   lineWidth;
+typedef struct PipelineRasterizationStateCreateInfo
+{
+    PipelineRasterizationStateCreateFlags flags;
+    Bool32 depthClampEnable;
+    Bool32 rasterizerDiscardEnable;
+    PolygonMode polygonMode;
+    CullModeFlags cullMode;
+    FrontFace frontFace;
+    Bool32 depthBiasEnable;
+    float depthBiasConstantFactor;
+    float depthBiasClamp;
+    float depthBiasSlopeFactor;
+    float lineWidth;
 } PipelineRasterizationStateCreateInfo;
 
-typedef struct PipelineMultisampleStateCreateInfo {
-    PipelineMultisampleStateCreateFlags    flags;
-    SampleCountFlagBits                    rasterizationSamples;
-    Bool32                                 sampleShadingEnable;
-    float                                  minSampleShading;
-    Bool32                                 alphaToCoverageEnable;
-    Bool32                                 alphaToOneEnable;
+typedef struct PipelineMultisampleStateCreateInfo
+{
+    PipelineMultisampleStateCreateFlags flags;
+    SampleCountFlagBits rasterizationSamples;
+    Bool32 sampleShadingEnable;
+    float minSampleShading;
+    Bool32 alphaToCoverageEnable;
+    Bool32 alphaToOneEnable;
 } PipelineMultisampleStateCreateInfo;
 
-typedef struct StencilOpState {
-    StencilOp    failOp;
-    StencilOp    passOp;
-    StencilOp    depthFailOp;
-    CompareOp    compareOp;
-    uint32_t       compareMask;
-    uint32_t       writeMask;
-    uint32_t       reference;
+typedef struct StencilOpState
+{
+    StencilOp failOp;
+    StencilOp passOp;
+    StencilOp depthFailOp;
+    CompareOp compareOp;
+    uint32_t compareMask;
+    uint32_t writeMask;
+    uint32_t reference;
 } StencilOpState;
 
-typedef struct PipelineDepthStencilStateCreateInfo {
-    PipelineDepthStencilStateCreateFlags    flags;
-    Bool32                                  depthTestEnable;
-    Bool32                                  depthWriteEnable;
-    CompareOp                               depthCompareOp;
-    Bool32                                  depthBoundsTestEnable;
-    Bool32                                  stencilTestEnable;
-    StencilOpState                          front;
-    StencilOpState                          back;
-    float                                     minDepthBounds;
-    float                                     maxDepthBounds;
+typedef struct PipelineDepthStencilStateCreateInfo
+{
+    PipelineDepthStencilStateCreateFlags flags;
+    Bool32 depthTestEnable;
+    Bool32 depthWriteEnable;
+    CompareOp depthCompareOp;
+    Bool32 depthBoundsTestEnable;
+    Bool32 stencilTestEnable;
+    StencilOpState front;
+    StencilOpState back;
+    float minDepthBounds;
+    float maxDepthBounds;
 } PipelineDepthStencilStateCreateInfo;
 
-typedef struct PipelineColorBlendAttachmentState {
-    Bool32                 blendEnable;
-    BlendFactor            srcColorBlendFactor;
-    BlendFactor            dstColorBlendFactor;
-    BlendOp                colorBlendOp;
-    BlendFactor            srcAlphaBlendFactor;
-    BlendFactor            dstAlphaBlendFactor;
-    BlendOp                alphaBlendOp;
-    ColorComponentFlags    colorWriteMask;
+typedef struct PipelineColorBlendAttachmentState
+{
+    Bool32 blendEnable;
+    BlendFactor srcColorBlendFactor;
+    BlendFactor dstColorBlendFactor;
+    BlendOp colorBlendOp;
+    BlendFactor srcAlphaBlendFactor;
+    BlendFactor dstAlphaBlendFactor;
+    BlendOp alphaBlendOp;
+    ColorComponentFlags colorWriteMask;
 } PipelineColorBlendAttachmentState;
 
-typedef struct PipelineColorBlendStateCreateInfo {
-    PipelineColorBlendStateCreateFlags              flags;
-    Bool32                                          logicOpEnable;
-    LogicOp                                         logicOp;
-    std::vector<PipelineColorBlendAttachmentState>  attachments;
-    float                                           blendConstants[4];
+typedef struct PipelineColorBlendStateCreateInfo
+{
+    PipelineColorBlendStateCreateFlags flags;
+    Bool32 logicOpEnable;
+    LogicOp logicOp;
+    std::vector<PipelineColorBlendAttachmentState> attachments;
+    float blendConstants[4];
 } PipelineColorBlendStateCreateInfo;
 
-typedef struct SpecializationMapEntry {
-    uint32_t    constantID;
-    uint32_t    offset;
-    size_t      size;
+typedef struct SpecializationMapEntry
+{
+    uint32_t constantID;
+    uint32_t offset;
+    size_t size;
 } SpecializationMapEntry;
 
-typedef struct SpecializationInfo {
+typedef struct SpecializationInfo
+{
     std::vector<SpecializationMapEntry> mapEntries;
-    size_t                             dataSize;
-    const void*                        pData;
+    size_t dataSize;
+    const void* pData;
 } SpecializationInfo;
 
-typedef struct PipelineShaderStageCreateInfo {
-    PipelineShaderStageCreateFlags    flags;
-    ShaderStageFlagBits               stage;
-    Shader*                           shader;
-    std::string                       entryName;
-    const SpecializationInfo*         pSpecializationInfo;
+typedef struct PipelineShaderStageCreateInfo
+{
+    PipelineShaderStageCreateFlags flags;
+    ShaderStageFlagBits stage;
+    Shader* shader;
+    std::string entryName;
+    const SpecializationInfo* pSpecializationInfo;
 } PipelineShaderStageCreateInfo;
 
-typedef struct PipelineTessellationStateCreateInfo {
-    PipelineTessellationStateCreateFlags    flags;
-    uint32_t                                  patchControlPoints;
+typedef struct PipelineTessellationStateCreateInfo
+{
+    PipelineTessellationStateCreateFlags flags;
+    uint32_t patchControlPoints;
 } PipelineTessellationStateCreateInfo;
 
 
-typedef struct PipelineViewportStateCreateInfo {
-    PipelineViewportStateCreateFlags    flags;
-    std::vector<Viewport>               viewports;
-    std::vector<Scissor>                scissors;
+typedef struct PipelineViewportStateCreateInfo
+{
+    PipelineViewportStateCreateFlags flags;
+    std::vector<Viewport> viewports;
+    std::vector<Scissor> scissors;
 } PipelineViewportStateCreateInfo;
 
-typedef struct PipelineDynamicStateCreateInfo {
-    PipelineDynamicStateCreateFlags    flags;
-    std::vector<DynamicState>          dynamicStates;
+typedef struct PipelineDynamicStateCreateInfo
+{
+    PipelineDynamicStateCreateFlags flags;
+    std::vector<DynamicState> dynamicStates;
 } PipelineDynamicStateCreateInfo;
 
 typedef struct StageCreateInfo
 {
-    PipelineShaderStageCreateInfo           stage;
-    PipelineVertexInputStateCreateInfo      vertexInputState;
-    PipelineInputAssemblyStateCreateInfo    inputAssemblyState;
-    PipelineViewportStateCreateInfo         viewportState;
-    PipelineRasterizationStateCreateInfo    rasterizationState;
-    PipelineMultisampleStateCreateInfo      multisampleState;
-    PipelineDepthStencilStateCreateInfo     depthStencilState;
-    PipelineColorBlendStateCreateInfo       colorBlendState;
-    PipelineDynamicStateCreateInfo          dynamicState;
+    PipelineShaderStageCreateInfo stage;
+    PipelineVertexInputStateCreateInfo vertexInputState;
+    PipelineInputAssemblyStateCreateInfo inputAssemblyState;
+    PipelineViewportStateCreateInfo viewportState;
+    PipelineRasterizationStateCreateInfo rasterizationState;
+    PipelineMultisampleStateCreateInfo multisampleState;
+    PipelineDepthStencilStateCreateInfo depthStencilState;
+    PipelineColorBlendStateCreateInfo colorBlendState;
+    PipelineDynamicStateCreateInfo dynamicState;
 } StageCreateInfo;
 
-typedef struct GraphicsPipelineCreateInfo {
-    PipelineCreateFlags           flags;
-    std::vector<StageCreateInfo>  stateCreateInfos;
-//    NativePipelineLayout          layout;
-    NativeRenderPass              renderPass;
-    uint32_t                      subpass;
-    NativePipeline                basePipelineHandle;
-    int32_t                       basePipelineIndex;
+typedef struct GraphicsPipelineCreateInfo
+{
+    PipelineCreateFlags flags;
+    std::vector<StageCreateInfo> stateCreateInfos;
+    //    NativePipelineLayout          layout;
+    NativeRenderPass renderPass;
+    uint32_t subpass;
+    NativePipeline basePipelineHandle;
+    int32_t basePipelineIndex;
 } GraphicsPipelineCreateInfo;
 
-typedef struct AttachmentDescription {
-    AttachmentDescriptionFlags    flags;
-    Format                        format;
-    SampleCountFlagBits           samples;
-    AttachmentLoadOp              loadOp;
-    AttachmentStoreOp             storeOp;
-    AttachmentLoadOp              stencilLoadOp;
-    AttachmentStoreOp             stencilStoreOp;
-    ImageLayout                   initialLayout;
-    ImageLayout                   finalLayout;
+typedef struct AttachmentDescription
+{
+    AttachmentDescriptionFlags flags;
+    Format format;
+    SampleCountFlagBits samples;
+    AttachmentLoadOp loadOp;
+    AttachmentStoreOp storeOp;
+    AttachmentLoadOp stencilLoadOp;
+    AttachmentStoreOp stencilStoreOp;
+    ImageLayout initialLayout;
+    ImageLayout finalLayout;
 } AttachmentDescription;
 
-typedef struct SubpassDependency {
-    uint32_t                srcSubpass;
-    uint32_t                dstSubpass;
-    PipelineStageFlags    srcStageMask;
-    PipelineStageFlags    dstStageMask;
-    AccessFlags           srcAccessMask;
-    AccessFlags           dstAccessMask;
-    DependencyFlags       dependencyFlags;
+typedef struct SubpassDependency
+{
+    uint32_t srcSubpass;
+    uint32_t dstSubpass;
+    PipelineStageFlags srcStageMask;
+    PipelineStageFlags dstStageMask;
+    AccessFlags srcAccessMask;
+    AccessFlags dstAccessMask;
+    DependencyFlags dependencyFlags;
 } SubpassDependency;
 
 
-typedef struct AttachmentReference {
-    uint32_t       attachment;
-    ImageLayout    layout;
+typedef struct AttachmentReference
+{
+    uint32_t attachment;
+    ImageLayout layout;
 } AttachmentReference;
 
-typedef struct SubpassDescription {
-    SubpassDescriptionFlags          flags;
-    PipelineBindPoint                pipelineBindPoint;
+typedef struct SubpassDescription
+{
+    SubpassDescriptionFlags flags;
+    PipelineBindPoint pipelineBindPoint;
     std::vector<AttachmentReference> inputAttachments;
     std::vector<AttachmentReference> colorAttachments;
     std::vector<AttachmentReference> resolveAttachments;
     std::vector<AttachmentReference> depthStencilAttachment;
-    std::vector<std::uint32_t>       preserveAttachments;
+    std::vector<std::uint32_t> preserveAttachments;
 } SubpassDescription;
 
-typedef struct RenderPassCreateInfo {
-    RenderPassCreateFlags               flags;
-    std::vector<AttachmentDescription>  attachments;
-    std::vector<SubpassDescription>     subpasses;
-    std::vector<SubpassDependency>      dependencies;
+typedef struct RenderPassCreateInfo
+{
+    RenderPassCreateFlags flags;
+    std::vector<AttachmentDescription> attachments;
+    std::vector<SubpassDescription> subpasses;
+    std::vector<SubpassDependency> dependencies;
 } RenderPassCreateInfo;
 
-typedef struct Extent3D {
-    uint32_t    width;
-    uint32_t    height;
-    uint32_t    depth;
+typedef struct Extent3D
+{
+    uint32_t width;
+    uint32_t height;
+    uint32_t depth;
 } Extent3D;
 
-typedef struct ImageCreateInfo {
-    ImageCreateFlags       flags;
-    ImageType              imageType;
-    Format                 format;
-    Extent3D               extent;
-    uint32_t               mipLevels;
-    uint32_t               arrayLayers;
-    SampleCountFlagBits    samples;
-    ImageTiling            tiling;
-    ImageUsageFlags        usage;
-    SharingMode            sharingMode;
-    ImageLayout            initialLayout;
-    const void*            imageData;
+typedef struct ImageCreateInfo
+{
+    ImageCreateFlags flags;
+    ImageType imageType;
+    Format format;
+    Extent3D extent;
+    uint32_t mipLevels;
+    uint32_t arrayLayers;
+    SampleCountFlagBits samples;
+    ImageTiling tiling;
+    ImageUsageFlags usage;
+    SharingMode sharingMode;
+    ImageLayout initialLayout;
+    const void* imageData;
 } ImageCreateInfo;
 
-typedef struct DescriptorSetLayoutBinding {
-    uint32_t              binding;
-    DescriptorType      descriptorType;
-    uint32_t              descriptorCount;
-    ShaderStageFlags    stageFlags;
+typedef struct DescriptorSetLayoutBinding
+{
+    uint32_t binding;
+    DescriptorType descriptorType;
+    uint32_t descriptorCount;
+    ShaderStageFlags stageFlags;
 } DescriptorSetLayoutBinding;
 
-typedef struct DescriptorSetLayoutCreateInfo {
+typedef struct DescriptorSetLayoutCreateInfo
+{
     std::vector<DescriptorSetLayoutBinding> bindings;
 } DescriptorSetLayoutCreateInfo;
 

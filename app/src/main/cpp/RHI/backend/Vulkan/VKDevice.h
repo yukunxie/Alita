@@ -24,8 +24,11 @@
 NS_RHI_BEGIN
 
 class VKBuffer;
+
 class VKRenderPipeline;
+
 class VKShader;
+
 class VKQueue;
 
 struct SwapChainSupportDetails
@@ -39,7 +42,7 @@ struct QueueFamilyIndices
 {
     int graphicsFamily = -1;
     int presentFamily = -1;
-
+    
     bool isComplete()
     {
         return graphicsFamily >= 0 && presentFamily >= 0;
@@ -51,10 +54,10 @@ struct RenderPassCacheQuery
     void SetColor(uint32_t index, TextureFormat format, LoadOp loadOp)
     {
         colorFormats[index] = format;
-        colorLoadOp[index]  = loadOp;
+        colorLoadOp[index] = loadOp;
         colorMask.set(index, 1);
     }
-
+    
     void SetDepthStencil(TextureFormat format, LoadOp depthLoadOp, LoadOp stencilLoadOp)
     {
         this->hasDepthStencil = true;
@@ -62,19 +65,21 @@ struct RenderPassCacheQuery
         this->depthLoadOp = depthLoadOp;
         this->stencilLoadOp = stencilLoadOp;
     }
-
-    bool operator == (const RenderPassCacheQuery& other) const
+    
+    bool operator==(const RenderPassCacheQuery &other) const
     {
         bool ret = true;
         ret &= hasDepthStencil == other.hasDepthStencil;
         ret &= this->depthStencilFormat == other.depthStencilFormat;
         ret &= this->depthLoadOp == other.depthLoadOp;
         ret &= this->stencilLoadOp == other.stencilLoadOp;
-        ret &= memcmp(colorFormats.data(), other.colorFormats.data(), sizeof(colorFormats[0]) * colorFormats.size());
-        ret &= memcmp(colorLoadOp.data(), other.colorLoadOp.data(), sizeof(colorLoadOp[0]) * colorLoadOp.size());
+        ret &= memcmp(colorFormats.data(), other.colorFormats.data(),
+                      sizeof(colorFormats[0]) * colorFormats.size());
+        ret &= memcmp(colorLoadOp.data(), other.colorLoadOp.data(),
+                      sizeof(colorLoadOp[0]) * colorLoadOp.size());
         return ret;
     }
-
+    
     size_t operator()() const
     {
         size_t byteSize = 0;
@@ -84,32 +89,32 @@ struct RenderPassCacheQuery
         byteSize += sizeof(colorFormats[0]) * colorFormats.size();
         byteSize += sizeof(colorLoadOp[0]) * colorLoadOp.size();
         byteSize += sizeof(this->hasDepthStencil);
-
+        
         std::vector<std::uint8_t> buffer(byteSize, 0);
         std::uint8_t* pData = buffer.data();
-
+        
         memcpy(pData, colorFormats.data(), sizeof(colorFormats[0]) * colorFormats.size());
         pData += sizeof(colorFormats[0]) * colorFormats.size();
-
+        
         memcpy(pData, colorLoadOp.data(), sizeof(colorLoadOp[0]) * colorLoadOp.size());
         pData += sizeof(colorLoadOp[0]) * colorLoadOp.size();
-
+        
         memcpy(pData, &depthStencilFormat, sizeof(depthStencilFormat));
         pData += sizeof(depthStencilFormat);
-
+        
         memcpy(pData, &depthLoadOp, sizeof(depthLoadOp));
         pData += sizeof(depthLoadOp);
-
+        
         memcpy(pData, &stencilLoadOp, sizeof(stencilLoadOp));
         pData += sizeof(stencilLoadOp);
-
+        
         memcpy(pData, &hasDepthStencil, sizeof(hasDepthStencil));
-
-        static XXHash64 _hashFunc (0x21378732);
-
-        return (size_t)(_hashFunc.hash(pData, byteSize, 0));
+        
+        static XXHash64 _hashFunc(0x21378732);
+        
+        return (size_t) (_hashFunc.hash(pData, byteSize, 0));
     }
-
+    
     // member data
     std::bitset<kMaxColorAttachments> colorMask;
     std::array<TextureFormat, kMaxColorAttachments> colorFormats;
@@ -122,12 +127,12 @@ struct RenderPassCacheQuery
 
 struct RenderPassCacheQueryFuncs
 {
-    size_t operator()(const RenderPassCacheQuery& query) const
+    size_t operator()(const RenderPassCacheQuery &query) const
     {
         return query();
     }
-
-    bool operator()(const RenderPassCacheQuery& a, const RenderPassCacheQuery& b) const
+    
+    bool operator()(const RenderPassCacheQuery &a, const RenderPassCacheQuery &b) const
     {
         return a == b;
     }
@@ -138,118 +143,150 @@ typedef std::unordered_map<RenderPassCacheQuery, RenderPass*, RenderPassCacheQue
 class VKDevice : public Device
 {
 public:
-    VKDevice(ANativeWindow *window);
+    VKDevice(ANativeWindow* window);
+    
     ~VKDevice();
-
-    VkDevice GetDevice() const {return vkDevice_;}
-
-    VkPhysicalDevice GetPhysicalDevice() const {return vkPhysicalDevice_;}
-
-//    VkQueue GetQueue() const {return vkQueue_;}
-
-    VkSwapchainKHR GetVkSwapChain() const {return vkSwapchain_;}
-
-    VkExtent2D GetSwapChainExtent2D() const {return vkSwapchainExtent_;}
-
+    
+    VkDevice GetDevice() const
+    { return vkDevice_; }
+    
+    VkPhysicalDevice GetPhysicalDevice() const
+    { return vkPhysicalDevice_; }
+    
+    //    VkQueue GetQueue() const {return vkQueue_;}
+    
+    VkSwapchainKHR GetVkSwapChain() const
+    { return vkSwapchain_; }
+    
+    VkExtent2D GetSwapChainExtent2D() const
+    { return vkSwapchainExtent_; }
+    
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-
-    VkDescriptorPool GetDescriptorPool() {return vkDescriptorPool_;}
-
-    std::uint32_t GetGraphicQueueFamilyIndex() const {return graphicQueueFamilyIndex_;}
-
-    static void SetImageLayout(VkCommandBuffer cmdBuffer, VkImage image, VkImageLayout oldImageLayout,
-                        VkImageLayout newImageLayout,
-                        VkPipelineStageFlags srcStages,
-                        VkPipelineStageFlags destStages);
-
-    VkCommandPool GetCommandBufferPool() const {return vkCommandPool_;}
-
-    const QueueFamilyIndices& GetQueueFamilyIndices() const {return queueFamilyIndices_;}
-
-    void AddWaitingSemaphore(VkSemaphore semaphore) {waitingSemaphores_.push_back(semaphore);}
-
-    const std::vector<VkSemaphore>& GetWaitingSemaphores() {return waitingSemaphores_;}
-
-    void ClearWaitingSemaphores() {waitingSemaphores_.clear();}
-
-    const VkFormat GetPresentColorFormat() const {return VkFormat::VK_FORMAT_B8G8R8A8_UNORM;}
-
-    RenderPass* GetOrCreateRenderPass(const RenderPassCacheQuery& query);
+    
+    VkDescriptorPool GetDescriptorPool()
+    { return vkDescriptorPool_; }
+    
+    std::uint32_t GetGraphicQueueFamilyIndex() const
+    { return graphicQueueFamilyIndex_; }
+    
+    static void
+    SetImageLayout(VkCommandBuffer cmdBuffer, VkImage image, VkImageLayout oldImageLayout,
+                   VkImageLayout newImageLayout,
+                   VkPipelineStageFlags srcStages,
+                   VkPipelineStageFlags destStages);
+    
+    VkCommandPool GetCommandBufferPool() const
+    { return vkCommandPool_; }
+    
+    const QueueFamilyIndices &GetQueueFamilyIndices() const
+    { return queueFamilyIndices_; }
+    
+    void AddWaitingSemaphore(VkSemaphore semaphore)
+    { waitingSemaphores_.push_back(semaphore); }
+    
+    const std::vector<VkSemaphore> &GetWaitingSemaphores()
+    { return waitingSemaphores_; }
+    
+    void ClearWaitingSemaphores()
+    { waitingSemaphores_.clear(); }
+    
+    const VkFormat GetPresentColorFormat() const
+    { return VkFormat::VK_FORMAT_B8G8R8A8_UNORM; }
+    
+    RenderPass* GetOrCreateRenderPass(const RenderPassCacheQuery &query);
 
 public:
-    virtual Buffer* CreateBuffer(const BufferDescriptor& descriptor) override;
-
-    virtual void WriteBuffer(const Buffer* buffer, const void* data, std::uint32_t offset, std::uint32_t size) override;
-
-    virtual RenderPipeline* CreateRenderPipeline(const RenderPipelineDescriptor& descriptor) override;
+    virtual Buffer* CreateBuffer(const BufferDescriptor &descriptor) override;
     
-    virtual Shader* CreateShaderModule(const ShaderModuleDescriptor &descriptor) override ;
+    virtual void WriteBuffer(const Buffer* buffer, const void* data, std::uint32_t offset,
+                             std::uint32_t size) override;
     
-    virtual Texture* CreateTexture(const TextureDescriptor& descriptor) override ;
-
-    virtual Sampler* CreateSampler(const SamplerDescriptor& descriptor = {}) override ;
+    virtual RenderPipeline*
+    CreateRenderPipeline(const RenderPipelineDescriptor &descriptor) override;
     
-    virtual BindGroupLayout* CreateBindGroupLayout(const BindGroupLayoutDescriptor& descriptor ) override ;
+    virtual Shader* CreateShaderModule(const ShaderModuleDescriptor &descriptor) override;
     
-    virtual BindGroup* CreateBindGroup(const BindGroupDescriptor& descriptor) override;
-
-    virtual PipelineLayout* CreatePipelineLayout(const PipelineLayoutDescriptor& descriptor) override ;
-
-    virtual BindingResource* CreateBindingResourceBuffer(std::uint32_t bindingPoint, const Buffer* buffer, std::uint32_t offset, std::uint32_t size) override ;
-
-    virtual BindingResource* CreateBindingResourceCombined(std::uint32_t bindingPoint, const TextureView* textureView, const Sampler* sampler) override ;
-
-    virtual CommandEncoder* CreateCommandEncoder(const CommandEncoderDescriptor& descriptor = {}) override;
-
+    virtual Texture* CreateTexture(const TextureDescriptor &descriptor) override;
+    
+    virtual Sampler* CreateSampler(const SamplerDescriptor &descriptor = {}) override;
+    
+    virtual BindGroupLayout*
+    CreateBindGroupLayout(const BindGroupLayoutDescriptor &descriptor) override;
+    
+    virtual BindGroup* CreateBindGroup(const BindGroupDescriptor &descriptor) override;
+    
+    virtual PipelineLayout*
+    CreatePipelineLayout(const PipelineLayoutDescriptor &descriptor) override;
+    
+    virtual CommandEncoder*
+    CreateCommandEncoder(const CommandEncoderDescriptor &descriptor = {}) override;
+    
     virtual SwapChain* CreateSwapChain() override;
     
-    virtual Viewport GetViewport() const override {return viewport_;}
-
-    virtual Scissor  GetScissor() const override  {return scissor_;}
-
+    virtual Viewport GetViewport() const override
+    { return viewport_; }
+    
+    virtual Scissor GetScissor() const override
+    { return scissor_; }
+    
     virtual Queue* GetQueue() const override;
 
 private:
     void CreateInstance();
+    
     void CreateSurface();
+    
     void CreatePhysicDevice();
+    
     void CreateDevice();
+    
     void CreateSwapchain();
+    
     void CreateVKQueue();
+    
     void CreateCommandPool();
+    
     void CreateDescriptorPool();
+    
     Queue* CreateQueue();
 
 private:
     QueueFamilyIndices FindQueueFamilies();
-    VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
-    VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
+    
+    VkSurfaceFormatKHR
+    ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
+    
+    VkPresentModeKHR
+    ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
+    
     VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
+    
     SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);
+    
     bool IsDeviceSuitable(VkPhysicalDevice device);
 
 private:
-    ANativeWindow*                  nativeWindow_           = nullptr;
-    VkInstance                      vkInstance_             = nullptr;
-    VkDevice                        vkDevice_               = nullptr;
-//    VkQueue                         vkQueue_                = nullptr;
-    VkPhysicalDevice                vkPhysicalDevice_       = nullptr;
-    VkCommandPool                   vkCommandPool_;
-    VkDescriptorPool                vkDescriptorPool_;
-    VkSurfaceKHR                    vkSurface_;
-    VkSwapchainKHR                  vkSwapchain_;
-    VkFormat                        vkSwapchainImageFormat_;
-    VkExtent2D                      vkSwapchainExtent_;
-    VkDebugReportCallbackEXT        vkDebugReportCallback_;
-    QueueFamilyIndices              queueFamilyIndices_;
-
-    std::uint32_t                   graphicQueueFamilyIndex_ = 0;
-
-    Viewport                        viewport_;
-    Scissor                         scissor_;
+    ANativeWindow* nativeWindow_ = nullptr;
+    VkInstance vkInstance_ = nullptr;
+    VkDevice vkDevice_ = nullptr;
+    //    VkQueue                         vkQueue_                = nullptr;
+    VkPhysicalDevice vkPhysicalDevice_ = nullptr;
+    VkCommandPool vkCommandPool_;
+    VkDescriptorPool vkDescriptorPool_;
+    VkSurfaceKHR vkSurface_;
+    VkSwapchainKHR vkSwapchain_;
+    VkFormat vkSwapchainImageFormat_;
+    VkExtent2D vkSwapchainExtent_;
+    VkDebugReportCallbackEXT vkDebugReportCallback_;
+    QueueFamilyIndices queueFamilyIndices_;
     
-    Queue*                          renderQueuer_           = nullptr;
-    std::vector<VkSemaphore>        waitingSemaphores_;
+    std::uint32_t graphicQueueFamilyIndex_ = 0;
+    
+    Viewport viewport_;
+    Scissor scissor_;
+    
+    Queue* renderQueuer_ = nullptr;
+    std::vector<VkSemaphore> waitingSemaphores_;
     RenderPassCache renderPassCache_;
 };
 

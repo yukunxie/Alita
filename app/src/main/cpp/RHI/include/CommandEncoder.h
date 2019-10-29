@@ -24,7 +24,7 @@ public:
 public:
     virtual RenderPassEncoder* BeginRenderPass(const RenderPassDescriptor& descriptor) = 0;
 
-    virtual CommandBuffer* Finish() = 0;
+    virtual CommandBuffer* Finish(const CommandBufferDescriptor& descriptor = {}) = 0;
 
     virtual void CopyBufferToBuffer(
             const Buffer* source,

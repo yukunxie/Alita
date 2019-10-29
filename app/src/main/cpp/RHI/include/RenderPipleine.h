@@ -12,20 +12,19 @@
 #include "RHIObjectBase.h"
 
 
-
 NS_RHI_BEGIN
 
 typedef struct GraphicPipelineCreateInfo
 {
-    std::vector<PipelineShaderStageCreateInfo>  shaderStageInfos;
-    PipelineVertexInputStateCreateInfo          vertexInputInfo;
-    PipelineViewportStateCreateInfo             viewportState;
-    const PipelineLayout*                       pPipelineLayout;
-
+    std::vector<PipelineShaderStageCreateInfo> shaderStageInfos;
+    PipelineVertexInputStateCreateInfo vertexInputInfo;
+    PipelineViewportStateCreateInfo viewportState;
+    const PipelineLayout* pPipelineLayout;
+    
 } GraphicPipelineCreateInfo;
 
 
-class RenderPipeline : public  RHIObjectBase
+class RenderPipeline : public RHIObjectBase
 {
 public:
     virtual ~RenderPipeline()

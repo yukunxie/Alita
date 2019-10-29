@@ -60,56 +60,104 @@ void VKBindGroup::WriteToGPU() const
     for (const BindGroupBinding &binding : bindingResources_)
     {
         auto resource = binding.resource;
-        if (resource->GetResourceType() == BindingResourceType::BUFFER)
+        switch (resource->GetResourceType())
         {
-            auto* buffer = RHI_CAST(const VKBindingBuffer*, resource);
-            VkDescriptorBufferInfo bufferInfo{
-                .buffer = buffer->buffer_->GetNative(),
-                .offset = buffer->offset_,
-                .range  = buffer->size_,
-            };
-            
-            VkWriteDescriptorSet descriptorWrite{
-                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                .dstSet = vkDescriptorSet_,
-                .dstBinding = binding.binding,
-                .dstArrayElement = 0,
-                .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                .descriptorCount = 1,
-                .pBufferInfo = &bufferInfo,
-                .pImageInfo = nullptr, // optional
-                .pTexelBufferView = nullptr, // optional
+            case BindingResourceType::BUFFER:
+            {
+                auto bindingBuffer = RHI_CAST(const BufferBinding*, resource);
+                auto* buffer = RHI_CAST(const VKBuffer*, bindingBuffer->buffer);
+                VkDescriptorBufferInfo bufferInfo{
+                    .buffer = buffer->GetNative(),
+                    .offset = bindingBuffer->offset,
+                    .range  = bindingBuffer->size,
+                };
                 
-            };
-            vkUpdateDescriptorSets(vkDevice_, 1, &descriptorWrite, 0, nullptr);
-        }
-        else if (resource->GetResourceType() == BindingResourceType::COMBINED_SAMPLER_TEXTUREVIEW)
-        {
-            auto* vkRes = RHI_CAST(const VKBindingCombined*, resource);
+                VkWriteDescriptorSet descriptorWrite{
+                    .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                    .dstSet = vkDescriptorSet_,
+                    .dstBinding = binding.binding,
+                    .dstArrayElement = 0,
+                    .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                    .descriptorCount = 1,
+                    .pBufferInfo = &bufferInfo,
+                    .pImageInfo = nullptr,
+                    .pTexelBufferView = nullptr, // optional
+                    
+                };
+                vkUpdateDescriptorSets(vkDevice_, 1, &descriptorWrite, 0, nullptr);
+            }
+                break;
             
-            VkDescriptorImageInfo imageInfo = {
-                .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                .imageView = vkRes->textureView_->GetNative(),
-                .sampler = vkRes->sampler_->GetNative(),
-            };
-            
-            VkWriteDescriptorSet descriptorWrite{
-                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                .dstSet = vkDescriptorSet_,
-                .dstBinding = binding.binding,
-                .dstArrayElement = 0,
-                .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                .descriptorCount = 1,
-                .pBufferInfo = nullptr,
-                .pImageInfo = &imageInfo, // optional
-                .pTexelBufferView = nullptr, // optional
+            case BindingResourceType::SAMPLER:
+            {
+                VkDescriptorImageInfo imageInfo = {.sampler = RHI_CAST(const VKSampler*, resource)->GetNative()};
                 
-            };
-            vkUpdateDescriptorSets(vkDevice_, 1, &descriptorWrite, 0, nullptr);
-        }
-        else
-        {
-            RHI_ASSERT(false);
+                VkWriteDescriptorSet descriptorWrite{
+                    .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                    .dstSet = vkDescriptorSet_,
+                    .dstBinding = binding.binding,
+                    .dstArrayElement = 0,
+                    .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER,
+                    .descriptorCount = 1,
+                    .pBufferInfo = nullptr,
+                    .pImageInfo = &imageInfo,
+                    .pTexelBufferView = nullptr, // optional
+                    
+                };
+                vkUpdateDescriptorSets(vkDevice_, 1, &descriptorWrite, 0, nullptr);
+            }
+                break;
+            
+            case BindingResourceType::TEXTURE_VIEW:
+            {
+                VkDescriptorImageInfo imageInfo = {
+                    .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                    .imageView = RHI_CAST(const VKTextureView*, resource)->GetNative()
+                };
+    
+                VkWriteDescriptorSet descriptorWrite{
+                    .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                    .dstSet = vkDescriptorSet_,
+                    .dstBinding = binding.binding,
+                    .dstArrayElement = 0,
+                    .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                    .descriptorCount = 1,
+                    .pBufferInfo = nullptr,
+                    .pImageInfo = &imageInfo,
+                    .pTexelBufferView = nullptr, // optional
+        
+                };
+                vkUpdateDescriptorSets(vkDevice_, 1, &descriptorWrite, 0, nullptr);
+            }
+                break;
+            
+            case BindingResourceType::COMBINED_SAMPLER_TEXTUREVIEW:
+            {
+                auto combinedST = RHI_CAST(const CombinedSamplerImageViewBinding*, binding.resource);
+                auto vkTextureView = RHI_CAST(const VKTextureView*, combinedST->imageView);
+                auto vkSampler = RHI_CAST(const VKSampler*, combinedST->sampler);
+                
+                VkDescriptorImageInfo imageInfo = {
+                    .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                    .imageView = vkTextureView->GetNative(),
+                    .sampler = vkSampler->GetNative(),
+                };
+    
+                VkWriteDescriptorSet descriptorWrite{
+                    .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                    .dstSet = vkDescriptorSet_,
+                    .dstBinding = binding.binding,
+                    .dstArrayElement = 0,
+                    .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                    .descriptorCount = 1,
+                    .pBufferInfo = nullptr,
+                    .pImageInfo = &imageInfo,
+                    .pTexelBufferView = nullptr, // optional
+        
+                };
+                vkUpdateDescriptorSets(vkDevice_, 1, &descriptorWrite, 0, nullptr);
+            }
+                break;
         }
     }
 }

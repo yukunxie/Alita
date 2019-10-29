@@ -526,6 +526,9 @@ struct ShaderModuleDescriptor : ObjectDescriptorBase {
     std::string textCode;
 };
 
+struct CommandBufferDescriptor : ObjectDescriptorBase {
+};
+
 NS_RHI_END
 
 #endif //ALITA_DESCRIPTORS_H

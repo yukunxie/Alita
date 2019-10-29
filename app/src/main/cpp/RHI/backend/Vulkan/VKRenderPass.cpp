@@ -15,14 +15,14 @@
 
 NS_RHI_BEGIN
 
-VKRenderPass::VKRenderPass(VKDevice* device, const RenderPassCacheQuery& query)
+VKRenderPass::VKRenderPass(VKDevice* device, const RenderPassCacheQuery &query)
     : device_(device)
 {
     std::array<VkAttachmentReference, kMaxColorAttachments + 1> attachmentRefs;
-
+    
     // Contains the attachment description that will be chained in the create info
     std::array<VkAttachmentDescription, kMaxColorAttachments + 1> attachmentDescs = {};
-
+    
     uint32_t attachmentCount = 0;
     for (size_t i = 0; i < query.colorMask.size(); ++i)
     {
@@ -30,13 +30,13 @@ VKRenderPass::VKRenderPass(VKDevice* device, const RenderPassCacheQuery& query)
         {
             continue;
         }
-
-        auto& attachmentRef = attachmentRefs[attachmentCount];
-        auto& attachmentDesc = attachmentDescs[attachmentCount];
-
+        
+        auto &attachmentRef = attachmentRefs[attachmentCount];
+        auto &attachmentDesc = attachmentDescs[attachmentCount];
+        
         attachmentRef.attachment = attachmentCount;
         attachmentRef.layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
+        
         attachmentDesc.flags = 0;
         attachmentDesc.format = GetVkFormat(query.colorFormats[i]);
         attachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -44,21 +44,22 @@ VKRenderPass::VKRenderPass(VKDevice* device, const RenderPassCacheQuery& query)
         attachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         attachmentDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
+        
         attachmentCount++;
     }
     uint32_t colorAttachmentCount = attachmentCount;
-
+    
     VkAttachmentReference* depthStencilAttachment = nullptr;
-    if (query.hasDepthStencil) {
-        auto& attachmentRef = attachmentRefs[attachmentCount];
-        auto& attachmentDesc = attachmentDescs[attachmentCount];
-
+    if (query.hasDepthStencil)
+    {
+        auto &attachmentRef = attachmentRefs[attachmentCount];
+        auto &attachmentDesc = attachmentDescs[attachmentCount];
+        
         depthStencilAttachment = &attachmentRefs[attachmentCount];
-
+        
         attachmentRef.attachment = attachmentCount;
         attachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
+        
         attachmentDesc.flags = 0;
         attachmentDesc.format = GetVkFormat(query.depthStencilFormat);
         attachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -68,10 +69,10 @@ VKRenderPass::VKRenderPass(VKDevice* device, const RenderPassCacheQuery& query)
         attachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachmentDesc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         attachmentDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
+        
         attachmentCount++;
     }
-
+    
     // Create the VkSubpassDescription that will be chained in the VkRenderPassCreateInfo
     VkSubpassDescription subpassDesc;
     subpassDesc.flags = 0;
@@ -84,7 +85,7 @@ VKRenderPass::VKRenderPass(VKDevice* device, const RenderPassCacheQuery& query)
     subpassDesc.pDepthStencilAttachment = depthStencilAttachment;
     subpassDesc.preserveAttachmentCount = 0;
     subpassDesc.pPreserveAttachments = nullptr;
-
+    
     // Chain everything in VkRenderPassCreateInfo
     VkRenderPassCreateInfo createInfo;
     createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -96,9 +97,9 @@ VKRenderPass::VKRenderPass(VKDevice* device, const RenderPassCacheQuery& query)
     createInfo.pSubpasses = &subpassDesc;
     createInfo.dependencyCount = 0;
     createInfo.pDependencies = nullptr;
-
+    
     CALL_VK(vkCreateRenderPass(device->GetDevice(), &createInfo, nullptr, &vkRenderPass_));
-
+    
 }
 
 //VKRenderPass::VKRenderPass(VKDevice* device, const RenderPassCreateInfo& createInfo)

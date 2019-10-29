@@ -142,87 +142,87 @@ const TBuiltInResource DefaultTBuiltInResource = {
                            /* .generalConstantMatrixVectorIndexing = */ 1,
                        }};
 
-bool VKShader::Init(VKDevice* device, const ShaderModuleDescriptor& descriptor)
+bool VKShader::Init(VKDevice* device, const ShaderModuleDescriptor &descriptor)
 {
-//    if (!glslangInitialized)
-//    {
-//        glslang::InitializeProcess();
-//        glslangInitialized = true;
-//    }
-//
-//    if (glslangInitialized)
-//    {
-//        auto ShaderType = EShLanguage::EShLangVertex;
-//        glslang::TShader shader(ShaderType);
-//        shader.setStrings(&shaderString, 1);
-//
-//        int ClientInputSemanticsVersion = 100; // maps to, say, #define VULKAN 100
-//        glslang::EShTargetClientVersion VulkanClientVersion = glslang::EShTargetVulkan_1_0;
-//        glslang::EShTargetLanguageVersion TargetVersion = glslang::EShTargetSpv_1_0;
-//
-//        shader.setEnvInput(glslang::EShSourceGlsl, ShaderType, glslang::EShClientVulkan, ClientInputSemanticsVersion);
-//        shader.setEnvClient(glslang::EShClientVulkan, VulkanClientVersion);
-//        shader.setEnvTarget(glslang::EShTargetSpv, TargetVersion);
-//
-//        TBuiltInResource Resources;
-//        Resources = DefaultTBuiltInResource;
-//        EShMessages messages = (EShMessages) (EShMsgSpvRules | EShMsgVulkanRules);
-//
-//        const int DefaultVersion = 100;
-//
-//        DirStackFileIncluder Includer;
-//
-//        //Get Path of File
-////        std::string Path = GetFilePath(filename);
-//        Includer.pushExternalLocalDirectory("");
-//
-//        std::string PreprocessedGLSL;
-//
-//        if (!shader.preprocess(&Resources, DefaultVersion, ENoProfile, false, false, messages, &PreprocessedGLSL, Includer))
-//        {
-//            auto log = shader.getInfoLog();
-//            auto dlog = shader.getInfoDebugLog();
-//            LOGE("xxxxxxxx, %s, %s", log, dlog);
-//        }
-//
-//        const char* PreprocessedCStr = PreprocessedGLSL.c_str();
-//        shader.setStrings(&PreprocessedCStr, 1);
-//
-//        if (!shader.parse(&Resources, 100, false, messages))
-//        {
-//            LOGE("xxxxxxxx");
-//        }
-//
-//        glslang::TProgram Program;
-//        Program.addShader(&shader);
-//
-//        if(!Program.link(messages))
-//        {
-//            LOGE("xxxxxxxx");
-//        }
-//
-//        RHI_ASSERT(Program.buildReflection());
-//
-//        auto count = Program.getNumUniformVariables();
-//        for (int i = 0; i < count; i++)
-//        {
-//            auto binding = Program.getUniformBinding(i);
-//            auto name = Program.getUniformBlockName(i);
-//            auto name2 = Program.getUniformName(i);
-//            auto offset = Program.getUniformBufferOffset(i);
-//            auto type = Program.getUniformTType(i);
-//            auto size = Program.getUniformBlockSize(i);
-//            int k = 10;
-//        }
-//
-//        std::vector<unsigned int> SpirV;
-//        spv::SpvBuildLogger logger;
-//        glslang::SpvOptions spvOptions;
-//        glslang::GlslangToSpv(*Program.getIntermediate(ShaderType), SpirV, &logger, &spvOptions);
-//
-//        LOGI("kkkkkk");
-//
-//    }
+    //    if (!glslangInitialized)
+    //    {
+    //        glslang::InitializeProcess();
+    //        glslangInitialized = true;
+    //    }
+    //
+    //    if (glslangInitialized)
+    //    {
+    //        auto ShaderType = EShLanguage::EShLangVertex;
+    //        glslang::TShader shader(ShaderType);
+    //        shader.setStrings(&shaderString, 1);
+    //
+    //        int ClientInputSemanticsVersion = 100; // maps to, say, #define VULKAN 100
+    //        glslang::EShTargetClientVersion VulkanClientVersion = glslang::EShTargetVulkan_1_0;
+    //        glslang::EShTargetLanguageVersion TargetVersion = glslang::EShTargetSpv_1_0;
+    //
+    //        shader.setEnvInput(glslang::EShSourceGlsl, ShaderType, glslang::EShClientVulkan, ClientInputSemanticsVersion);
+    //        shader.setEnvClient(glslang::EShClientVulkan, VulkanClientVersion);
+    //        shader.setEnvTarget(glslang::EShTargetSpv, TargetVersion);
+    //
+    //        TBuiltInResource Resources;
+    //        Resources = DefaultTBuiltInResource;
+    //        EShMessages messages = (EShMessages) (EShMsgSpvRules | EShMsgVulkanRules);
+    //
+    //        const int DefaultVersion = 100;
+    //
+    //        DirStackFileIncluder Includer;
+    //
+    //        //Get Path of File
+    ////        std::string Path = GetFilePath(filename);
+    //        Includer.pushExternalLocalDirectory("");
+    //
+    //        std::string PreprocessedGLSL;
+    //
+    //        if (!shader.preprocess(&Resources, DefaultVersion, ENoProfile, false, false, messages, &PreprocessedGLSL, Includer))
+    //        {
+    //            auto log = shader.getInfoLog();
+    //            auto dlog = shader.getInfoDebugLog();
+    //            LOGE("xxxxxxxx, %s, %s", log, dlog);
+    //        }
+    //
+    //        const char* PreprocessedCStr = PreprocessedGLSL.c_str();
+    //        shader.setStrings(&PreprocessedCStr, 1);
+    //
+    //        if (!shader.parse(&Resources, 100, false, messages))
+    //        {
+    //            LOGE("xxxxxxxx");
+    //        }
+    //
+    //        glslang::TProgram Program;
+    //        Program.addShader(&shader);
+    //
+    //        if(!Program.link(messages))
+    //        {
+    //            LOGE("xxxxxxxx");
+    //        }
+    //
+    //        RHI_ASSERT(Program.buildReflection());
+    //
+    //        auto count = Program.getNumUniformVariables();
+    //        for (int i = 0; i < count; i++)
+    //        {
+    //            auto binding = Program.getUniformBinding(i);
+    //            auto name = Program.getUniformBlockName(i);
+    //            auto name2 = Program.getUniformName(i);
+    //            auto offset = Program.getUniformBufferOffset(i);
+    //            auto type = Program.getUniformTType(i);
+    //            auto size = Program.getUniformBlockSize(i);
+    //            int k = 10;
+    //        }
+    //
+    //        std::vector<unsigned int> SpirV;
+    //        spv::SpvBuildLogger logger;
+    //        glslang::SpvOptions spvOptions;
+    //        glslang::GlslangToSpv(*Program.getIntermediate(ShaderType), SpirV, &logger, &spvOptions);
+    //
+    //        LOGI("kkkkkk");
+    //
+    //    }
     
     vkDevice_ = device->GetDevice();
     
@@ -231,8 +231,8 @@ bool VKShader::Init(VKDevice* device, const ShaderModuleDescriptor& descriptor)
         VkShaderModuleCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         createInfo.codeSize = descriptor.binaryCode.size();
-        createInfo.pCode = reinterpret_cast<const std::uint32_t *>(descriptor.binaryCode.data());
-    
+        createInfo.pCode = reinterpret_cast<const std::uint32_t*>(descriptor.binaryCode.data());
+        
         CALL_VK(vkCreateShaderModule(vkDevice_, &createInfo, nullptr, &vkShaderModule_));
         return true;
     }
@@ -242,7 +242,7 @@ bool VKShader::Init(VKDevice* device, const ShaderModuleDescriptor& descriptor)
     }
 }
 
-VKShader* VKShader::Create(VKDevice* device, const ShaderModuleDescriptor& descriptor)
+VKShader* VKShader::Create(VKDevice* device, const ShaderModuleDescriptor &descriptor)
 {
     auto ret = new VKShader();
     if (ret && ret->Init(device, descriptor))

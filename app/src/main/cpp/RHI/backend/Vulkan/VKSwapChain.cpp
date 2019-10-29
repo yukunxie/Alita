@@ -7,8 +7,8 @@
 
 NS_RHI_BEGIN
 
-VKSwapChain::VKSwapChain(VKDevice *device)
-        : device_(device)
+VKSwapChain::VKSwapChain(VKDevice* device)
+    : device_(device)
 {
     Init();
 }
@@ -34,9 +34,9 @@ void VKSwapChain::Init()
     
     auto extent2D = device_->GetSwapChainExtent2D();
     Extent3D extent3D{
-            .width = extent2D.width,
-            .height = extent2D.height,
-            .depth = 1,
+        .width = extent2D.width,
+        .height = extent2D.height,
+        .depth = 1,
     };
     
     // setup swapChainImageViews_
@@ -86,7 +86,7 @@ void VKSwapChain::RecreateSwapChain()
     Init();
 }
 
-TextureView *VKSwapChain::GetCurrentTexture()
+TextureView* VKSwapChain::GetCurrentTexture()
 {
     // TODO realxie recreate swapchain
     
@@ -125,19 +125,19 @@ TextureView *VKSwapChain::GetCurrentTexture()
     //    }
 }
 
-void VKSwapChain::Present(const Queue *queue)
+void VKSwapChain::Present(const Queue* queue)
 {
     VkSwapchainKHR vkSwapchain = device_->GetVkSwapChain();
     VkResult result;
     VkPresentInfoKHR presentInfo{
-            .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-            .pNext = nullptr,
-            .swapchainCount = 1,
-            .pSwapchains = &vkSwapchain,
-            .pImageIndices = &imageIndex_,
-            .waitSemaphoreCount = 0,
-            .pWaitSemaphores = nullptr,
-            .pResults = &result
+        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .pNext = nullptr,
+        .swapchainCount = 1,
+        .pSwapchains = &vkSwapchain,
+        .pImageIndices = &imageIndex_,
+        .waitSemaphoreCount = 0,
+        .pWaitSemaphores = nullptr,
+        .pResults = &result
     };
     
     VkQueue vkQueue = RHI_CAST(const VKQueue*, queue)->GetNative();

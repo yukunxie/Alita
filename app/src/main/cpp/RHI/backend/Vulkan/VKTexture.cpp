@@ -99,57 +99,58 @@ NS_RHI_BEGIN
 //    SetImageLayout(device);
 //}
 
-bool VKTexture::Init(VKDevice* device, const TextureDescriptor& descriptor)
+bool VKTexture::Init(VKDevice* device, const TextureDescriptor &descriptor)
 {
     device_ = device;
     vkDevice_ = device->GetDevice();
     vkFormat_ = GetVkFormat(descriptor.format);
     textureFormat_ = descriptor.format;
-
+    
     std::uint32_t queueFamilyIndex = device->GetGraphicQueueFamilyIndex();
-
+    
     textureSize_ = descriptor.size;
-
+    
     VkImageCreateInfo imageInfo = {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-            .flags = 0,
-            .pNext = nullptr,
-            .format = vkFormat_,
-            .imageType = GetVkImageType(descriptor.dimension),
-            .extent = {textureSize_.width, textureSize_.height, textureSize_.depth},
-            .mipLevels = descriptor.mipLevelCount,
-            .arrayLayers = descriptor.arrayLayerCount,
-            .tiling = VK_IMAGE_TILING_OPTIMAL,
-            .initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED,
-            .sharingMode =  VK_SHARING_MODE_EXCLUSIVE,
-            .usage = GetVkImageUsageFlags(descriptor.usage, descriptor.format),
-            .samples = GetVkSampleCountFlagBits(descriptor.sampleCount),
-            .queueFamilyIndexCount = 1,
-            .pQueueFamilyIndices = &queueFamilyIndex,
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .flags = 0,
+        .pNext = nullptr,
+        .format = vkFormat_,
+        .imageType = GetVkImageType(descriptor.dimension),
+        .extent = {textureSize_.width, textureSize_.height, textureSize_.depth},
+        .mipLevels = descriptor.mipLevelCount,
+        .arrayLayers = descriptor.arrayLayerCount,
+        .tiling = VK_IMAGE_TILING_OPTIMAL,
+        .initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED,
+        .sharingMode =  VK_SHARING_MODE_EXCLUSIVE,
+        .usage = GetVkImageUsageFlags(descriptor.usage, descriptor.format),
+        .samples = GetVkSampleCountFlagBits(descriptor.sampleCount),
+        .queueFamilyIndexCount = 1,
+        .pQueueFamilyIndices = &queueFamilyIndex,
     };
-
+    
     CALL_VK(vkCreateImage(vkDevice_, &imageInfo, nullptr, &vkImage_));
-
+    
     VkMemoryRequirements memRequirements;
     vkGetImageMemoryRequirements(vkDevice_, vkImage_, &memRequirements);
-
+    
     VkMemoryPropertyFlags memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-//    if (vkFormat_ == VkFormat::VK_FORMAT_D24_UNORM_S8_UINT)
-//    {
-//        memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-//    }
-
-    VkMemoryAllocateInfo allocInfo {
-            .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-            .allocationSize = memRequirements.size,
-            .memoryTypeIndex = device->FindMemoryType(memRequirements.memoryTypeBits, memoryPropertyFlags),
+    //    if (vkFormat_ == VkFormat::VK_FORMAT_D24_UNORM_S8_UINT)
+    //    {
+    //        memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    //    }
+    
+    VkMemoryAllocateInfo allocInfo{
+        .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+        .allocationSize = memRequirements.size,
+        .memoryTypeIndex = device->FindMemoryType(memRequirements.memoryTypeBits,
+                                                  memoryPropertyFlags),
     };
-
+    
     CALL_VK(vkAllocateMemory(vkDevice_, &allocInfo, nullptr, &vkDeviceMemory_));
     CALL_VK(vkBindImageMemory(vkDevice_, vkImage_, vkDeviceMemory_, 0));
-
+    
     SetImageLayout(device);
-
+    
     return true;
 }
 
@@ -159,7 +160,7 @@ VKTexture::~VKTexture()
     {
         vkFreeMemory(vkDevice_, vkDeviceMemory_, nullptr);
     }
-
+    
     if (vkImage_)
     {
         vkDestroyImage(vkDevice_, vkImage_, nullptr);
@@ -170,32 +171,32 @@ VKTexture::~VKTexture()
 void VKTexture::SetImageLayout(const VKDevice* device)
 {
     VkCommandPoolCreateInfo cmdPoolCreateInfo{
-            .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-            .pNext = nullptr,
-            .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-            .queueFamilyIndex = device->GetGraphicQueueFamilyIndex(),
+        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+        .queueFamilyIndex = device->GetGraphicQueueFamilyIndex(),
     };
-
+    
     VkCommandPool cmdPool;
     CALL_VK(vkCreateCommandPool(vkDevice_, &cmdPoolCreateInfo, nullptr, &cmdPool));
-
+    
     VkCommandBuffer gfxCmd;
     const VkCommandBufferAllocateInfo cmd = {
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-            .pNext = nullptr,
-            .commandPool = cmdPool,
-            .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-            .commandBufferCount = 1,
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .pNext = nullptr,
+        .commandPool = cmdPool,
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = 1,
     };
-
+    
     CALL_VK(vkAllocateCommandBuffers(vkDevice_, &cmd, &gfxCmd));
     VkCommandBufferBeginInfo cmd_buf_info = {
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-            .pNext = nullptr,
-            .flags = 0,
-            .pInheritanceInfo = nullptr};
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .pInheritanceInfo = nullptr};
     CALL_VK(vkBeginCommandBuffer(gfxCmd, &cmd_buf_info));
-
+    
     if (vkFormat_ == VkFormat::VK_FORMAT_D24_UNORM_S8_UINT)
     {
         device->SetImageLayout(gfxCmd, vkImage_, VK_IMAGE_LAYOUT_UNDEFINED,
@@ -210,32 +211,32 @@ void VKTexture::SetImageLayout(const VKDevice* device)
                                VK_PIPELINE_STAGE_HOST_BIT,
                                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
     }
-
+    
     CALL_VK(vkEndCommandBuffer(gfxCmd));
     VkFenceCreateInfo fenceInfo = {
-            .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-            .pNext = nullptr,
-            .flags = 0,
+        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
     };
     VkFence fence;
     CALL_VK(vkCreateFence(vkDevice_, &fenceInfo, nullptr, &fence));
     vkResetFences(vkDevice_, 1, &fence);
-
+    
     VkSubmitInfo submitInfo = {
-            .pNext = nullptr,
-            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-            .waitSemaphoreCount = 0,
-            .pWaitSemaphores = nullptr,
-            .pWaitDstStageMask = nullptr,
-            .commandBufferCount = 1,
-            .pCommandBuffers = &gfxCmd,
-            .signalSemaphoreCount = 0,
-            .pSignalSemaphores = nullptr,
+        .pNext = nullptr,
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .waitSemaphoreCount = 0,
+        .pWaitSemaphores = nullptr,
+        .pWaitDstStageMask = nullptr,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &gfxCmd,
+        .signalSemaphoreCount = 0,
+        .pSignalSemaphores = nullptr,
     };
     const VKQueue* queue = RHI_CAST(const VKQueue*, device->GetQueue());
     CALL_VK(vkQueueSubmit(queue->GetNative(), 1, &submitInfo, fence));
     CALL_VK(vkWaitForFences(vkDevice_, 1, &fence, VK_TRUE, 100000000));
-
+    
     vkDestroyFence(vkDevice_, fence, nullptr);
     vkFreeCommandBuffers(vkDevice_, cmdPool, 1, &gfxCmd);
     vkDestroyCommandPool(vkDevice_, cmdPool, nullptr);

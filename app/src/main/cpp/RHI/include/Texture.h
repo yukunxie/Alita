@@ -13,16 +13,16 @@ NS_RHI_BEGIN
 
 class TextureView;
 
-class Texture : public  RHIObjectBase
+class Texture : public RHIObjectBase
 {
 public:
     virtual ~Texture()
     {
     }
-
-    virtual TextureFormat  GetFormat() const = 0;
-
-    virtual TextureView*   CreateView() = 0;
+    
+    virtual TextureFormat GetFormat() const = 0;
+    
+    virtual TextureView* CreateView() = 0;
 };
 
 NS_RHI_END

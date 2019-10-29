@@ -13,18 +13,20 @@ class VKShader : public Shader
 {
 protected:
     VKShader() = default;
-    bool Init(VKDevice* device, const ShaderModuleDescriptor& descriptor);
     
+    bool Init(VKDevice* device, const ShaderModuleDescriptor &descriptor);
+
 public:
-    static VKShader* Create(VKDevice* device, const ShaderModuleDescriptor& descriptor);
+    static VKShader* Create(VKDevice* device, const ShaderModuleDescriptor &descriptor);
     
     virtual ~VKShader();
-
-    VkShaderModule  GetNative() const {return vkShaderModule_;}
+    
+    VkShaderModule GetNative() const
+    { return vkShaderModule_; }
 
 private:
-    VkDevice       vkDevice_        = nullptr;
-    VkShaderModule vkShaderModule_  = 0;
+    VkDevice vkDevice_ = nullptr;
+    VkShaderModule vkShaderModule_ = 0;
 };
 
 NS_RHI_END

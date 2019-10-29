@@ -14,20 +14,23 @@ class VKRenderPass;
 class VKRenderPipeline : public RenderPipeline
 {
 public:
-    VKRenderPipeline(VKDevice* device, const RenderPipelineDescriptor& descriptor);
+    VKRenderPipeline(VKDevice* device, const RenderPipelineDescriptor &descriptor);
+    
     virtual ~VKRenderPipeline();
-
-    VkPipeline GetNative() const {return vkGraphicsPipeline_;}
-
-    VkPipelineLayout GetPipelineLayout() const {return vkPipelineLayout_;}
+    
+    VkPipeline GetNative() const
+    { return vkGraphicsPipeline_; }
+    
+    VkPipelineLayout GetPipelineLayout() const
+    { return vkPipelineLayout_; }
 
 private:
 
 private:
-    VkPipeline                      vkGraphicsPipeline_     = 0;
-    VkPipelineLayout                vkPipelineLayout_       = 0;
-    VKRenderPass*                   renderPass_             = nullptr;
-
+    VkPipeline vkGraphicsPipeline_ = 0;
+    VkPipelineLayout vkPipelineLayout_ = 0;
+    VKRenderPass* renderPass_ = nullptr;
+    
     friend class VKDevice;
 };
 

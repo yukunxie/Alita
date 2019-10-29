@@ -10,10 +10,11 @@
 
 NS_RHI_BEGIN
 
-class CommandBuffer : public  RHIObjectBase
+class CommandBuffer : public RHIObjectBase
 {
 public:
-    virtual ~CommandBuffer(){ }
+    virtual ~CommandBuffer()
+    {}
 };
 
 NS_RHI_END

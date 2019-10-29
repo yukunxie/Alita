@@ -13,7 +13,8 @@ NS_RHI_BEGIN
 class BindGroupLayout : public RHIObjectBase
 {
 public:
-    virtual ~BindGroupLayout(){}
+    virtual ~BindGroupLayout()
+    {}
 };
 
 NS_RHI_END

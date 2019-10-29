@@ -11,18 +11,17 @@
 #include "Queue.h"
 
 
-
 NS_RHI_BEGIN
 
 class SwapChain;
 
-class SwapChain : public  RHIObjectBase
+class SwapChain : public RHIObjectBase
 {
 public:
     virtual ~SwapChain() = default;
-
+    
     virtual TextureView* GetCurrentTexture() = 0;
-
+    
     virtual void Present(const Queue* queue) = 0;
 };
 

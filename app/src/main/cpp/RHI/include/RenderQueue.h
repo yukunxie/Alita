@@ -11,7 +11,7 @@
 
 NS_RHI_BEGIN
 
-class RenderQueue : public  RHIObjectBase
+class RenderQueue : public RHIObjectBase
 {
 public:
     virtual ~RenderQueue()

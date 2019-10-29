@@ -26,7 +26,7 @@ do {                            \
 #define RHI_CAST(TYPE, obj) (static_cast<TYPE>(obj))
 
 // Android log function wrappers
-static const char *kTAG = "RHI";
+static const char* kTAG = "RHI";
 #define LOGI(...) \
   ((void)__android_log_print(ANDROID_LOG_INFO, kTAG, __VA_ARGS__))
 #define LOGW(...) \

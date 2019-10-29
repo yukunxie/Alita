@@ -6,22 +6,24 @@
 #define ALITA_TEXTUREVIEW_H
 
 #include "Macros.h"
-#include "RHIObjectBase.h"
-
+#include "BindingResource.h"
 
 
 NS_RHI_BEGIN
 
-class TextureView;
-
-class TextureView : public RHIObjectBase
+class TextureView : public BindingResource
 {
 public:
-    virtual ~TextureView()
-    {
-    }
+    TextureView()
+        : BindingResource(BindingResourceType::TEXTURE_VIEW)
+    {}
 
-    virtual TextureFormat  GetFormat() const = 0;
+protected:
+    virtual ~TextureView()
+    {}
+
+public:
+    virtual TextureFormat GetFormat() const = 0;
 };
 
 NS_RHI_END

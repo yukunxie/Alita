@@ -436,22 +436,21 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     
     
     // setup UBO
-    rhiBindingBuffer_ = rhiDevice_->CreateBindingResourceBuffer(0, rhiUniformBuffer_, 0,
-                                                                sizeof(UniformBufferObject));
-    rhiBindingCombined_ = rhiDevice_->CreateBindingResourceCombined(1, rhiTextureView_,
-                                                                    rhiSampler_);
-    
     {
+        auto bufferBinding = new RHI::BufferBinding(rhiUniformBuffer_, 0, (std::uint32_t)sizeof(UniformBufferObject));
+        auto combinedST = new RHI::CombinedSamplerImageViewBinding(rhiSampler_, rhiTextureView_);
+    
         RHI::BindGroupDescriptor descriptor;
         descriptor.layout = rhiBindGroupLayout_;
+        
         descriptor.bindings = {
             RHI::BindGroupBinding {
                 .binding = 0,
-                .resource = rhiBindingBuffer_
+                .resource = bufferBinding
             },
             RHI::BindGroupBinding {
                 .binding = 1,
-                .resource = rhiBindingCombined_
+                .resource = combinedST
             }
         };
         rhiBindGroup_ = rhiDevice_->CreateBindGroup(descriptor);

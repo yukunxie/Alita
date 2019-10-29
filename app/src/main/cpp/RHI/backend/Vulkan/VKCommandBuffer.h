@@ -13,14 +13,16 @@ class VKCommandBuffer : public CommandBuffer
 {
 public:
     VKCommandBuffer(VKDevice* device);
+    
     virtual ~VKCommandBuffer();
-
-    VkCommandBuffer GetNative() const {return vkCommandBuffer_;}
-
-    void ResetCommandBuffer() ;
+    
+    VkCommandBuffer GetNative() const
+    { return vkCommandBuffer_; }
+    
+    void ResetCommandBuffer();
 
 private:
-    VKDevice*       device_ = nullptr;
+    VKDevice* device_ = nullptr;
     VkCommandBuffer vkCommandBuffer_;
 };
 

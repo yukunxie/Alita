@@ -13,6 +13,7 @@ class VKRenderQueue : public RenderQueue
 {
 public:
     VKRenderQueue();
+    
     virtual ~VKRenderQueue();
 };
 

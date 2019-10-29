@@ -13,7 +13,8 @@ NS_RHI_BEGIN
 class BindGroup : public RHIObjectBase
 {
 public:
-    virtual ~BindGroup(){}
+    virtual ~BindGroup()
+    {}
 };
 
 NS_RHI_END

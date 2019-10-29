@@ -15,16 +15,17 @@ protected:
     VKSampler() = default;
 
 public:
-    bool Init(VKDevice* device, const SamplerDescriptor& descriptor);
-
+    bool Init(VKDevice* device, const SamplerDescriptor &descriptor);
+    
     virtual ~VKSampler();
-
-    VkSampler  GetNative() const {return vkSampler_;}
+    
+    VkSampler GetNative() const
+    { return vkSampler_; }
 
 private:
-    VkDevice  vkDevice_   = nullptr;
-    VkSampler vkSampler_  = 0;
-
+    VkDevice vkDevice_ = nullptr;
+    VkSampler vkSampler_ = 0;
+    
     friend class VKDevice;
 };
 

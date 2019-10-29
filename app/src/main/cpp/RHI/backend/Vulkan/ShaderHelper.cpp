@@ -118,12 +118,14 @@ const TBuiltInResource DefaultTBuiltInResource = {
                            /* .generalConstantMatrixVectorIndexing = */ 1,
                        }};
 
-std::vector<std::uint32_t> CompileGLSLToSPIRV(const std::string &code, ShaderType type, const std::string& includeSearchPath)
+std::vector<std::uint32_t>
+CompileGLSLToSPIRV(const std::string &code, ShaderType type, const std::string &includeSearchPath)
 {
     return CompileGLSLToSPIRV(code.c_str(), type, includeSearchPath);
 }
 
-std::vector<std::uint32_t> CompileGLSLToSPIRV(const char* code, ShaderType type, const std::string& includeSearchPath)
+std::vector<std::uint32_t>
+CompileGLSLToSPIRV(const char* code, ShaderType type, const std::string &includeSearchPath)
 {
     if (!glslangInitialized)
     {
@@ -174,7 +176,8 @@ std::vector<std::uint32_t> CompileGLSLToSPIRV(const char* code, ShaderType type,
     if (!shader.preprocess(&Resources, DefaultVersion, ENoProfile, false, false, messages,
                            &PreprocessedGLSL, Includer))
     {
-        LOGE("CompileGLSLToSPIRV fail[preprocess]: %s, %s", shader.getInfoLog(), shader.getInfoDebugLog());
+        LOGE("CompileGLSLToSPIRV fail[preprocess]: %s, %s", shader.getInfoLog(),
+             shader.getInfoDebugLog());
     }
     
     const char* PreprocessedCStr = PreprocessedGLSL.c_str();
@@ -182,7 +185,8 @@ std::vector<std::uint32_t> CompileGLSLToSPIRV(const char* code, ShaderType type,
     
     if (!shader.parse(&Resources, 100, false, messages))
     {
-        LOGE("CompileGLSLToSPIRV fail[parse]: %s, %s", shader.getInfoLog(), shader.getInfoDebugLog());
+        LOGE("CompileGLSLToSPIRV fail[parse]: %s, %s", shader.getInfoLog(),
+             shader.getInfoDebugLog());
     }
     
     glslang::TProgram Program;

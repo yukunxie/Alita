@@ -100,7 +100,7 @@ VkShaderStageFlags GetVkShaderStageFlags(ShaderStageFlags flag)
     
     if (!ret)
     {
-        throw  std::runtime_error("invlid ShaderStageFlags");
+        throw std::runtime_error("invlid ShaderStageFlags");
     }
     
     return ret;
@@ -549,7 +549,7 @@ VkBufferUsageFlags GetVkBufferUsageFlags(BufferUsageFlags flags)
     if (BufferUsage::INDEX & flags)
         vkFlags |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
     
-    if (BufferUsage::VERTEX& flags)
+    if (BufferUsage::VERTEX & flags)
         vkFlags |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
     
     if (BufferUsage::UNIFORM & flags)

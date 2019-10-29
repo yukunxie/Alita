@@ -11,10 +11,11 @@
 
 NS_RHI_BEGIN
 
-class RenderTarget : public  RHIObjectBase
+class RenderTarget : public RHIObjectBase
 {
 public:
-    virtual ~RenderTarget(){}
+    virtual ~RenderTarget()
+    {}
 };
 
 NS_RHI_END

@@ -10,12 +10,11 @@
 #include "RHIObjectBase.h"
 
 
-
 NS_RHI_BEGIN
 
 class Shader;
 
-class Shader : public  RHIObjectBase
+class Shader : public RHIObjectBase
 {
 public:
     virtual ~Shader()

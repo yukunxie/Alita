@@ -10,24 +10,25 @@
 NS_RHI_BEGIN
 
 
-
 class VKRenderPass : public RenderPass
 {
 public:
-    VKRenderPass(VKDevice* device, const RenderPassCacheQuery& query);
-//    VKRenderPass(VKDevice* device, const RenderPassCreateInfo& createInfo);
+    VKRenderPass(VKDevice* device, const RenderPassCacheQuery &query);
+    
+    //    VKRenderPass(VKDevice* device, const RenderPassCreateInfo& createInfo);
     virtual ~VKRenderPass();
-
-    VkRenderPass GetNative() {return vkRenderPass_;}
+    
+    VkRenderPass GetNative()
+    { return vkRenderPass_; }
 
 protected:
-//    void ParseAttachmentDescriptions(const RenderPassCreateInfo& createInfo, std::vector<VkAttachmentDescription>& descriptions);
-//    void ParseSubpassDescriptions(const RenderPassCreateInfo& createInfo, std::vector<VkSubpassDescription>& descriptions, std::vector<std::vector<VkAttachmentReference>>& references);
-//    void ParseAttachmentReferences(const std::vector<AttachmentReference>& attachments, std::vector<VkAttachmentReference>& attachmentReferences);
+    //    void ParseAttachmentDescriptions(const RenderPassCreateInfo& createInfo, std::vector<VkAttachmentDescription>& descriptions);
+    //    void ParseSubpassDescriptions(const RenderPassCreateInfo& createInfo, std::vector<VkSubpassDescription>& descriptions, std::vector<std::vector<VkAttachmentReference>>& references);
+    //    void ParseAttachmentReferences(const std::vector<AttachmentReference>& attachments, std::vector<VkAttachmentReference>& attachmentReferences);
 
 private:
-    VKDevice*      device_              = nullptr;
-    VkRenderPass   vkRenderPass_        = 0L;
+    VKDevice* device_ = nullptr;
+    VkRenderPass vkRenderPass_ = 0L;
 };
 
 NS_RHI_END

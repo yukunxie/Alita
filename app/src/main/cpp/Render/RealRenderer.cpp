@@ -11,33 +11,15 @@
 #include <android/asset_manager_jni.h>
 
 #include "../aux/AFileSystem.h"
-#include "../external/glm/vec3.hpp"
+#include "../external/glm/glm.hpp"
 #include "../external/glm/gtx/closest_point.inl"
 #include "../aux/AFileSystem.h"
 #include "../types/TData.h"
 
-#include "../RHI/include/RHI.h"
 #include "../RHI/backend/Vulkan/ShaderHelper.h"
+#include "../RHI/backend/Vulkan/VKDevice.h"
 
 #include "../external/stb/stb_image.h"
-
-//
-//// Android log function wrappers
-//static const char *kTAG = "VulkanDemo";
-//#define LOGI(...) \
-//  ((void)__android_log_print(ANDROID_LOG_INFO, kTAG, __VA_ARGS__))
-//#define LOGW(...) \
-//  ((void)__android_log_print(ANDROID_LOG_WARN, kTAG, __VA_ARGS__))
-//#define LOGE(...) \
-//  ((void)__android_log_print(ANDROID_LOG_ERROR, kTAG, __VA_ARGS__))
-//
-// Vulkan call wrapper
-//#define CALL_VK(func)                                                 \
-//  if (VK_SUCCESS != (func)) {                                         \
-//    __android_log_print(ANDROID_LOG_ERROR, "Tutorial ",               \
-//                        "Vulkan error. File[%s], line[%d]", __FILE__, \
-//                        __LINE__);                                    \
-//  }
 
 struct UniformBufferObject
 {
@@ -408,14 +390,15 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     
     // Create Depth Stencil texture and textureview
     {
-        VkExtent2D extent2D = rhiDevice_->GetSwapChainExtent2D();
+//        VkExtent2D extent2D = rhiDevice_->GetSwapChainExtent2D();
         
         RHI::TextureDescriptor descriptor;
         {
             descriptor.sampleCount = 1;
             descriptor.format = RHI::TextureFormat::DEPTH24PLUS_STENCIL8;
             descriptor.usage = RHI::TextureUsage::OUTPUT_ATTACHMENT;
-            descriptor.size = {(std::uint32_t) extent2D.width, (std::uint32_t) extent2D.height, 1};
+            descriptor.size = {1080, 1810, 1};
+//            descriptor.size = {(std::uint32_t) extent2D.width, (std::uint32_t) extent2D.height, 1};
             descriptor.arrayLayerCount = 1;
             descriptor.mipLevelCount = 1;
             descriptor.dimension = RHI::TextureDimension::TEXTURE_2D;

@@ -11,7 +11,7 @@
 #include <array>
 #include <vulkan/vulkan.h>
 
-#include "../../include/xxhash64.h"
+#include "../../Include/xxhash64.h"
 
 NS_RHI_BEGIN
 

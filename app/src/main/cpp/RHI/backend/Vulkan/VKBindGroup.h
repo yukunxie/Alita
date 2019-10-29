@@ -7,7 +7,6 @@
 
 #include "VKDevice.h"
 #include "VKBindGroupLayout.h"
-#include "VKBindingResources.h"
 
 NS_RHI_BEGIN
 

@@ -5,9 +5,9 @@
 #ifndef ALITA_VKTYPES_H
 #define ALITA_VKTYPES_H
 
-#include "../../include/Macros.h"
-#include "../../include/Flags.h"
-#include "../../include/Descriptors.h"
+#include "../../Include/Macros.h"
+#include "../../Include/Flags.h"
+#include "../../Include/Descriptors.h"
 
 #include <vulkan/vulkan.h>
 

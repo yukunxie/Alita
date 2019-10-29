@@ -6,13 +6,16 @@
 #define ALITA_ALITA_H
 
 #include <vector>
-#include <android/log.h>
 //#include <android_native_app_glue.h>
 #include "types/Types.h"
 #include "aux/Aux.h"
-#include "RHI/backend/Vulkan/VKDevice.h"
 
-#include "RHI/include/RHI.h"
+#ifdef ANDROID
+#include <android/native_window.h>
+#include <android/log.h>
+#endif
+
+#include "RHI/Include/RHI.h"
 
 class RealRenderer
 {
@@ -36,7 +39,7 @@ protected:
 private:
     static RealRenderer *instance_;
 
-    RHI::VKDevice*        rhiDevice_            = nullptr;
+    RHI::Device*          rhiDevice_            = nullptr;
     RHI::Buffer*          rhiVertexBuffer_      = nullptr;
     RHI::Buffer*          rhiIndexBuffer_       = nullptr;
     RHI::Buffer*          rhiUniformBuffer_     = nullptr;

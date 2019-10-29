@@ -12,14 +12,13 @@
 #include "VKSampler.h"
 #include "VKTextureView.h"
 #include "VKPipelineLayout.h"
-#include "VKBindingResources.h"
 #include "VKBindGroupLayout.h"
 #include "VKBindGroup.h"
 #include "VKQueue.h"
 #include "VKRenderQueue.h"
 #include "VKCommandEncoder.h"
 #include "VKSwapChain.h"
-#include "../../include/xxhash64.h"
+#include "../../Include/xxhash64.h"
 
 #include <vector>
 #include <array>

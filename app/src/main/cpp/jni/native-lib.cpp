@@ -5,7 +5,7 @@
 #include <android/native_window.h>
 #include<android/native_window_jni.h>
 
-#include "../render/RealRenderer.h"
+#include "../Render/RealRenderer.h"
 #include "../aux/AFileSystem.h"
 
 extern "C" {

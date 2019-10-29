@@ -5,8 +5,8 @@
 #ifndef ALITA_VKDEVICE_H
 #define ALITA_VKDEVICE_H
 
-#include "../../include/RHI.h"
-#include "../../include/xxhash64.h"
+#include "../../Include/RHI.h"
+#include "../../Include/xxhash64.h"
 
 #include "vulkan_wrapper.h"
 #include "VulkanMarcos.h"

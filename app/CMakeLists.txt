@@ -18,7 +18,7 @@ cmake_minimum_required(VERSION 3.4.1)
 include_directories(
         src/main/cpp
         src/main/cpp/external
-        src/main/cpp/RHI/include
+        src/main/cpp/RHI/Include
         src/main/cpp/RHI/backend/Vulkan
         )
 

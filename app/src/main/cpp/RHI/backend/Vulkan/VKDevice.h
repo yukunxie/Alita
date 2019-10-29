@@ -31,6 +31,8 @@ class VKShader;
 
 class VKQueue;
 
+class VKSwapChain;
+
 struct SwapChainSupportDetails
 {
     VkSurfaceCapabilitiesKHR capabilities;
@@ -150,17 +152,6 @@ public:
     VkDevice GetDevice() const
     { return vkDevice_; }
     
-    VkPhysicalDevice GetPhysicalDevice() const
-    { return vkPhysicalDevice_; }
-    
-    //    VkQueue GetQueue() const {return vkQueue_;}
-    
-    VkSwapchainKHR GetVkSwapChain() const
-    { return vkSwapchain_; }
-    
-    VkExtent2D GetSwapChainExtent2D() const
-    { return vkSwapchainExtent_; }
-    
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     
     VkDescriptorPool GetDescriptorPool()
@@ -190,11 +181,8 @@ public:
     void ClearWaitingSemaphores()
     { waitingSemaphores_.clear(); }
     
-    const VkFormat GetPresentColorFormat() const
-    { return VkFormat::VK_FORMAT_B8G8R8A8_UNORM; }
-    
     RenderPass* GetOrCreateRenderPass(const RenderPassCacheQuery &query);
-
+    
 public:
     virtual Buffer* CreateBuffer(const BufferDescriptor &descriptor) override;
     
@@ -221,14 +209,6 @@ public:
     virtual CommandEncoder*
     CreateCommandEncoder(const CommandEncoderDescriptor &descriptor = {}) override;
     
-    virtual SwapChain* CreateSwapChain() override;
-    
-    virtual Viewport GetViewport() const override
-    { return viewport_; }
-    
-    virtual Scissor GetScissor() const override
-    { return scissor_; }
-    
     virtual Queue* GetQueue() const override;
 
 private:
@@ -240,7 +220,7 @@ private:
     
     void CreateDevice();
     
-    void CreateSwapchain();
+//    void CreateSwapchain();
     
     void CreateVKQueue();
     
@@ -254,40 +234,38 @@ private:
     QueueFamilyIndices FindQueueFamilies();
     
     VkSurfaceFormatKHR
-    ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
+    ChooseVulkanSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats, VkFormat targetSurfaceFormat);
     
     VkPresentModeKHR
     ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
     
-    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
+    Extent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
     
-    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);
+    SwapChainSupportDetails QuerySwapChainSupport(VkSurfaceKHR surface);
     
     bool IsDeviceSuitable(VkPhysicalDevice device);
+    
+    VkSurfaceKHR GetVulkanSurface() const {return vkSurface_;}
 
 private:
     ANativeWindow* nativeWindow_ = nullptr;
     VkInstance vkInstance_ = nullptr;
     VkDevice vkDevice_ = nullptr;
-    //    VkQueue                         vkQueue_                = nullptr;
     VkPhysicalDevice vkPhysicalDevice_ = nullptr;
     VkCommandPool vkCommandPool_;
     VkDescriptorPool vkDescriptorPool_;
     VkSurfaceKHR vkSurface_;
-    VkSwapchainKHR vkSwapchain_;
-    VkFormat vkSwapchainImageFormat_;
-    VkExtent2D vkSwapchainExtent_;
     VkDebugReportCallbackEXT vkDebugReportCallback_;
     QueueFamilyIndices queueFamilyIndices_;
     
     std::uint32_t graphicQueueFamilyIndex_ = 0;
     
-    Viewport viewport_;
-    Scissor scissor_;
-    
     Queue* renderQueuer_ = nullptr;
     std::vector<VkSemaphore> waitingSemaphores_;
     RenderPassCache renderPassCache_;
+    
+    
+    friend class VKSwapChain;
 };
 
 NS_RHI_END

@@ -13,8 +13,6 @@
 
 NS_RHI_BEGIN
 
-class SwapChain;
-
 class SwapChain : public RHIObjectBase
 {
 public:
@@ -23,6 +21,10 @@ public:
     virtual TextureView* GetCurrentTexture() = 0;
     
     virtual void Present(const Queue* queue) = 0;
+    
+    virtual Extent2D GetExtent() = 0;
+    
+    virtual TextureFormat GetFormat() = 0;
 };
 
 NS_RHI_END

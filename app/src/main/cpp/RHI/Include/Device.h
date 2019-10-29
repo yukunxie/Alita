@@ -57,12 +57,6 @@ public:
     virtual CommandEncoder*
     CreateCommandEncoder(const CommandEncoderDescriptor &descriptor = {}) = 0;
     
-    virtual SwapChain* CreateSwapChain() = 0;
-    
-    virtual Viewport GetViewport() const = 0;
-    
-    virtual Scissor GetScissor() const = 0;
-    
     virtual Queue* GetQueue() const = 0;
 
 public:

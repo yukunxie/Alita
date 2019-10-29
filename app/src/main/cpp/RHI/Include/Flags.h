@@ -1435,12 +1435,40 @@ typedef struct RenderPassCreateInfo
     std::vector<SubpassDependency> dependencies;
 } RenderPassCreateInfo;
 
+typedef struct Extent2D
+{
+    uint32_t width;
+    uint32_t height;
+} Extent2D;
+
 typedef struct Extent3D
 {
     uint32_t width;
     uint32_t height;
     uint32_t depth;
+    
+    Extent3D() = default;
+    
+    Extent3D(const Extent2D &extent2D)
+    {
+        this->width = extent2D.width;
+        this->height = extent2D.height;
+        this->depth = 1;
+    }
+    
+    Extent3D(uint32_t width, uint32_t height, uint32_t depth)
+        : width(width), height(height), depth(depth)
+    {}
+    
+    Extent3D &operator=(const Extent2D &extent2D)
+    {
+        this->width = extent2D.width;
+        this->height = extent2D.height;
+        this->depth = 1;
+        return *this;
+    }
 } Extent3D;
+
 
 typedef struct ImageCreateInfo
 {

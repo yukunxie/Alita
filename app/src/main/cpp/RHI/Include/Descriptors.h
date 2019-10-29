@@ -14,6 +14,8 @@
 
 NS_RHI_BEGIN
 
+class Device;
+
 class TextureView;
 
 class Texture;
@@ -510,8 +512,9 @@ struct PipelineLayoutDescriptor
     std::vector<const BindGroupLayout*> bindGroupLayouts;
 };
 
-struct CommandEncoderDescriptor : ObjectDescriptorBase {
-// TODO: reusability flag?
+struct CommandEncoderDescriptor : ObjectDescriptorBase
+{
+    // TODO: reusability flag?
 };
 
 enum class ShaderCodeType
@@ -520,13 +523,22 @@ enum class ShaderCodeType
     TEXT,
 };
 
-struct ShaderModuleDescriptor : ObjectDescriptorBase {
-    ShaderCodeType  codeType;
+struct ShaderModuleDescriptor : ObjectDescriptorBase
+{
+    ShaderCodeType codeType;
     std::vector<std::uint8_t> binaryCode;
     std::string textCode;
 };
 
-struct CommandBufferDescriptor : ObjectDescriptorBase {
+struct CommandBufferDescriptor : ObjectDescriptorBase
+{
+};
+
+struct SwapChainDescriptor : ObjectDescriptorBase
+{
+    Device* device = nullptr;
+    TextureFormat format = TextureFormat::RGBA8UNORM;
+    TextureUsageFlags usage = TextureUsage::OUTPUT_ATTACHMENT;
 };
 
 NS_RHI_END

@@ -7,15 +7,69 @@
 
 NS_RHI_BEGIN
 
-VKSwapChain::VKSwapChain(VKDevice* device)
+VKSwapChain::VKSwapChain(VKDevice* device, VkFormat targetSurfaceFormat)
     : device_(device)
+    , format_(GetTextureFormat(targetSurfaceFormat))
 {
+    CreateVulkanSwapChain(targetSurfaceFormat);
     Init();
 }
 
 VKSwapChain::~VKSwapChain()
 {
     Dispose();
+}
+
+void VKSwapChain::CreateVulkanSwapChain(VkFormat targetSurfaceFormat)
+{
+    auto queueFamilyIndices_ = device_->GetQueueFamilyIndices();
+    auto vkSurface_ = device_->GetVulkanSurface();
+    
+    std::uint32_t queueFamilyIndices[] = {
+        (std::uint32_t)queueFamilyIndices_.graphicsFamily,
+        (std::uint32_t)queueFamilyIndices_.presentFamily
+    };
+    
+    SwapChainSupportDetails swapChainSupport = device_->QuerySwapChainSupport(vkSurface_);
+    VkSurfaceFormatKHR surfaceFormat = device_->ChooseVulkanSurfaceFormat(swapChainSupport.formats, targetSurfaceFormat);
+    vkSwapchainImageFormat_ = surfaceFormat.format;
+    extent_ = device_->ChooseSwapExtent(swapChainSupport.capabilities);
+    
+    uint32_t minImageCount = swapChainSupport.capabilities.minImageCount + 1;
+    if (swapChainSupport.capabilities.maxImageCount > 0 &&
+        minImageCount > swapChainSupport.capabilities.maxImageCount)
+    {
+        minImageCount = swapChainSupport.capabilities.maxImageCount;
+    }
+    
+    VkSwapchainCreateInfoKHR createInfo{
+        .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+        .surface = vkSurface_,
+        .minImageCount = minImageCount,
+        .imageFormat = vkSwapchainImageFormat_,
+        .imageColorSpace = surfaceFormat.colorSpace,
+        .imageExtent = {extent_.width, extent_.height},
+        .imageArrayLayers = 1,
+        .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+        .preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
+        .compositeAlpha = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
+        .presentMode = VK_PRESENT_MODE_FIFO_KHR,
+    };
+    
+    if (queueFamilyIndices_.graphicsFamily != queueFamilyIndices_.presentFamily)
+    {
+        createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+        createInfo.queueFamilyIndexCount = 2;
+        createInfo.pQueueFamilyIndices = queueFamilyIndices;
+    }
+    else
+    {
+        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        createInfo.queueFamilyIndexCount = 0; // Optional   createInfo.pQueueFamilyIndices = nullptr; // Optional
+    }
+    
+    // create swapchain.
+    CALL_VK(vkCreateSwapchainKHR(device_->GetDevice(), &createInfo, nullptr, &vkSwapChain_));
 }
 
 void VKSwapChain::Init()
@@ -25,19 +79,12 @@ void VKSwapChain::Init()
     std::vector<VkImage> swapChainImages;
     uint32_t imageCount = 0;
     
-    vkGetSwapchainImagesKHR(vkDevice, device_->GetVkSwapChain(), &imageCount, nullptr);
+    vkGetSwapchainImagesKHR(vkDevice, vkSwapChain_, &imageCount, nullptr);
     swapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(vkDevice, device_->GetVkSwapChain(), &imageCount,
+    vkGetSwapchainImagesKHR(vkDevice, vkSwapChain_, &imageCount,
                             swapChainImages.data());
     
-    auto vkSwapchainImageFormat = device_->GetPresentColorFormat();
-    
-    auto extent2D = device_->GetSwapChainExtent2D();
-    Extent3D extent3D{
-        .width = extent2D.width,
-        .height = extent2D.height,
-        .depth = 1,
-    };
+    Extent3D extent3D = extent_;
     
     // setup swapChainImageViews_
     swapChainImageViews_.resize(swapChainImages.size());
@@ -47,7 +94,7 @@ void VKSwapChain::Init()
         createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         createInfo.image = swapChainImages[i];
         createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        createInfo.format = vkSwapchainImageFormat;
+        createInfo.format = vkSwapchainImageFormat_;
         createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
         createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
         createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -59,7 +106,7 @@ void VKSwapChain::Init()
         createInfo.subresourceRange.baseArrayLayer = 0;
         createInfo.subresourceRange.layerCount = 1;
         
-        auto textureImage = new VKTextureView(device_, createInfo, extent3D);
+        auto textureImage = new VKTextureView(device_, createInfo, extent_);
         RHI_SAFE_RETAIN(textureImage);
         swapChainImageViews_[i] = textureImage;
     }
@@ -90,7 +137,7 @@ TextureView* VKSwapChain::GetCurrentTexture()
 {
     // TODO realxie recreate swapchain
     
-    CALL_VK(vkAcquireNextImageKHR(device_->GetDevice(), device_->GetVkSwapChain(),
+    CALL_VK(vkAcquireNextImageKHR(device_->GetDevice(), vkSwapChain_,
                                   std::numeric_limits<uint64_t>::max(),
                                   vkImageAvailableSemaphore_, VK_NULL_HANDLE, &imageIndex_));
     
@@ -127,13 +174,13 @@ TextureView* VKSwapChain::GetCurrentTexture()
 
 void VKSwapChain::Present(const Queue* queue)
 {
-    VkSwapchainKHR vkSwapchain = device_->GetVkSwapChain();
+//    VkSwapchainKHR vkSwapchain = device_->GetVkSwapChain();
     VkResult result;
     VkPresentInfoKHR presentInfo{
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
         .pNext = nullptr,
         .swapchainCount = 1,
-        .pSwapchains = &vkSwapchain,
+        .pSwapchains = &vkSwapChain_,
         .pImageIndices = &imageIndex_,
         .waitSemaphoreCount = 0,
         .pWaitSemaphores = nullptr,

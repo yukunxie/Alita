@@ -16,6 +16,7 @@
 #endif
 
 #include "RHI/Include/RHI.h"
+#include "../RHI/Include/CanvasContext.h"
 
 class RealRenderer
 {
@@ -39,6 +40,7 @@ protected:
 private:
     static RealRenderer *instance_;
 
+    RHI::CanvasContext*   rhiCanvasContext_     = nullptr;
     RHI::Device*          rhiDevice_            = nullptr;
     RHI::Buffer*          rhiVertexBuffer_      = nullptr;
     RHI::Buffer*          rhiIndexBuffer_       = nullptr;

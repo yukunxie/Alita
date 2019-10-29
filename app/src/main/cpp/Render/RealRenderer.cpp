@@ -18,6 +18,7 @@
 
 #include "../RHI/backend/Vulkan/ShaderHelper.h"
 #include "../RHI/backend/Vulkan/VKDevice.h"
+#include "../RHI/backend/Vulkan/VKCanvasContext.h"
 
 #include "../external/stb/stb_image.h"
 
@@ -28,9 +29,9 @@ struct UniformBufferObject
     glm::mat4 proj;
 };
 
-RealRenderer *RealRenderer::instance_ = nullptr;
+RealRenderer* RealRenderer::instance_ = nullptr;
 
-RealRenderer *RealRenderer::getInstance()
+RealRenderer* RealRenderer::getInstance()
 {
     if (instance_)
     {
@@ -50,7 +51,7 @@ RealRenderer::~RealRenderer()
 {
 }
 
-bool RealRenderer::initVulkanContext(ANativeWindow *window)
+bool RealRenderer::initVulkanContext(ANativeWindow* window)
 {
     if (window == nullptr || isReady())
     {
@@ -58,6 +59,14 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     }
     
     rhiDevice_ = new RHI::VKDevice(window);
+    rhiCanvasContext_ = new RHI::VKCanvasContext();
+    
+    {
+        RHI::SwapChainDescriptor swapChainDescriptor;
+        swapChainDescriptor.device = rhiDevice_;
+        swapChainDescriptor.format = RHI::TextureFormat::BGRA8UNORM;
+        rhiSwapChain_ = rhiCanvasContext_->ConfigureSwapChain(swapChainDescriptor);
+    }
     
     //    const std::vector<TVertex> vertices = {
     //            {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
@@ -67,41 +76,41 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     //    };
     
     const std::vector<TVertex> vertices = {
-            // Front face
-            {{-1.0f, -1.0f, 1.0f},  {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
-            {{1.0f,  -1.0f, 1.0f},  {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
-            {{1.0f,  1.0f,  1.0f},  {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-            {{-1.0f, 1.0f,  1.0f},  {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-            
-            // Back face
-            {{-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
-            {{-1.0f, 1.0f,  -1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
-            {{1.0f,  1.0f,  -1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-            {{1.0f,  -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-            
-            // Top face
-            {{-1.0f, 1.0f,  -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
-            {{-1.0f, 1.0f,  1.0f},  {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
-            {{1.0f,  1.0f,  1.0f},  {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-            {{1.0f,  1.0f,  -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-            
-            // Bottom face
-            {{-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
-            {{1.0f,  -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
-            {{1.0f,  -1.0f, 1.0f},  {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-            {{-1.0f, -1.0f, 1.0f},  {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-            
-            // Right face
-            {{1.0f,  -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
-            {{1.0f,  1.0f,  -1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
-            {{1.0f,  1.0f,  1.0f},  {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-            {{1.0f,  -1.0f, 1.0f},  {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-            
-            // Left face
-            {{-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
-            {{-1.0f, -1.0f, 1.0f},  {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
-            {{-1.0f, 1.0f,  1.0f},  {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-            {{-1.0f, 1.0f,  -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+        // Front face
+        {{-1.0f, -1.0f, 1.0f},  {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
+        {{1.0f,  -1.0f, 1.0f},  {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+        {{1.0f,  1.0f,  1.0f},  {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+        {{-1.0f, 1.0f,  1.0f},  {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+        
+        // Back face
+        {{-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
+        {{-1.0f, 1.0f,  -1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+        {{1.0f,  1.0f,  -1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+        {{1.0f,  -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+        
+        // Top face
+        {{-1.0f, 1.0f,  -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
+        {{-1.0f, 1.0f,  1.0f},  {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+        {{1.0f,  1.0f,  1.0f},  {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+        {{1.0f,  1.0f,  -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+        
+        // Bottom face
+        {{-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
+        {{1.0f,  -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+        {{1.0f,  -1.0f, 1.0f},  {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+        {{-1.0f, -1.0f, 1.0f},  {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+        
+        // Right face
+        {{1.0f,  -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
+        {{1.0f,  1.0f,  -1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+        {{1.0f,  1.0f,  1.0f},  {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+        {{1.0f,  -1.0f, 1.0f},  {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+        
+        // Left face
+        {{-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
+        {{-1.0f, -1.0f, 1.0f},  {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+        {{-1.0f, 1.0f,  1.0f},  {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+        {{-1.0f, 1.0f,  -1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
     };
     
     // Create VertexBuffer
@@ -109,23 +118,23 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
         RHI::BufferSize vertexBufferSize = static_cast<std::uint32_t>(sizeof(vertices[0]) *
                                                                       vertices.size());
         RHI::BufferDescriptor vertexBufferDescriptor = {
-                .usage = RHI::BufferUsage::VERTEX,
-                .size  = vertexBufferSize,
+            .usage = RHI::BufferUsage::VERTEX,
+            .size  = vertexBufferSize,
         };
         rhiVertexBuffer_ = rhiDevice_->CreateBuffer(vertexBufferDescriptor);
         
-        std::uint8_t *pVertexData = (std::uint8_t *) rhiVertexBuffer_->MapWriteAsync();
+        std::uint8_t* pVertexData = (std::uint8_t*) rhiVertexBuffer_->MapWriteAsync();
         memcpy(pVertexData, vertices.data(), vertexBufferSize);
         rhiVertexBuffer_->Unmap();
     }
     
     const std::vector<uint16_t> indices = {
-            0, 1, 2, 0, 2, 3,    // front
-            4, 5, 6, 4, 6, 7,    // back
-            8, 9, 10, 8, 10, 11,   // top
-            12, 13, 14, 12, 14, 15,   // bottom
-            16, 17, 18, 16, 18, 19,   // right
-            20, 21, 22, 20, 22, 23,   // left
+        0, 1, 2, 0, 2, 3,    // front
+        4, 5, 6, 4, 6, 7,    // back
+        8, 9, 10, 8, 10, 11,   // top
+        12, 13, 14, 12, 14, 15,   // bottom
+        16, 17, 18, 16, 18, 19,   // right
+        20, 21, 22, 20, 22, 23,   // left
     };
     
     // Create index buffer
@@ -133,15 +142,17 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
         RHI::BufferSize indexBufferSize = static_cast<std::uint32_t>(sizeof(indices[0]) *
                                                                      indices.size());
         RHI::BufferDescriptor indexBufferDescriptor = {
-                .usage = RHI::BufferUsage::INDEX,
-                .size  = indexBufferSize,
+            .usage = RHI::BufferUsage::INDEX,
+            .size  = indexBufferSize,
         };
         rhiIndexBuffer_ = rhiDevice_->CreateBuffer(indexBufferDescriptor);
         
-        std::uint8_t *pIndexData = (std::uint8_t *) rhiIndexBuffer_->MapWriteAsync();
+        std::uint8_t* pIndexData = (std::uint8_t*) rhiIndexBuffer_->MapWriteAsync();
         memcpy(pIndexData, indices.data(), indexBufferSize);
         rhiIndexBuffer_->Unmap();
     }
+    
+    RHI::Extent3D viewport = {1080, 1810, 1};
     
     UniformBufferObject ubo = {};
     float time = 0.0f;
@@ -149,8 +160,8 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
                             glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f),
                            glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), rhiDevice_->GetViewport().width /
-                                                     (float) rhiDevice_->GetViewport().height, 0.1f,
+    ubo.proj = glm::perspective(glm::radians(45.0f), float(viewport.width) /
+                                                     (float) viewport.height, 0.1f,
                                 10.0f);
     ubo.proj[1][1] *= -1;
     
@@ -158,12 +169,12 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     {
         RHI::BufferSize bufferSize = static_cast<std::uint32_t>(sizeof(UniformBufferObject));
         RHI::BufferDescriptor bufferDescriptor = {
-                .usage = RHI::BufferUsage::UNIFORM,
-                .size  = bufferSize,
+            .usage = RHI::BufferUsage::UNIFORM,
+            .size  = bufferSize,
         };
         rhiUniformBuffer_ = rhiDevice_->CreateBuffer(bufferDescriptor);
         
-        std::uint8_t *pData = (std::uint8_t *) rhiUniformBuffer_->MapWriteAsync();
+        std::uint8_t* pData = (std::uint8_t*) rhiUniformBuffer_->MapWriteAsync();
         memcpy(pData, &ubo, bufferSize);
         rhiUniformBuffer_->Unmap();
     }
@@ -171,26 +182,27 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     // ------------ Start setup RenderPipeline object ---------------
     
     // Step 1. create shaders
-//    {
-//        TData vertData = AFileSystem::getInstance()->readData("shaders/shader.vert.spv");
-//        RHI::ShaderModuleDescriptor descriptor;
-//        descriptor.binaryCode = std::move(vertData);
-//        descriptor.codeType   = RHI::ShaderCodeType::BINARY;
-//        rhiVertShader_ = rhiDevice_->CreateShaderModule(descriptor);
-//    }
-//
-//    {
-//        TData fragData = AFileSystem::getInstance()->readData("shaders/shader.frag.spv");
-//        RHI::ShaderModuleDescriptor descriptor;
-//        descriptor.binaryCode = std::move(fragData);
-//        descriptor.codeType   = RHI::ShaderCodeType::BINARY;
-//        rhiFragShader_ = rhiDevice_->CreateShaderModule(descriptor);
-//    }
+    //    {
+    //        TData vertData = AFileSystem::getInstance()->readData("shaders/shader.vert.spv");
+    //        RHI::ShaderModuleDescriptor descriptor;
+    //        descriptor.binaryCode = std::move(vertData);
+    //        descriptor.codeType   = RHI::ShaderCodeType::BINARY;
+    //        rhiVertShader_ = rhiDevice_->CreateShaderModule(descriptor);
+    //    }
+    //
+    //    {
+    //        TData fragData = AFileSystem::getInstance()->readData("shaders/shader.frag.spv");
+    //        RHI::ShaderModuleDescriptor descriptor;
+    //        descriptor.binaryCode = std::move(fragData);
+    //        descriptor.codeType   = RHI::ShaderCodeType::BINARY;
+    //        rhiFragShader_ = rhiDevice_->CreateShaderModule(descriptor);
+    //    }
     
     {
         TData vertData = AFileSystem::getInstance()->readData("shaders/shader.vert");
-        std::vector<std::uint32_t> spirV = RHI::CompileGLSLToSPIRV((const char*)vertData.data(), RHI::ShaderType::VERTEX);
-        std::vector<std::uint8_t>  tmpData(spirV.size() * sizeof(std::uint32_t), 0);
+        std::vector<std::uint32_t> spirV = RHI::CompileGLSLToSPIRV((const char*) vertData.data(),
+                                                                   RHI::ShaderType::VERTEX);
+        std::vector<std::uint8_t> tmpData(spirV.size() * sizeof(std::uint32_t), 0);
         memcpy(tmpData.data(), spirV.data(), tmpData.size());
         RHI::ShaderModuleDescriptor descriptor;
         descriptor.binaryCode = std::move(tmpData);
@@ -200,8 +212,9 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     
     {
         TData fragData = AFileSystem::getInstance()->readData("shaders/shader.frag");
-        std::vector<std::uint32_t> spirV = RHI::CompileGLSLToSPIRV((const char*)fragData.data(), RHI::ShaderType::FRAGMENT);
-        std::vector<std::uint8_t>  tmpData(spirV.size() * sizeof(std::uint32_t), 0);
+        std::vector<std::uint32_t> spirV = RHI::CompileGLSLToSPIRV((const char*) fragData.data(),
+                                                                   RHI::ShaderType::FRAGMENT);
+        std::vector<std::uint8_t> tmpData(spirV.size() * sizeof(std::uint32_t), 0);
         memcpy(tmpData.data(), spirV.data(), tmpData.size());
         RHI::ShaderModuleDescriptor descriptor;
         descriptor.binaryCode = std::move(tmpData);
@@ -212,12 +225,12 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     {
         RHI::BindGroupLayoutDescriptor descriptor;
         descriptor.bindings = {
-            RHI::BindGroupLayoutBinding {
+            RHI::BindGroupLayoutBinding{
                 .type = RHI::BindingType::UNIFORM_BUFFER,
                 .binding = 0,
                 .visibility = RHI::ShaderStage::VERTEX,
             },
-            RHI::BindGroupLayoutBinding {
+            RHI::BindGroupLayoutBinding{
                 .type = RHI::BindingType::SAMPLED_TEXTURE,
                 .binding = 1,
                 .visibility = RHI::ShaderStage::FRAGMENT,
@@ -231,69 +244,69 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
         descriptor.bindGroupLayouts = {rhiBindGroupLayout_};
         rhiPipelineLayout_ = rhiDevice_->CreatePipelineLayout(descriptor);
     }
-  
+    
     RHI::RenderPipelineDescriptor renderPipelineDescriptor;
     {
         renderPipelineDescriptor.layout = rhiPipelineLayout_;
         
         renderPipelineDescriptor.vertexStage = {
-                .module = rhiVertShader_,
-                .entryPoint = "main"
+            .module = rhiVertShader_,
+            .entryPoint = "main"
         };
         
         renderPipelineDescriptor.fragmentStage = {
-                .module = rhiFragShader_,
-                .entryPoint = "main"
+            .module = rhiFragShader_,
+            .entryPoint = "main"
         };
         
         renderPipelineDescriptor.primitiveTopology = RHI::PrimitiveTopology::TRIANGLE_LIST;
         
         renderPipelineDescriptor.depthStencilState = RHI::DepthStencilStateDescriptor{
-                .depthWriteEnabled = true,
-                .depthCompare = RHI::CompareFunction::LESS,
-                .format = RHI::TextureFormat::DEPTH24PLUS_STENCIL8,
-                .stencilFront = {},
-                .stencilBack  = {},
+            .depthWriteEnabled = true,
+            .depthCompare = RHI::CompareFunction::LESS,
+            .format = RHI::TextureFormat::DEPTH24PLUS_STENCIL8,
+            .stencilFront = {},
+            .stencilBack  = {},
         };
         
         renderPipelineDescriptor.vertexInput = {
-                .indexFormat = RHI::IndexFormat::UINT32,
-                .vertexBuffers = {
-                        RHI::VertexBufferDescriptor{
-                                .stride = sizeof(TVertex),
-                                .stepMode = RHI::InputStepMode::VERTEX,
-                                .attributeSet = {
-                                        RHI::VertexAttributeDescriptor{
-                                                .shaderLocation = 0,
-                                                .format = RHI::VertexFormat::FLOAT3,
-                                                .offset = offsetof(TVertex, pos),
-                                        },
-                                        RHI::VertexAttributeDescriptor{
-                                                .shaderLocation = 1,
-                                                .format = RHI::VertexFormat::FLOAT3,
-                                                .offset = offsetof(TVertex, color),
-                                        },
-                                        RHI::VertexAttributeDescriptor{
-                                                .shaderLocation = 2,
-                                                .format = RHI::VertexFormat::FLOAT2,
-                                                .offset = offsetof(TVertex, texCoord),
-                                        },
-                                },
+            .indexFormat = RHI::IndexFormat::UINT32,
+            .vertexBuffers = {
+                RHI::VertexBufferDescriptor{
+                    .stride = sizeof(TVertex),
+                    .stepMode = RHI::InputStepMode::VERTEX,
+                    .attributeSet = {
+                        RHI::VertexAttributeDescriptor{
+                            .shaderLocation = 0,
+                            .format = RHI::VertexFormat::FLOAT3,
+                            .offset = offsetof(TVertex, pos),
                         },
-                }
+                        RHI::VertexAttributeDescriptor{
+                            .shaderLocation = 1,
+                            .format = RHI::VertexFormat::FLOAT3,
+                            .offset = offsetof(TVertex, color),
+                        },
+                        RHI::VertexAttributeDescriptor{
+                            .shaderLocation = 2,
+                            .format = RHI::VertexFormat::FLOAT2,
+                            .offset = offsetof(TVertex, texCoord),
+                        },
+                    },
+                },
+            }
         };
         renderPipelineDescriptor.rasterizationState = {
-                .frontFace = RHI::FrontFace::COUNTER_CLOCKWISE,
-                .cullMode  = RHI::CullMode::BACK_BIT,
+            .frontFace = RHI::FrontFace::COUNTER_CLOCKWISE,
+            .cullMode  = RHI::CullMode::BACK_BIT,
         };
         
         renderPipelineDescriptor.colorStates = {
-                RHI::ColorStateDescriptor{
-                        .format = RHI::TextureFormat::BGRA8UNORM,
-                        .alphaBlend = {},
-                        .colorBlend = {},
-                        .writeMask  = RHI::ColorWrite::ALL,
-                }
+            RHI::ColorStateDescriptor{
+                .format = RHI::TextureFormat::BGRA8UNORM,
+                .alphaBlend = {},
+                .colorBlend = {},
+                .writeMask  = RHI::ColorWrite::ALL,
+            }
         };
         
         renderPipelineDescriptor.sampleCount = 1;
@@ -309,7 +322,7 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     
     int texWidth, texHeight, texChannels;
     const TData &imageData = AFileSystem::getInstance()->readData("images/spiderman.jpg");
-    stbi_uc *pixels = stbi_load_from_memory(imageData.data(), imageData.size(), &texWidth,
+    stbi_uc* pixels = stbi_load_from_memory(imageData.data(), imageData.size(), &texWidth,
                                             &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize imageSize = texWidth * texHeight * 4;
     if (!pixels)
@@ -318,22 +331,17 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     }
     
     RHI::ImageCreateInfo imageCreateInfo{
-            .imageType = RHI::ImageType::IMAGE_TYPE_2D,
-            .format    = RHI::Format::R8G8B8A8_UNORM,
-            .extent = {
-                    .width = (std::uint32_t) texWidth,
-                    .height= (std::uint32_t) texHeight,
-                    .depth = 1
-            },
-            .mipLevels = 1,
-            .arrayLayers = 1,
-            .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
-            .tiling = RHI::ImageTiling::LINEAR,
-            .sharingMode = RHI::SharingMode::EXCLUSIVE,
-            .imageData = pixels,
+        .imageType = RHI::ImageType::IMAGE_TYPE_2D,
+        .format    = RHI::Format::R8G8B8A8_UNORM,
+        .extent = {(std::uint32_t) texWidth,(std::uint32_t) texHeight, 1},
+        .mipLevels = 1,
+        .arrayLayers = 1,
+        .samples = RHI::SampleCountFlagBits::SAMPLE_COUNT_1_BIT,
+        .tiling = RHI::ImageTiling::LINEAR,
+        .sharingMode = RHI::SharingMode::EXCLUSIVE,
+        .imageData = pixels,
     };
     
-    //    rhiTexture_ = rhiDevice_->CreateTexture(imageCreateInfo);
     {
         RHI::TextureDescriptor descriptor;
         {
@@ -354,7 +362,7 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
         }
         
         auto buffer = rhiDevice_->CreateBuffer(bufferDescriptor);
-        std::uint8_t *pData = (std::uint8_t *) buffer->MapWriteAsync();
+        std::uint8_t* pData = (std::uint8_t*) buffer->MapWriteAsync();
         memcpy(pData, pixels, texWidth * texHeight * 4);
         buffer->Unmap();
         
@@ -390,15 +398,12 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     
     // Create Depth Stencil texture and textureview
     {
-//        VkExtent2D extent2D = rhiDevice_->GetSwapChainExtent2D();
-        
         RHI::TextureDescriptor descriptor;
         {
             descriptor.sampleCount = 1;
             descriptor.format = RHI::TextureFormat::DEPTH24PLUS_STENCIL8;
             descriptor.usage = RHI::TextureUsage::OUTPUT_ATTACHMENT;
-            descriptor.size = {1080, 1810, 1};
-//            descriptor.size = {(std::uint32_t) extent2D.width, (std::uint32_t) extent2D.height, 1};
+            descriptor.size = rhiSwapChain_->GetExtent();
             descriptor.arrayLayerCount = 1;
             descriptor.mipLevelCount = 1;
             descriptor.dimension = RHI::TextureDimension::TEXTURE_2D;
@@ -420,18 +425,19 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     
     // setup UBO
     {
-        auto bufferBinding = new RHI::BufferBinding(rhiUniformBuffer_, 0, (std::uint32_t)sizeof(UniformBufferObject));
+        auto bufferBinding = new RHI::BufferBinding(rhiUniformBuffer_, 0,
+                                                    (std::uint32_t) sizeof(UniformBufferObject));
         auto combinedST = new RHI::CombinedSamplerImageViewBinding(rhiSampler_, rhiTextureView_);
-    
+        
         RHI::BindGroupDescriptor descriptor;
         descriptor.layout = rhiBindGroupLayout_;
         
         descriptor.bindings = {
-            RHI::BindGroupBinding {
+            RHI::BindGroupBinding{
                 .binding = 0,
                 .resource = bufferBinding
             },
-            RHI::BindGroupBinding {
+            RHI::BindGroupBinding{
                 .binding = 1,
                 .resource = combinedST
             }
@@ -441,8 +447,6 @@ bool RealRenderer::initVulkanContext(ANativeWindow *window)
     
     rhiCommandEncoder_ = rhiDevice_->CreateCommandEncoder();
     
-    rhiSwapChain_ = rhiDevice_->CreateSwapChain();
-    
     return true;
 }
 
@@ -451,15 +455,17 @@ void RealRenderer::testRotate()
     static auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(
-            currentTime - startTime).count();
+        currentTime - startTime).count();
+    
+    RHI::Extent3D viewport = rhiSwapChain_->GetExtent();
     
     UniformBufferObject ubo = {};
     ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f),
                             glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.view = glm::lookAt(glm::vec3(.0f, 8.0f, .0f), glm::vec3(0.0f, 0.0f, 0.0f),
                            glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), rhiDevice_->GetViewport().width /
-                                                     (float) rhiDevice_->GetViewport().height, 2.0f,
+    ubo.proj = glm::perspective(glm::radians(45.0f), viewport.width /
+                                                     (float) viewport.height, 2.0f,
                                 20.0f);
     ubo.proj[1][1] *= -1;
     
@@ -471,25 +477,25 @@ void RealRenderer::drawFrame()
     testRotate();
     
     std::vector<RHI::RenderPassColorAttachmentDescriptor> colorAttachments = {
-            RHI::RenderPassColorAttachmentDescriptor{
-                    .attachment = rhiSwapChain_->GetCurrentTexture(),
-                    .resolveTarget = nullptr,
-                    .loadOp = RHI::LoadOp::CLEAR,
-                    .loadValue = {0.0f, 0.0f, 0.0f, 1.0f},
-                    .storeOp= RHI::StoreOp::STORE,
-            }
+        RHI::RenderPassColorAttachmentDescriptor{
+            .attachment = rhiSwapChain_->GetCurrentTexture(),
+            .resolveTarget = nullptr,
+            .loadOp = RHI::LoadOp::CLEAR,
+            .loadValue = {0.0f, 0.0f, 0.0f, 1.0f},
+            .storeOp= RHI::StoreOp::STORE,
+        }
     };
     
     RHI::RenderPassDescriptor renderPassDescriptor;
     renderPassDescriptor.colorAttachments = std::move(colorAttachments);
     renderPassDescriptor.depthStencilAttachment = {
-            .attachment = rhiDSTextureView_,
-            .depthLoadOp = RHI::LoadOp::CLEAR,
-            .depthLoadValue = 1.0f,
-            .depthStoreOp = RHI::StoreOp::STORE,
-            .stencilLoadOp = RHI::LoadOp::CLEAR,
-            .stencilLoadValue = 0,
-            .stencilStoreOp = RHI::StoreOp::STORE,
+        .attachment = rhiDSTextureView_,
+        .depthLoadOp = RHI::LoadOp::CLEAR,
+        .depthLoadValue = 1.0f,
+        .depthStoreOp = RHI::StoreOp::STORE,
+        .stencilLoadOp = RHI::LoadOp::CLEAR,
+        .stencilLoadValue = 0,
+        .stencilStoreOp = RHI::StoreOp::STORE,
     };
     
     auto renderPassEncoder = rhiCommandEncoder_->BeginRenderPass(renderPassDescriptor);
@@ -500,8 +506,9 @@ void RealRenderer::drawFrame()
         renderPassEncoder->SetVertexBuffer(rhiVertexBuffer_, 0);
         renderPassEncoder->SetIndexBuffer(rhiIndexBuffer_, 0);
         renderPassEncoder->SetBindGroup(0, rhiBindGroup_);
-        renderPassEncoder->SetViewport(0, 0, 1080, 1810, 0, 1);
-        renderPassEncoder->SetScissorRect(0, 0, 1080, 1810);
+        const auto& extent = rhiSwapChain_->GetExtent();
+        renderPassEncoder->SetViewport(0, 0, extent.width, extent.height, 0, 1);
+        renderPassEncoder->SetScissorRect(0, 0, extent.width, extent.height);
         renderPassEncoder->DrawIndxed(36, 0);
     }
     

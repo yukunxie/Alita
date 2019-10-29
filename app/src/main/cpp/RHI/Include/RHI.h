@@ -9,6 +9,7 @@
 #include "BindGroupLayout.h"
 #include "BindingResource.h"
 #include "Buffer.h"
+#include "CanvasContext.h"
 #include "CommandBuffer.h"
 #include "CommandEncoder.h"
 #include "Constants.h"

@@ -12,21 +12,18 @@
 
 NS_RX_BEGIN
 
-class Noncopyable
+#define SET_CLASS_NON_COPYABLE(ClassName)               \
+public:                                                 \
+    ClassName(ClassName&&) = delete;                    \
+    ClassName& operator =(ClassName&&) = delete;        \
+    ClassName(const ClassName&) = delete;               \
+    ClassName& operator=(const ClassName&) = delete;
+
+    
+class ObjectBase
 {
-public:
-    Noncopyable() = default;
+SET_CLASS_NON_COPYABLE(ObjectBase)
 
-    Noncopyable(Noncopyable&&) = default;
-    Noncopyable& operator =(Noncopyable&&) = default;
-
-private:
-    Noncopyable(const Noncopyable&) = delete;
-    Noncopyable& operator=(const Noncopyable&) = delete;
-};
-
-class ObjectBase : public Noncopyable
-{
 protected:
     virtual ~ObjectBase() = default;
 

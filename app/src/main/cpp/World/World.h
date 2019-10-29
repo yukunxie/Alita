@@ -6,6 +6,8 @@
 #define ALITA_WORLD_H
 
 #include "../Base/Macros.h"
+#include "SceneComponent.h"
+#include "Level.h"
 
 NS_RX_BEGIN
 
@@ -13,6 +15,9 @@ class World
 {
 public:
     World();
+
+protected:
+    std::vector<Level*> levels_;
 };
 
 NS_RX_END

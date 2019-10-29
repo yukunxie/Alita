@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.4.1)
 
 include_directories(
+        ${CMAKE_CURRENT_SOURCE_DIR}
         .
         ./..
         RHI/backend/Vulkan
@@ -13,7 +14,7 @@ file(GLOB_RECURSE HEADERS
         "aux/*.hpp"
         "Base/*.h"
         "World/*.h"
-        "render/*.h"
+        "Render/*.h"
         "types/*.h"
         )
 
@@ -22,7 +23,7 @@ file(GLOB_RECURSE SRCS
         "Base/*.cpp"
         "types/*.cpp"
         "World/*.cpp"
-        "render/*.cpp"
+        "Render/*.cpp"
         )
 
 add_library( # Sets the name of the library.

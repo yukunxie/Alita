@@ -9,6 +9,14 @@
 
 #include <stdint.h>
 #include <string>
+#include <vector>
+#include <list>
+#include <map>
+#include <functional>
+#include <limits>
+#include <unordered_map>
+#include <algorithm>
+#include <set>
 
 NS_RX_BEGIN
 

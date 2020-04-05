@@ -8,8 +8,15 @@ add_subdirectory(glslang)
 add_subdirectory(SPIRV)
 add_subdirectory(OGLCompilersDLL)
 
-file(GLOB SRCS "./*.cpp")
-file(GLOB HEADS "./*.h")
+file(GLOB SRCS
+        "./*.cpp"
+        "../../Platforms/Android/*.cpp"
+        )
+
+file(GLOB HEADS
+        "./*.h"
+        "../../Platforms/Android/*.h"
+        )
 
 add_library( # Sets the name of the library.
         vulkan-lib-static

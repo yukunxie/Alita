@@ -12,4 +12,16 @@ Model::Model()
     AddComponment(new SceneComponent());
 }
 
+Model::~Model()
+{
+    RX_SAFE_RELEASE(mesh_);
+}
+
+void Model::SetMesh(Mesh* mesh)
+{
+    RX_SAFE_RETAIN(mesh);
+    RX_SAFE_RELEASE(mesh_);
+    mesh_ = mesh;
+}
+
 NS_RX_END

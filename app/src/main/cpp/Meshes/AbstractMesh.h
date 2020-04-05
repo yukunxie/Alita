@@ -9,7 +9,7 @@
 
 NS_RX_BEGIN
 
-class AbstractMesh
+class AbstractMesh : public ObjectBase
 {
 
 };

@@ -22,6 +22,6 @@ if __name__ == "__main__":
         path = "./"
     filenames = getAllFiles(path, [".vert", ".frag"])
     for filename in filenames:
-        cmd = "glslangValidator -H -V %s -o %s.spv" % (filename, filename)
+        cmd = "glslangValidator -H -V --iy %s -o %s.spv" % (filename, filename)
         print (cmd)
         os.system(cmd)

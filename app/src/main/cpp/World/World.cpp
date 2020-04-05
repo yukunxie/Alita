@@ -10,4 +10,8 @@ World::World()
 {
 }
 
+void World::Update(float dt)
+{
+}
+
 NS_RX_END

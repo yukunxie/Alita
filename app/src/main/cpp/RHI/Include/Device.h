@@ -12,7 +12,7 @@
 #include "CommandBuffer.h"
 #include "CommandEncoder.h"
 #include "Flags.h"
-#include "RenderPipleine.h"
+#include "RenderPipeine.h"
 #include "Macros.h"
 #include "PipelineLayout.h"
 #include "Queue.h"
@@ -31,6 +31,14 @@
 #include <vector>
 
 NS_RHI_BEGIN
+
+enum class DeviceType
+{
+    OPENGLES,
+    VULKAN,
+    METAL,
+    DX12
+};
 
 class Device
 {
@@ -63,6 +71,11 @@ public:
     ~Device()
     {}
 };
+
+/*
+ * brief
+ */
+Device* CreateDeviceHelper(DeviceType deviceType, void* data = nullptr);
 
 NS_RHI_END
 

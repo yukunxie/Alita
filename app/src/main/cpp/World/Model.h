@@ -7,6 +7,7 @@
 
 #include "../Base/ObjectBase.h"
 #include "../Base/Entity.h"
+#include "../Meshes/Mesh.h"
 
 NS_RX_BEGIN
 
@@ -14,6 +15,13 @@ class Model : public Entity
 {
 public:
     Model();
+    
+    virtual ~Model();
+    
+    void SetMesh(Mesh* mesh);
+
+protected:
+    Mesh* mesh_ = nullptr;
 };
 
 NS_RX_END

@@ -2,8 +2,8 @@
 // Created by realxie on 2019-10-04.
 //
 
-#ifndef ALITA_RENDERPIPLEINE_H
-#define ALITA_RENDERPIPLEINE_H
+#ifndef ALITA_RENDERPIPEINE_H
+#define ALITA_RENDERPIPEINE_H
 
 #include "Macros.h"
 #include "Flags.h"
@@ -34,4 +34,4 @@ public:
 
 NS_RHI_END
 
-#endif //ALITA_RENDERPIPLEINE_H
+#endif //ALITA_RENDERPIPEINE_H

@@ -11,10 +11,17 @@
 
 NS_RX_BEGIN
 
-class World
+class World : public ObjectBase
 {
 public:
     World();
+    
+    void Update(float dt);
+    
+    void AddLevel(Level* level)
+    {
+        levels_.push_back(level);
+    }
 
 protected:
     std::vector<Level*> levels_;
